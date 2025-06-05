@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Upload - Slip</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/login-form/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+    <style>
+        :root {
+            --success-color: #4CAF50;
+            --danger-color: #f44336;
+            --transition: all 0.3s ease;
+            --gradient: linear-gradient(90deg, #8b6346, #3d2e23);
+        }
+
+        html[data-theme="light"] {
+            --primary-color: #8b6346;
+            --text-color: #333333;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --background-color: #f5f5f5;
+            --card-background: #ffffff;
+            --input-background: rgba(0, 0, 0, 0.05);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        html[data-theme="dark"] {
+            --primary-color: #8b6346;
+            --text-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #1a1a1a;
+            --card-background: #242424;
+            --input-background: #2e2e2e;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-shapes {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: var(--primary-color);
+            opacity: 0.1;
+            border-radius: 50%;
+        }
+
+        .shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+        }
+
+        .shape:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            bottom: -150px;
+            right: -150px;
+        }
+
+        .payment-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .payment-box {
+            background: var(--card-background);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-container {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+        }
+
+        .logo-container i {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .payment-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .payment-header p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group label {
+            position: absolute;
+            top: 0.75rem;
+            left: 1rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label {
+            top: -0.5rem;
+            left: 0.5rem;
+            font-size: 0.75rem;
+            background: var(--card-background);
+            padding: 0 0.25rem;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            text-align: left;
+            min-height: 1rem;
+        }
+
+        .upload-btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .upload-btn:hover {
+            background: var(--primary-dark, #3d2e23);
+        }
+
+        .upload-btn:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .payment-box p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        .payment-box a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .payment-box a:hover {
+            text-decoration: underline;
+        }
+
+        .custom-toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: var(--card-background);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: var(--text-color);
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 1000;
+        }
+
+        .custom-toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .custom-toast.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .modal-content p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-content .modal-btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-content .modal-btn:hover {
+            background: var(--primary-dark, #3d2e23);
+        }
+
+        @media (max-width: 480px) {
+            .payment-box {
+                padding: 1.5rem;
+            }
+
+            .shape:nth-child(1),
+            .shape:nth-child(2) {
+                width: 200px;
+                height: 200px;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+
+            .modal-content h2 {
+                font-size: 1.2rem;
+            }
+
+            .modal-content p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <section id="payment-upload" class="payment-section">
+        <div class="payment-container">
+            <div class="payment-box">
+                <div class="brand">
+                    <div class="logo-container">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <h1>Adem Baba</h1>
+                </div>
+                <div class="payment-header">
+                    <h2 class="gradient-text">Upload Payment Slip</h2>
+                    <p>Upload a JPEG, PNG, or PDF file (&lt;5MB) and enter the amount.</p>
+                </div>
+
+                <form class="payment-form" id="paymentSlipForm">
+                    <div class="form-group">
+                        <input type="number" id="paymentAmount" required aria-label="Payment amount" placeholder=" " min="1" step="0.01">
+                        <label for="paymentAmount">Amount (₦)</label>
+                        <div id="amount-error" class="error-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <input type="file" id="paymentSlip" accept="image/jpeg,image/png,application/pdf" required aria-label="Payment slip" aria-describedby="file-instructions">
+                        <div id="file-instructions" class="payment-header p" style="text-align: left; margin-bottom: 0.5rem;">Accepted formats: JPEG, PNG, PDF (max 5MB)</div>
+                        <div id="file-error" class="error-message"></div>
+                    </div>
+                    <button type="submit" class="upload-btn" aria-label="Upload Payment Slip">
+                        <span>Upload Slip</span>
+                        <i class="fas fa-upload"></i>
+                    </button>
+                </form>
+
+                <p><a href="#" id="logoutLink">Logout</a></p>
+            </div>
+        </div>
+    </section>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h2>Payment Slip Uploaded</h2>
+            <p>Your payment slip has been submitted for verification. You will be notified once it’s approved.</p>
+            <button class="modal-btn" id="closeModalBtn">OK</button>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast"></div>
+
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry } from './utils.js';
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = LOGIN_PATH;
+                return false;
+            }
+            try {
+                await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                return true;
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return false;
+            }
+        }
+
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'flex';
+            document.getElementById('closeModalBtn').focus();
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'none';
+            window.location.href = LOGIN_PATH;
+        }
+
+        document.getElementById('closeModalBtn').addEventListener('click', closeSuccessModal);
+        document.getElementById('successModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('successModal')) {
+                closeSuccessModal();
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('successModal').style.display === 'flex') {
+                closeSuccessModal();
+            }
+        });
+
+        document.getElementById('logoutLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        });
+
+        document.getElementById('paymentSlipForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amountInput = document.getElementById('paymentAmount');
+            const fileInput = document.getElementById('paymentSlip');
+            const amount = parseFloat(amountInput.value);
+            const file = fileInput.files[0];
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+            // Clear errors
+            document.getElementById('amount-error').textContent = '';
+            document.getElementById('file-error').textContent = '';
+
+            // Client-side validation
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                document.getElementById('amount-error').textContent = 'Enter a positive amount';
+                amountInput.focus();
+                return;
+            }
+            if (!file) {
+                showToast('Please select a payment slip file', 'error');
+                document.getElementById('file-error').textContent = 'File is required';
+                fileInput.focus();
+                return;
+            }
+            if (!['image/jpeg', 'image/png', 'application/pdf'].includes(file.type)) {
+                showToast('Only JPEG, PNG, or PDF files are allowed', 'error');
+                document.getElementById('file-error').textContent = 'Invalid file type';
+                fileInput.focus();
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('File size must be less than 5MB', 'error');
+                document.getElementById('file-error').textContent = 'File too large';
+                fileInput.focus();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('amount', amount.toString());
+            formData.append('paymentSlip', file);
+            for (let [key, value] of formData.entries()) {
+                console.log(`FormData: ${key}`, value);
+            }
+
+            const submitButton = document.querySelector('#paymentSlipForm .upload-btn');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                const response = await fetchWithRetry(`${API_URL}/payment-slips/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                });
+                console.log('Server response:', response);
+                showToast(response.message, 'success');
+                document.getElementById('paymentSlipForm').reset();
+                showSuccessModal();
+            } catch (error) {
+                console.error('Upload error:', error);
+                let message = 'Failed to upload payment slip';
+                let targetErrorField = 'file-error';
+
+                if (error.message.includes('401')) {
+                    message = 'Session expired. Please log in again.';
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else if (error.message.includes('403')) {
+                    message = 'Access denied. Students only.';
+                } else if (error.message.includes('No file uploaded')) {
+                    message = 'No file uploaded. Please select a file.';
+                    targetErrorField = 'file-error';
+                } else if (error.message.includes('Validation failed')) {
+                    message = error.message.includes('Amount') ? 'Enter a valid amount' : 'Invalid input';
+                    targetErrorField = error.message.includes('Amount') ? 'amount-error' : 'file-error';
+                } else if (error.message.includes('Invalid file type')) {
+                    message = 'Only JPEG, PNG, or PDF files are allowed';
+                    targetErrorField = 'file-error';
+                } else if (error.message.includes('network')) {
+                    message = 'Network error. Please check your connection.';
+                }
+
+                showToast(message, 'error');
+                document.getElementById(targetErrorField).textContent = message;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<span>Upload Slip</span><i class="fas fa-upload"></i>';
+            }
+        });
+
+        // Check authentication on page load
+        (async () => {
+            const isAuthenticated = await checkAuth();
+            if (!isAuthenticated) {
+                showToast('Please log in to continue', 'error');
+            }
+        })();
+    </script>
+</body>
+</html>

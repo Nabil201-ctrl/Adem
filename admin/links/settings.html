@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adem Baba - Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/login-form/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+    <!-- Add this inside the <head> tag of settings.html -->
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            color: #f5f6fa;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            background: transparent;
+        }
+
+        .settings-container {
+            background: rgba(34, 40, 49, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+            padding: 2.5rem 2rem 2rem 2rem;
+            max-width: 480px;
+            margin: 2.5rem auto 0 auto;
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-container h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            background: linear-gradient(90deg, #ffb347 0%, #ffcc33 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.7rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: none;
+            border-radius: 8px;
+            background: #23272f;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="email"]:focus,
+        .form-group input[type="password"]:focus {
+            box-shadow: 0 0 0 2px #ffcc33;
+            background: #23272f;
+        }
+
+        .form-group label {
+            position: absolute;
+            left: 1rem;
+            top: 0.7rem;
+            color: #bbb;
+            font-size: 0.98rem;
+            pointer-events: none;
+            transition: 0.2s;
+            background: transparent;
+        }
+
+        .form-group input:focus+label,
+        .form-group input:not(:placeholder-shown)+label {
+            top: -1.1rem;
+            left: 0.7rem;
+            font-size: 0.85rem;
+            color: #ffcc33;
+            background: #222831;
+            padding: 0 0.3rem;
+            border-radius: 4px;
+        }
+
+        .form-group .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .form-group .toggle-password:hover {
+            color: #ffcc33;
+        }
+
+        .add-button {
+            width: 100%;
+            padding: 0.9rem 0;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #ffb347 0%, #ffcc33 100%);
+            color: #232526;
+            font-weight: 700;
+            font-size: 1.08rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 8px rgba(255, 204, 51, 0.08);
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .add-button:hover {
+            background: linear-gradient(90deg, #ffcc33 0%, #ffb347 100%);
+            color: #222831;
+        }
+
+        /* Notification checkboxes */
+        .form-group label span {
+            margin-left: 0.7rem;
+            color: #f5f6fa;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .form-group input[type="checkbox"] {
+            accent-color: #ffcc33;
+            width: 1.1rem;
+            height: 1.1rem;
+            vertical-align: middle;
+        }
+
+        /* Toast notification */
+        #toast.custom-toast {
+            position: fixed;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 220px;
+            max-width: 340px;
+            background: linear-gradient(90deg, #ffb347 0%, #ffcc33 100%);
+            color: #232526;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 24px rgba(255, 204, 51, 0.18);
+            z-index: 9999;
+            display: none;
+            text-align: center;
+            letter-spacing: 0.2px;
+        }
+
+        #toast.custom-toast.show {
+            display: block;
+            animation: fadeInUp 0.4s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .settings-container {
+                padding: 1.2rem 0.7rem 1.5rem 0.7rem;
+                max-width: 98vw;
+            }
+
+            .main-content {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">Loading...</div>
+    <div id="app" style="display: none;">
+        <div class="sidebar">
+            <div class="brand logo">
+                <div class="logo-container logo-icon">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <h1>Adem Baba</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="./index.html" class="active nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="./rooms.html" class="nav-link"><i class="fas fa-door-open"></i> Rooms</a>
+                <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
+                <a href="./schedule.html" class="nav-link"><i class="fas fa-calendar"></i> Schedule</a>
+                <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
+                <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+                <a href="../../login-form/index.html" class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <header>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search disabled" aria-label="Search settings"
+                        disabled title="Search is not available on the settings page">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-info">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-details">
+                        <h4 id="userName">Admin User</h4>
+                        <p>Admin</p>
+                    </div>
+                    <div class="user-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+                <div class="settings-container">
+                    <h2>Profile Settings</h2>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <input type="text" id="profileName" required aria-label="Full name">
+                            <label for="profileName">Full Name</label>
+                            <span class="focus-border"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="profileEmail" required aria-label="Email">
+                            <label for="profileEmail">Email</label>
+                            <span class="focus-border"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="profilePassword" aria-label="New password">
+                            <label for="profilePassword">New Password</label>
+                            <span class="focus-border"></span>
+                            <i id="togglePassword" class="fas fa-eye-slash toggle-password" role="button"
+                                aria-label="Toggle password visibility"></i>
+                        </div>
+                        <button type="submit" class="add-button">Update Profile</button>
+                    </form>
+
+                    <h2>Notification Settings</h2>
+                    <form id="notificationForm">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="emailNotifications" aria-label="Email notifications">
+                                <span>Email Notifications</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="newStudentNotifications"
+                                    aria-label="New student notifications">
+                                <span>New Student Notifications</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="maintenanceNotifications"
+                                    aria-label="Maintenance notifications">
+                                <span>Maintenance Notifications</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="add-button">Update Notifications</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast"></div>
+
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, togglePasswordVisibility, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+
+        // Initialize password visibility toggle
+        togglePasswordVisibility('profilePassword', 'togglePassword');
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+            try {
+                const data = await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return data.user;
+            } catch (error) {
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+        }
+
+        async function fetchSettingsData() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                document.getElementById('profileName').value = data.user.name || '';
+                document.getElementById('profileEmail').value = data.user.email || '';
+                document.getElementById('emailNotifications').checked = data.notifications.email || false;
+                document.getElementById('newStudentNotifications').checked = data.notifications.newStudent || false;
+                document.getElementById('maintenanceNotifications').checked = data.notifications.maintenance || false;
+            } catch (error) {
+                showToast(error.message || 'Failed to load settings', 'error');
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = sanitizeInput(document.getElementById('profileName').value.trim());
+            const email = sanitizeInput(document.getElementById('profileEmail').value.trim());
+            const password = document.getElementById('profilePassword').value;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+            // Enhanced validation
+            if (!name || name.length < 2) {
+                showToast('Name must be at least 2 characters', 'error');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Invalid email format', 'error');
+                return;
+            }
+            if (password && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
+                showToast('Password must be 8+ characters with uppercase, lowercase, and a number', 'error');
+                return;
+            }
+
+            try {
+                const payload = { name, email };
+                if (password) payload.password = password;
+                const data = await fetchWithRetry(`${API_URL}/settings/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    sessionStorage.setItem('token', data.token);
+                }
+                // Update header name
+                document.getElementById('userName').textContent = name || 'Admin User';
+                showToast('Profile updated successfully', 'success');
+                document.getElementById('profilePassword').value = ''; // Clear password field
+            } catch (error) {
+                showToast(error.message || 'Failed to update profile', 'error');
+            }
+        });
+
+        document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailNotifications').checked;
+            const newStudent = document.getElementById('newStudentNotifications').checked;
+            const maintenance = document.getElementById('maintenanceNotifications').checked;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/settings/notifications`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ email, newStudent, maintenance })
+                });
+                showToast('Notification settings saved successfully', 'success');
+            } catch (error) {
+                showToast(error.message || 'Failed to update notifications', 'error');
+            }
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        }
+
+        (async () => {
+            const user = await checkAuth();
+            if (user) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('userName').textContent = user.name || 'Admin User';
+                fetchSettingsData();
+
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+                document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
+
+                // Add event listeners for buttons
+                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                document.getElementById('logoutButton').addEventListener('click', logout);
+            }
+        })();
+    </script>
+</body>
+
+</html>

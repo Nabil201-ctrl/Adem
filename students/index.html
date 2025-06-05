@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adem Baba - Student Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/login-form/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+    <style>
+        :root {
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #f44336;
+            --transition: all 0.3s ease;
+            --border-radius: 12px;
+        }
+
+        html[data-theme="light"] {
+            --primary-color: #8b6346;
+            --primary-dark: #3d2e23;
+            --text-color: #333333;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --background-color: #f5f5f5;
+            --card-background: #ffffff;
+            --input-background: rgba(0, 0, 0, 0.05);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        html[data-theme="dark"] {
+            --primary-color: #8b6346;
+            --primary-dark: #3d2e23;
+            --text-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #1a1a1a;
+            --card-background: #242424;
+            --input-background: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            overflow-x: hidden;
+        }
+
+        #loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-size: 1.5rem;
+            background: var(--background-color);
+            color: var(--text-color);
+            position: fixed;
+            width: 100%;
+            z-index: 2000;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            overflow-y: auto;
+            z-index: 1000;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--background-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding: 0.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-link i {
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            max-width: 1800px;
+            width: calc(100vw - 280px);
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--card-background);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 300px;
+            padding: 1rem 1rem 1rem 3rem;
+            background: var(--input-background);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .theme-toggle {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .user-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .user-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        @media (max-width: 1400px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--card-background);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow);
+            min-height: 120px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            padding: 1rem;
+            border-radius: 12px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .stat-info h3 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-info p {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .stat-card .action-button {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .stat-card .action-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .activity-table-container {
+            background: var(--card-background);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .activity-table {
+            height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--border-color);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 0;
+            background: var(--card-background);
+            padding: 1rem;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-button:hover {
+            background: var(--primary-dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 600px;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            font-weight: 500;
+            padding: 1.25rem 1rem;
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background: var(--input-background);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: var(--shadow);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--border-color);
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--border-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        .close-btn:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .custom-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            z-index: 2000;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+
+        .custom-toast.success {
+            background-color: var(--success-color);
+        }
+
+        .custom-toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .custom-toast.info {
+            background-color: var(--primary-color);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card,
+        .activity-table-container,
+        .payment-upload-container {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-bar input {
+                width: 100%;
+            }
+
+            .activity-table {
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .table-header h2 {
+                font-size: 1.2rem;
+            }
+
+            th,
+            td {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .modal-content {
+                padding: 1rem;
+            }
+
+            .modal-content h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading" class="loading">Loading...</div>
+    <div id="app" style="display: none;">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <h1>Adem Baba</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="./student.html" class="nav-link active"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+                <a href="#" class="nav-link" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <header class="header">
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search events..." aria-label="Search events">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-profile">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <h4 id="userName">Student User</h4>
+                        <p>Student</p>
+                    </div>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Name</h3>
+                        <p class="stat-value" id="studentName">N/A</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-id-card"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Matric Number</h3>
+                        <p class="stat-value" id="matricNumber">N/A</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Room</h3>
+                        <p class="stat-value" id="roomInfo">Unassigned</p>
+                    </div>
+                </div>
+                <div class="stat-card" id="paymentStatusCard">
+                    <div class="stat-icon"><i class="fas fa-money-bill"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Payment Status</h3>
+                        <p class="stat-value" id="paymentStatus">N/A</p>
+                        <button class="action-button" onclick="navigateToPaymentUpload()">Upload/View Payment</button>
+                    </div>
+                </div>
+            </div>
+            <div class="activity-table-container">
+                <div class="activity-table">
+                    <div class="table-header">
+                        <h2>Upcoming Events</h2>
+                        <div class="table-actions">
+                            <button class="action-button" id="filterButton">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="filterModal" class="modal">
+        <div class="modal-content">
+            <h2>Filter Events</h2>
+            <form id="filterForm">
+                <div class="form-group">
+                    <input type="text" id="filterKeyword" aria-label="Search keyword" placeholder=" ">
+                    <label for="filterKeyword">Keyword</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="filterStartDate" aria-label="Start date" placeholder=" ">
+                    <label for="filterStartDate">Start Date</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="filterEndDate" aria-label="End date" placeholder=" ">
+                    <label for="filterEndDate">End Date</label>
+                </div>
+                <button type="submit" class="add-button">Apply Filter</button>
+                <button type="button" class="close-btn" id="closeFilterModal">Cancel</button>
+                <button type="button" class="close-btn" id="resetFilter">Reset</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast"></div>
+
+<script type="module">
+    import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+
+    async function checkAuth() {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            console.log('No token found, redirecting to login');
+            window.location.href = LOGIN_PATH;
+            return null;
+        }
+        try {
+            const data = await fetchWithRetry(`${API_URL}/protected`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            console.log('Auth check successful, user:', data.user);
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            console.log('Token payload:', payload);
+            return data.user;
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+            return null;
+        }
+    }
+
+    async function checkPaymentStatus() {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        console.log('Checking payment status with token:', token ? 'Present' : 'Missing');
+        try {
+            const data = await fetchWithRetry(`${API_URL}/student/dashboard`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            console.log('Dashboard data:', data);
+            if (!data.paymentStatus) {
+                showToast('No payment slip uploaded. Please upload one.', 'info');
+                setTimeout(() => {
+                    console.log('Redirecting to payment upload: no payment');
+                    window.location.href = '/login-form/payment-upload.html';
+                }, 2000);
+                return false;
+            }
+            const status = data.paymentStatus.status;
+            console.log('Payment status:', status);
+            if (status === 'Approved') {
+                console.log('Payment approved, loading dashboard');
+                return data; // Proceed to dashboard
+            } else if (status === 'Rejected') {
+                showToast('Your payment was rejected. Please upload a new payment slip.', 'error');
+                setTimeout(() => {
+                    console.log('Redirecting to payment upload: rejected');
+                    window.location.href = '/login-form/payment-upload.html';
+                }, 2000);
+                return false;
+            } else if (status === 'Pending') {
+                showToast('Your payment is pending approval. Please wait or upload a new slip.', 'info');
+                setTimeout(() => {
+                    console.log('Redirecting to payment upload: pending');
+                    window.location.href = '/login-form/payment-upload.html';
+                }, 2000);
+                return false;
+            } else {
+                showToast('Invalid payment status. Please upload a payment slip.', 'error');
+                setTimeout(() => {
+                    console.log('Redirecting to payment upload: invalid status');
+                    window.location.href = '/login-form/payment-upload.html';
+                }, 2000);
+                return false;
+            }
+        } catch (error) {
+            console.error('Payment status check error:', error, 'Status:', error.status);
+            if (error.status === 403 || error.message.includes('403')) {
+                const errorData = error.error || {};
+                const message = errorData.message || 'Access restricted';
+                const redirect = errorData.redirect || errorData.redirectTo || '/login-form/payment-upload.html';
+
+                if (message.includes('Students only')) {
+                    showToast('Access denied. Please log in with a student account.', 'error');
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    setTimeout(() => {
+                        console.log('Redirecting to login: non-student role');
+                        window.location.href = LOGIN_PATH;
+                    }, 2000);
+                    return false;
+                }
+
+                showToast(message, 'error');
+                setTimeout(() => {
+                    console.log(`Redirecting to: ${redirect}`);
+                    window.location.href = redirect;
+                }, 2000);
+                return false;
+            } else if (error.status === 401 || error.message.includes('401')) {
+                showToast('Session expired. Please log in again.', 'error');
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return false;
+            } else if (error.name === 'network' || error.message.includes('network')) {
+                showToast('Network error. Please check your connection.', 'error');
+                return false;
+            }
+            showToast(`Failed to verify payment status: ${error.message || 'Unknown error'}`, 'error');
+            return false;
+        }
+    }
+
+    async function fetchDashboardData(data) {
+        document.getElementById('studentName').textContent = sanitizeInput(data.student.name || 'N/A');
+        document.getElementById('matricNumber').textContent = sanitizeInput(data.student.matricNumber || 'N/A');
+        document.getElementById('roomInfo').textContent = data.student.room ? `${sanitizeInput(data.student.room.roomNumber)} (${sanitizeInput(data.student.room.type)})` : 'Unassigned';
+        document.getElementById('paymentStatus').textContent = data.paymentStatus ? `${sanitizeInput(data.paymentStatus.status)} (₦${data.paymentStatus.amount.toLocaleString()})` : 'No Payment Slip';
+        await fetchEvents();
+    }
+
+    async function fetchEvents(filters = {}) {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const defaultFilters = {
+                start: today,
+                status: 'Scheduled'
+            };
+            const combinedFilters = { ...defaultFilters, ...filters };
+            const params = new URLSearchParams(combinedFilters).toString();
+            const response = await fetchWithRetry(`${API_URL}/events?${params}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            window.currentEvents = response;
+            renderEventList(response);
+            return response;
+        } catch (error) {
+            showToast(error.error?.message || 'Failed to load events', 'error');
+            return [];
+        }
+    }
+
+    function navigateToPaymentUpload() {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            showToast('Please log in to continue', 'error');
+            window.location.href = LOGIN_PATH;
+            return false;
+        }
+        window.location.href = '/login-form/payment-upload.html';
+        return true;
+    }
+
+    function renderEventList(events) {
+        const tableBody = document.getElementById('eventList');
+        tableBody.innerHTML = '';
+        if (!events || events.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No upcoming events</td></tr>';
+            return;
+        }
+        events.forEach(event => {
+            const row = document.createElement('tr');
+            row.innerHTML = DOMPurify.sanitize(`
+                <td>${sanitizeInput(event.title)}</td>
+                <td>${new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                <td>${sanitizeInput(event.time || 'N/A')}</td>
+                <td>${sanitizeInput(event.description || 'N/A')}</td>
+            `);
+            tableBody.appendChild(row);
+        });
+    }
+
+    function filterEvents(keyword, startDate, endDate) {
+        const filters = {};
+        if (keyword) filters.keyword = keyword;
+        if (startDate) filters.start = startDate;
+        if (endDate) filters.end = endDate;
+        fetchEvents(filters);
+    }
+
+    function startEventPolling() {
+        setInterval(() => {
+            const keyword = document.getElementById('filterKeyword').value.trim();
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            filterEvents(keyword, startDate, endDate);
+        }, 60000); // Poll every minute
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const themeIcon = document.querySelector('.theme-toggle i');
+        const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+        themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+        localStorage.setItem('theme', newTheme);
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.toggle('active');
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        window.location.href = LOGIN_PATH;
+    }
+
+    function openFilterModal() {
+        document.getElementById('filterModal').style.display = 'flex';
+        document.getElementById('filterKeyword').focus();
+    }
+
+    function closeFilterModal() {
+        document.getElementById('filterModal').style.display = 'none';
+    }
+
+    function setupModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal(modalId);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                closeModal(modalId);
+            }
+        });
+    }
+
+    function closeModal(modalId) {
+        document.getElementById('filterModal').style.display = 'none';
+    }
+
+    (async () => {
+        const user = await checkAuth();
+        if (!user) return;
+
+        const dashboardData = await checkPaymentStatus();
+        if (!dashboardData) return;
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').style.display = 'grid';
+        document.getElementById('userName').textContent = sanitizeInput(user.name || 'Student User');
+        await fetchDashboardData(dashboardData);
+        startEventPolling();
+
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+        document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = sanitizeInput(e.target.value.trim());
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            filterEvents(query, startDate, endDate);
+        });
+        document.getElementById('filterButton').addEventListener('click', openFilterModal);
+        document.getElementById('closeFilterModal').addEventListener('click', closeFilterModal);
+        document.getElementById('resetFilter').addEventListener('click', () => {
+            document.getElementById('filterForm').reset();
+            document.getElementById('searchInput').value = '';
+            fetchEvents();
+            closeFilterModal();
+        });
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        document.getElementById('logoutButton').addEventListener('click', logout);
+        document.querySelector('.hamburger').addEventListener('click', toggleSidebar);
+        setupModal('filterModal');
+
+        document.getElementById('filterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const keyword = sanitizeInput(document.getElementById('filterKeyword').value.trim());
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            if (startDate && endDate && startDate > endDate) {
+                showToast('Start date cannot be after end date', 'error');
+                return;
+            }
+            filterEvents(keyword, startDate, endDate);
+            closeFilterModal();
+        });
+    })();
+</script>
+</body>
+
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adem Baba - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+    <style>
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .close-btn {
+            background: var(--text-muted);
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .sidebar-close {
+                display: block;
+                background: none;
+                border: none;
+                color: var(--text-color);
+                font-size: 1.5rem;
+                cursor: pointer;
+                position: absolute;
+                right: 0.5rem;
+                top: 0.5rem;
+            }
+        }
+
+        .decline-btn {
+            background: var(--danger-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .decline-btn:hover {
+            background: #d32f2f;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            z-index: 9999;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s ease;
+        }
+
+        .action-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .action-button:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .hide-mobile {
+            display: table-cell;
+        }
+
+        @media (max-width: 768px) {
+            .hide-mobile {
+                display: none;
+            }
+
+            .student-card {
+                background: var(--card-background);
+                padding: 1rem;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .student-card p {
+                margin: 0.5rem 0;
+                font-size: 0.9rem;
+            }
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Status badge styles */
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            text-transform: capitalize;
+        }
+
+        .status.pending {
+            background: var(--warning-color);
+            color: var(--background-color);
+        }
+
+        .status.approved {
+            background: var(--success-color);
+            color: var(--background-color);
+        }
+
+        .status.declined {
+            background: var(--danger-color);
+            color: var(--background-color);
+        }
+
+        /* Form group enhancements */
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--background-color);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .form-group label {
+            position: absolute;
+            top: -0.5rem;
+            left: 0.75rem;
+            background: var(--card-background);
+            padding: 0 0.25rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Toast enhancements */
+        .custom-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .custom-toast.info {
+            background: var(--primary-color);
+        }
+
+        .custom-toast.success {
+            background: var(--success-color);
+        }
+
+        .custom-toast.error {
+            background: var(--danger-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">Loading...</div>
+    <div id="app" style="display: none;">
+        <div class="sidebar">
+            <div class="brand logo">
+                <div class="logo-container logo-icon">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <h1>Adem Baba</h1>
+                <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="nav-links">
+                <a href="/index.html" class="active nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="./links/rooms.html" class="nav-link"><i class="fas fa-door-open"></i> Rooms</a>
+                <a href="./links/student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
+                <a href="./links/schedule.html" class="nav-link"><i class="fas fa-calendar"></i> Schedule</a>
+                <a href="./links/payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
+                <a href="./links/settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+                <a href="../login-form/index.html" class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <header class="header">
+                <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search students..." aria-label="Search">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-profile">
+                    <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-details">
+                        <h4 id="userName">Admin User</h4>
+                        <p>Admin</p>
+                    </div>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationCount">0</span>
+                    </div>
+                </div>
+            </header>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-icon students"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Total Students</h3>
+                        <p class="stat-value" id="totalStudents">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon rooms"><i class="fas fa-door-open"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Occupied Rooms</h3>
+                        <p class="stat-value" id="occupiedRooms">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon revenue"><i class="fas fa-money-bill"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Monthly Revenue</h3>
+                        <p class="stat-value" id="monthlyRevenue">₦0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pending"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Pending Requests</h3>
+                        <p class="stat-value" id="pendingRequests">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="activity-containers">
+                <div class="activity-table-container">
+                    <div class="activity-table">
+                        <div class="table-header">
+                            <h2>Pending Registration Requests</h2>
+                            <div class="table-actions">
+                                <button class="action-button"><i class="fas fa-filter"></i> Filter</button>
+                                <button class="action-button"><i class="fas fa-download"></i> Export</button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th class="hide-mobile">Matric Number</th>
+                                    <th class="hide-mobile">Phone</th>
+                                    <th class="hide-mobile">Faculty</th>
+                                    <th class="hide-mobile">Level</th>
+                                    <th class="hide-mobile">Interview Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingRequestsTable"></tbody>
+                        </table>
+                        <div id="pendingRequestsMobile" class="mobile-view"></div>
+                    </div>
+                </div>
+                <div class="activity-table-container">
+                    <div class="activity-table">
+                        <div class="table-header">
+                            <h2>Recent Activities</h2>
+                            <button class="action-button view-all">View All</button>
+                        </div>
+                        <div class="activities-list" id="activityList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast"></div>
+
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '../login-form/utils.js';
+
+        // Check authentication
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+            try {
+                const data = await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return data.user;
+            } catch (error) {
+                console.error('Auth error:', error);
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+        }
+
+        // Fetch dashboard data
+        async function fetchDashboardData() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const stats = await fetchWithRetry(`${API_URL}/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                document.getElementById('totalStudents').textContent = stats.totalStudents || 0;
+                document.getElementById('occupiedRooms').textContent = stats.occupiedRooms || 0;
+                document.getElementById('monthlyRevenue').textContent = `₦${(stats.monthlyRevenue || 0).toLocaleString()}`;
+                document.getElementById('pendingRequests').textContent = stats.pendingRequests || 0;
+                document.getElementById('notificationCount').textContent = stats.pendingRequests || 0;
+
+                const pendingRequests = await fetchWithRetry(`${API_URL}/pending-requests`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!pendingRequests.requests || !Array.isArray(pendingRequests.requests)) {
+                    throw new Error('Invalid pending requests data');
+                }
+                window.currentPendingRequests = pendingRequests.requests;
+                renderPendingRequests(pendingRequests.requests);
+
+                const activities = await fetchWithRetry(`${API_URL}/activities`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                renderActivityList(activities);
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showToast(error.message || 'Failed to load dashboard data', 'error');
+            }
+        }
+
+        // Render pending requests
+        function renderPendingRequests(requests) {
+            const tableBody = document.getElementById('pendingRequestsTable');
+            const mobileView = document.getElementById('pendingRequestsMobile');
+            tableBody.innerHTML = '';
+            mobileView.innerHTML = '';
+
+            if (!requests || requests.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9">No pending requests</td></tr>';
+                mobileView.innerHTML = '<p>No pending requests</p>';
+                return;
+            }
+
+            requests.forEach(request => {
+                const statusClass = request.status.toLowerCase();
+                const interviewDate = request.interviewDate ? new Date(request.interviewDate).toLocaleString() : 'Not Scheduled';
+
+                // Desktop table row
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sanitizeInput(request.name)}</td>
+                    <td>${sanitizeInput(request.email)}</td>
+                    <td class="hide-mobile">${sanitizeInput(request.matricNumber || 'N/A')}</td>
+                    <td class="hide-mobile">${sanitizeInput(request.phone || 'N/A')}</td>
+                    <td class="hide-mobile">${sanitizeInput(request.faculty || 'N/A')}</td>
+                    <td class="hide-mobile">${sanitizeInput(request.level || 'N/A')}</td>
+                    <td class="hide-mobile">${sanitizeInput(interviewDate)}</td>
+                    <td><span class="status ${statusClass}">${sanitizeInput(request.status)}</span></td>
+                    <td class="table-actions">
+                        <button class="action-button schedule-btn" data-student-id="${request._id}">
+                            <i class="fas fa-calendar"></i> Schedule
+                        </button>
+                        <button class="action-button otp-btn" data-student-id="${request._id}">
+                            <i class="fas fa-key"></i> Generate OTP
+                        </button>
+                        <button class="action-button accept-btn" data-student-id="${request._id}">
+                            <i class="fas fa-check"></i> Accept Direct
+                        </button>
+                        <button class="action-button decline-btn" data-student-id="${request._id}">
+                            <i class="fas fa-times"></i> Decline
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+
+                // Mobile card view
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.innerHTML = `
+                    <p><strong>Name:</strong> ${sanitizeInput(request.name)}</p>
+                    <p><strong>Email:</strong> ${sanitizeInput(request.email)}</p>
+                    <p><strong>Matric Number:</strong> ${sanitizeInput(request.matricNumber || 'N/A')}</p>
+                    <p><strong>Phone:</strong> ${sanitizeInput(request.phone || 'N/A')}</p>
+                    <p><strong>Faculty:</strong> ${sanitizeInput(request.faculty || 'N/A')}</p>
+                    <p><strong>Level:</strong> ${sanitizeInput(request.level || 'N/A')}</p>
+                    <p><strong>Interview Date:</strong> ${sanitizeInput(interviewDate)}</p>
+                    <p><strong>Status:</strong> <span class="status ${statusClass}">${sanitizeInput(request.status)}</span></p>
+                    <div class="table-actions">
+                        <button class="action-button schedule-btn" data-student-id="${request._id}">
+                            <i class="fas fa-calendar"></i> Schedule
+                        </button>
+                        <button class="action-button otp-btn" data-student-id="${request._id}">
+                            <i class="fas fa-key"></i> Generate OTP
+                        </button>
+                        <button class="action-button accept-btn" data-student-id="${request._id}">
+                            <i class="fas fa-check"></i> Accept Direct
+                        </button>
+                        <button class="action-button decline-btn" data-student-id="${request._id}">
+                            <i class="fas fa-times"></i> Decline
+                        </button>
+                    </div>
+                `;
+                mobileView.appendChild(card);
+            });
+
+            // Attach event listeners to buttons
+            document.querySelectorAll('.schedule-btn').forEach(button => {
+                button.addEventListener('click', () => openInterviewModal(button.dataset.studentId));
+            });
+            document.querySelectorAll('.otp-btn').forEach(button => {
+                button.addEventListener('click', () => generateOTP(button.dataset.studentId));
+            });
+            document.querySelectorAll('.accept-btn').forEach(button => {
+                button.addEventListener('click', () => acceptDirect(button.dataset.studentId));
+            });
+            document.querySelectorAll('.decline-btn').forEach(button => {
+                button.addEventListener('click', () => declineRequest(button.dataset.studentId));
+            });
+        }
+
+        // Render activity list
+        function renderActivityList(activities) {
+            const list = document.getElementById('activityList');
+            list.innerHTML = '';
+            if (!activities || activities.length === 0) {
+                list.innerHTML = '<div class="activity-item">No recent activities</div>';
+                return;
+            }
+            activities.forEach(activity => {
+                const item = `
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-${sanitizeInput(activity.icon)} text-${sanitizeInput(activity.type)}"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p class="activity-text">${sanitizeInput(activity.text)}</p>
+                            <span class="activity-time">${sanitizeInput(activity.time)}</span>
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', item);
+            });
+        }
+
+        // Open interview scheduling modal
+        function openInterviewModal(studentId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'interviewModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Schedule Interview</h2>
+                    <form id="interviewForm">
+                        <div class="form-group">
+                            <input type="date" id="interviewDate" required aria-label="Interview date">
+                            <label for="interviewDate">Interview Date</label>
+                            <i class="fas fa-calendar-alt"></i>
+                            <div id="interviewDate-error" class="error-message"></div>
+                        </div>
+                        <div class="form-group">
+                            <input type="time" id="interviewTime" required aria-label="Interview time">
+                            <label for="interviewTime">Interview Time</label>
+                            <i class="fas fa-clock"></i>
+                            <div id="interviewTime-error" class="error-message"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="action-button close-btn" onclick="closeModal()">Cancel</button>
+                            <button type="submit" class="action-button" id="scheduleButton">Schedule</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('interviewDate').setAttribute('min', today);
+
+            document.getElementById('interviewForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const scheduleButton = document.getElementById('scheduleButton');
+                scheduleButton.disabled = true;
+                scheduleButton.textContent = 'Scheduling...';
+
+                const interviewDate = document.getElementById('interviewDate').value;
+                const interviewTime = document.getElementById('interviewTime').value;
+
+                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+                const selectedDate = new Date(interviewDate);
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                if (selectedDate < now) {
+                    showToast('Interview date must be in the future', 'error');
+                    document.getElementById('interviewDate-error').textContent = 'Date must be in the future';
+                    scheduleButton.disabled = false;
+                    scheduleButton.textContent = 'Schedule';
+                    return;
+                }
+
+                if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(interviewTime)) {
+                    showToast('Invalid time format (e.g., HH:MM)', 'error');
+                    document.getElementById('interviewTime-error').textContent = 'Invalid time format';
+                    scheduleButton.disabled = false;
+                    scheduleButton.textContent = 'Schedule';
+                    return;
+                }
+
+                await scheduleInterview(studentId, interviewDate, interviewTime);
+                scheduleButton.disabled = false;
+                scheduleButton.textContent = 'Schedule';
+                closeModal();
+            });
+        }
+
+        // Schedule interview
+        async function scheduleInterview(studentId, interviewDate, interviewTime) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/accept-request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ studentId, interviewDate, interviewTime })
+                });
+                showToast(data.message, 'success');
+                fetchDashboardData();
+            } catch (error) {
+                console.error('Schedule interview error:', error);
+                showToast(error.message || 'Failed to schedule interview', 'error');
+            }
+        }
+
+        // Generate OTP
+        async function generateOTP(studentId) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/students/generate-otp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ studentId })
+                });
+                showToast(data.message, 'success');
+                fetchDashboardData();
+            } catch (error) {
+                console.error('Generate OTP error:', error);
+                showToast(error.message || 'Failed to generate OTP', 'error');
+            }
+        }
+
+        // Accept direct (no interview)
+        async function acceptDirect(studentId) {
+            if (!confirm('Approve this student directly without an interview?')) return;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/accept-request-direct`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ studentId })
+                });
+                showToast(data.message, 'success');
+                fetchDashboardData();
+            } catch (error) {
+                console.error('Accept direct error:', error);
+                showToast(error.message || 'Failed to accept student', 'error');
+            }
+        }
+
+        // Decline request
+        async function declineRequest(studentId) {
+            if (!confirm('Are you sure you want to decline this request?')) return;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/decline-request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ studentId })
+                });
+                showToast(data.message, 'success');
+                fetchDashboardData();
+            } catch (error) {
+                console.error('Decline request error:', error);
+                showToast(error.message || 'Failed to decline request', 'error');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('interviewModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.body.classList.toggle('show-sidebar');
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        }
+
+        // Initialize
+        (async () => {
+            const user = await checkAuth();
+            if (user) {
+                if (user.userType !== 'admin') {
+                    showToast('Access denied. Admins only.', 'error');
+                    setTimeout(() => {
+                        window.location.href = LOGIN_PATH;
+                    }, 2000);
+                    return;
+                }
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('userName').textContent = sanitizeInput(user.name) || 'Admin User';
+                fetchDashboardData();
+
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+                document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
+
+                // Search functionality
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    const query = sanitizeInput(e.target.value.toLowerCase());
+                    const filtered = window.currentPendingRequests.filter(request =>
+                        (request.name || '').toLowerCase().includes(query) ||
+                        (request.email || '').toLowerCase().includes(query) ||
+                        (request.matricNumber || '').toLowerCase().includes(query) ||
+                        (request.phone || '').toLowerCase().includes(query) ||
+                        (request.faculty || '').toLowerCase().includes(query) ||
+                        (request.level || '').toLowerCase().includes(query) ||
+                        (request.department || '').toLowerCase().includes(query)
+                    );
+                    renderPendingRequests(filtered);
+                });
+
+                // Close sidebar on outside click for mobile
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 1024 && document.body.classList.contains('show-sidebar')) {
+                        const sidebar = document.querySelector('.sidebar');
+                        const toggleButton = document.querySelector('.sidebar-toggle');
+                        if (!sidebar.contains(e.target) && !toggleButton.contains(e.target)) {
+                            document.body.classList.remove('show-sidebar');
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+
+</html>

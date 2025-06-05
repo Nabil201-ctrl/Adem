@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adem Baba - Payment Verification</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #a67c00;
+            --secondary-color: #2c2c2c;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --background-color: #121212;
+            --card-background: #1e1e1e;
+            --input-background: #2a2a2a;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-color: #e0e0e0;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --transition: all 0.3s ease;
+            --shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        html[data-theme="light"] {
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --input-background: #f1f5f9;
+            --border-color: rgba(0, 0, 0, 0.15);
+            --text-color: #1f2937;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: var(--background-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loader {
+            border: 4px solid var(--text-muted);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #app {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--secondary-color);
+            padding: 2rem 1.5rem;
+            height: 100vh;
+            position: fixed;
+            transition: var(--transition);
+        }
+
+        .brand.logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-container {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .logo-container i {
+            font-size: 1.8rem;
+            color: #fff;
+        }
+
+        .brand h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .nav-links a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            width: calc(100% - 260px);
+            transition: var(--transition);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.8rem;
+            color: var(--text-color);
+        }
+
+        .search-bar {
+            position: relative;
+            width: 350px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 3rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(166, 124, 0, 0.1);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .theme-toggle {
+            background: var(--card-background);
+            border: none;
+            color: var(--text-color);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.6rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .user-details h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .user-details p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .user-icon i {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-icon {
+            background: var(--primary-color);
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon i {
+            font-size: 1.8rem;
+            color: #fff;
+        }
+
+        .stat-info h3 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .activity-table-container {
+            background: var(--card-background);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .table-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: var(--transition);
+        }
+
+        .action-button:hover {
+            background: #8b6346;
+        }
+
+        .action-button.approve {
+            background: var(--success-color);
+        }
+
+        .action-button.approve:hover {
+            background: #218838;
+        }
+
+        .action-button.reject {
+            background: var(--danger-color);
+        }
+
+        .action-button.reject:hover {
+            background: #c82333;
+        }
+
+        .action-button.view {
+            background: var(--info-color);
+        }
+
+        .action-button.view:hover {
+            background: #138496;
+        }
+
+        .action-button:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: var(--secondary-color);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        th:hover {
+            background: #3a3a3a;
+        }
+
+        th.sortable::after {
+            content: '\f0dc';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        th.sort-asc::after {
+            content: '\f0de';
+        }
+
+        th.sort-desc::after {
+            content: '\f0dd';
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        .status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            text-transform: capitalize;
+            text-align: center;
+        }
+
+        .status.pending {
+            background: var(--warning-color);
+            color: #1a1a1a;
+        }
+
+        .status.approved {
+            background: var(--success-color);
+            color: #fff;
+        }
+
+        .status.rejected {
+            background: var(--danger-color);
+            color: #fff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-controls button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-controls button:hover {
+            background: #8b6346;
+        }
+
+        .modal-controls .download-btn {
+            background: var(--info-color);
+        }
+
+        .modal-controls .download-btn:hover {
+            background: #138496;
+        }
+
+        .slip-viewer {
+            position: relative;
+            overflow: auto;
+            max-height: 70vh;
+        }
+
+        .slip-viewer img {
+            max-width: 100%;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .slip-viewer canvas {
+            max-width: 100%;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.85rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(166, 124, 0, 0.1);
+        }
+
+        .form-group label {
+            position: absolute;
+            top: 0.85rem;
+            left: 1rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .form-group input:focus+label,
+        .form-group input:not(:placeholder-shown)+label,
+        .form-group select:focus+label,
+        .form-group select:not(:placeholder-shown)+label {
+            top: -0.5rem;
+            left: 0.5rem;
+            font-size: 0.8rem;
+            background: var(--card-background);
+            padding: 0 0.3rem;
+        }
+
+        .add-button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .add-button:hover {
+            background: #8b6346;
+        }
+
+        .close-btn {
+            background: var(--danger-color);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            background: #c82333;
+        }
+
+        .close-btn#resetFilter {
+            background: var(--warning-color);
+        }
+
+        .close-btn#resetFilter:hover {
+            background: #e0a800;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-color);
+        }
+
+        .custom-toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--card-background);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: var(--text-color);
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .custom-toast.success {
+            border-left: 5px solid var(--success-color);
+        }
+
+        .custom-toast.error {
+            border-left: 5px solid var(--danger-color);
+        }
+
+        .custom-toast.info {
+            border-left: 5px solid var(--info-color);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 220px;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 1.5rem;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                min-width: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .action-button {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+
+            .modal-controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading"><div class="loader"></div></div>
+    <div id="app" style="display: none;">
+        <div class="sidebar">
+            <div class="brand logo">
+                <div class="logo-container logo-icon">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <h1>Adem Baba</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="./rooms.html" class="nav-link"><i class="fas fa-door-open"></i> Rooms</a>
+                <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
+                <a href="./schedule.html" class="nav-link"><i class="fas fa-calendar"></i> Schedule</a>
+                <a href="./payment.html" class="nav-link active"><i class="fas fa-money-bill"></i> Payments</a>
+                <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+                <a href="#" class="nav-link" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <header>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search payment slips..." aria-label="Search payment slips">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-info">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-details">
+                        <h4 id="userName">Admin User</h4>
+                        <p>Admin</p>
+                    </div>
+                    <div class="user-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-money-bill"></i></div>
+                        <div class="stat-info">
+                            <h3>Pending Slips</h3>
+                            <p class="stat-value" id="pendingSlips">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <h3>Approved Slips</h3>
+                            <p class="stat-value" id="approvedSlips">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                        <div class="stat-info">
+                            <h3>Rejected Slips</h3>
+                            <p class="stat-value" id="rejectedSlips">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Amount</h3>
+                            <p class="stat-value" id="totalAmount">₦0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="activity-table-container">
+                    <div class="activity-table">
+                        <div class="table-header">
+                            <h2>Payment Verification</h2>
+                            <div class="table-actions">
+                                <button class="action-button" id="refreshButton">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                                <button class="action-button" id="filterButton">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <button class="action-button" id="exportButton">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="name">Student Name</th>
+                                    <th class="sortable" data-sort="matricNumber">Matric Number</th>
+                                    <th class="sortable" data-sort="email">Email</th>
+                                    <th class="sortable" data-sort="amount">Amount</th>
+                                    <th class="sortable" data-sort="status">Status</th>
+                                    <th class="sortable" data-sort="createdAt">Date</th>
+                                    <th>Slip</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentSlipsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="filterModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeFilterModal" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2>Filter Payment Slips</h2>
+            <form id="filterForm">
+                <div class="form-group">
+                    <input type="text" id="filterKeyword" aria-label="Search keyword" placeholder=" ">
+                    <label for="filterKeyword">Keyword</label>
+                </div>
+                <div class="form-group">
+                    <select id="filterStatus" aria-label="Slip status" placeholder=" ">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <label for="filterStatus">Status</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="filterStartDate" aria-label="Start date" placeholder=" ">
+                    <label for="filterStartDate">Start Date</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="filterEndDate" aria-label="End date" placeholder=" ">
+                    <label for="filterEndDate">End Date</label>
+                </div>
+                <button type="submit" class="add-button">Apply Filter</button>
+                <button type="button" class="close-btn" id="closeFilterModalBtn">Cancel</button>
+                <button type="button" class="close-btn" id="resetFilter">Reset</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="slipModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeSlipModal" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2>Payment Slip Preview</h2>
+            <div class="modal-controls">
+                <button id="zoomIn"><i class="fas fa-search-plus"></i> Zoom In</button>
+                <button id="zoomOut"><i class="fas fa-search-minus"></i> Zoom Out</button>
+                <button id="modalDownload" class="download-btn"><i class="fas fa-download"></i> Download</button>
+            </div>
+            <div class="slip-viewer" id="slipViewer"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast"></div>
+
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+
+        let zoomLevel = 1;
+        let currentSort = { field: null, direction: null };
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+            try {
+                const data = await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (data.user.userType !== 'admin') {
+                    throw new Error('403: Access denied. Admins only.');
+                }
+                return data.user;
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+        }
+
+        async function fetchPaymentSlips() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const slips = await fetchWithRetry(`${API_URL}/payment-slips`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.currentSlips = slips || [];
+                updateStats(window.currentSlips);
+                sortAndRenderSlips();
+                if (!slips || slips.length === 0) {
+                    showToast('No payment slips found.', 'info');
+                }
+            } catch (error) {
+                console.error('Fetch payment slips error:', error);
+                handleError(error, 'Failed to load payment slips');
+            }
+        }
+
+        function updateStats(slips) {
+            const pending = slips.filter(slip => slip.status === 'Pending').length;
+            const approved = slips.filter(slip => slip.status === 'Approved').length;
+            const rejected = slips.filter(slip => slip.status === 'Rejected').length;
+            const totalAmount = slips.reduce((sum, slip) => sum + (slip.amount || 0), 0);
+
+            document.getElementById('pendingSlips').textContent = pending;
+            document.getElementById('approvedSlips').textContent = approved;
+            document.getElementById('rejectedSlips').textContent = rejected;
+            document.getElementById('totalAmount').textContent = `₦${totalAmount.toLocaleString()}`;
+        }
+
+        function renderPaymentSlips(slips) {
+            const tableBody = document.getElementById('paymentSlipsTable');
+            tableBody.innerHTML = '';
+            if (!slips || slips.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;">No payment slips to display.</td></tr>';
+                return;
+            }
+            slips.forEach(slip => {
+                try {
+                    const isImage = (slip.fileUrl || '').match(/\.(jpg|jpeg|png|gif)$/i);
+                    const student = slip.student || {};
+                    const row = document.createElement('tr');
+                    row.innerHTML = DOMPurify.sanitize(`
+                        <td>${sanitizeInput(student.name || 'N/A')}</td>
+                        <td>${sanitizeInput(student.matricNumber || 'N/A')}</td>
+                        <td>${sanitizeInput(student.email || 'N/A')}</td>
+                        <td>₦${(slip.amount || 0).toLocaleString()}</td>
+                        <td><span class="status ${slip.status?.toLowerCase() || 'pending'}">${sanitizeInput(slip.status || 'Pending')}</span></td>
+                        <td>${slip.createdAt ? new Date(slip.createdAt).toLocaleDateString('en-GB') : 'N/A'}</td>
+                        <td>
+                            <button class="action-button view" data-file="${sanitizeInput(slip.fileUrl || '')}" data-id="${slip._id || ''}" aria-label="View slip">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <button class="action-button download" data-id="${slip._id || ''}" aria-label="Download slip">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            ${slip.status === 'Pending' ? `
+                                <button class="action-button approve" data-id="${slip._id || ''}" aria-label="Approve slip"><i class="fas fa-check"></i></button>
+                                <button class="action-button reject" data-id="${slip._id || ''}" aria-label="Reject slip"><i class="fas fa-times"></i></button>
+                            ` : ''}
+                        </td>
+                    `);
+                    tableBody.appendChild(row);
+                } catch (error) {
+                    console.error('Error rendering slip:', slip, error);
+                }
+            });
+        }
+
+        function sortAndRenderSlips() {
+            if (!window.currentSlips) return;
+            let slips = [...window.currentSlips];
+            if (currentSort.field) {
+                slips.sort((a, b) => {
+                    let aValue, bValue;
+                    switch (currentSort.field) {
+                        case 'name':
+                            aValue = (a.student?.name || '').toLowerCase();
+                            bValue = (b.student?.name || '').toLowerCase();
+                            break;
+                        case 'matricNumber':
+                            aValue = (a.student?.matricNumber || '').toLowerCase();
+                            bValue = (b.student?.matricNumber || '').toLowerCase();
+                            break;
+                        case 'email':
+                            aValue = (a.student?.email || '').toLowerCase();
+                            bValue = (b.student?.email || '').toLowerCase();
+                            break;
+                        case 'amount':
+                            aValue = a.amount || 0;
+                            bValue = b.amount || 0;
+                            break;
+                        case 'status':
+                            aValue = (a.status || '').toLowerCase();
+                            bValue = (b.status || '').toLowerCase();
+                            break;
+                        case 'createdAt':
+                            aValue = new Date(a.createdAt || 0);
+                            bValue = new Date(b.createdAt || 0);
+                            break;
+                    }
+                    if (currentSort.direction === 'asc') {
+                        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+                    } else {
+                        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+                    }
+                });
+            }
+            filterSlips(
+                document.getElementById('searchInput').value,
+                document.getElementById('filterStatus').value,
+                document.getElementById('filterStartDate').value,
+                document.getElementById('filterEndDate').value,
+                slips
+            );
+        }
+
+        function filterSlips(query, status, startDate, endDate, slips = window.currentSlips) {
+            if (!slips) return;
+            let filtered = [...slips];
+            if (query) {
+                const lowercaseQuery = query.toLowerCase();
+                filtered = filtered.filter(slip => {
+                    const student = slip.student || {};
+                    return (
+                        (student.name || '').toLowerCase().includes(lowercaseQuery) ||
+                        (student.matricNumber || '').toLowerCase().includes(lowercaseQuery) ||
+                        (student.email || '').toLowerCase().includes(lowercaseQuery)
+                    );
+                });
+            }
+            if (status) {
+                filtered = filtered.filter(slip => (slip.status || '').toLowerCase() === status.toLowerCase());
+            }
+            if (startDate) {
+                filtered = filtered.filter(slip => new Date(slip.createdAt || 0) >= new Date(startDate));
+            }
+            if (endDate) {
+                filtered = filtered.filter(slip => new Date(slip.createdAt || 0) <= new Date(endDate));
+            }
+            renderPaymentSlips(filtered);
+        }
+
+        async function handleAction(slipId, action, button) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!slipId) {
+                showToast('Invalid payment slip ID', 'error');
+                return;
+            }
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                const data = await fetchWithRetry(`${API_URL}/payment-slips/${slipId}/${action}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showToast(data.message, 'success');
+                fetchPaymentSlips();
+            } catch (error) {
+                console.error(`Error ${action} slip:`, error);
+                handleError(error, `Failed to ${action} payment slip`);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = `<i class="fas fa-${action === 'approve' ? 'check' : 'times'}"></i>`;
+            }
+        }
+
+        async function handleDownload(slipId, button) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!slipId) {
+                showToast('Invalid payment slip ID', 'error');
+                return;
+            }
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                const response = await fetch(`${API_URL}/payment-slips/${slipId}/download`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `HTTP error ${response.status}`);
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = response.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1] || `payment-slip-${slipId}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                showToast('Payment slip downloaded successfully', 'success');
+            } catch (error) {
+                console.error('Download error:', error);
+                handleError(error, 'Failed to download payment slip');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-download"></i>';
+            }
+        }
+
+        function handleError(error, defaultMessage) {
+            let message = defaultMessage;
+            if (error.status === 401) {
+                message = 'Session expired. Please log in again.';
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+            } else if (error.status === 403) {
+                message = 'Access denied. Admins only.';
+            } else if (error.status === 404) {
+                message = 'Payment slip not found.';
+            } else if (error.message.includes('network')) {
+                message = 'Network error. Please check your connection.';
+            }
+            showToast(message, 'error');
+            document.getElementById('paymentSlipsTable').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;">No payment slips available.</td></tr>';
+        }
+
+        function exportToCSV() {
+            if (!window.currentSlips || window.currentSlips.length === 0) {
+                showToast('No payment slips to export', 'info');
+                return;
+            }
+            const headers = ['Student Name', 'Matric Number', 'Email', 'Amount', 'Status', 'Date', 'File URL'];
+            const rows = window.currentSlips.map(slip => {
+                const student = slip.student || {};
+                return [
+                    `"${sanitizeInput(student.name || 'N/A').replace(/"/g, '""')}"`,
+                    sanitizeInput(student.matricNumber || 'N/A'),
+                    sanitizeInput(student.email || 'N/A'),
+                    (slip.amount || 0).toLocaleString(),
+                    sanitizeInput(slip.status || 'Pending'),
+                    slip.createdAt ? new Date(slip.createdAt).toLocaleDateString('en-GB') : 'N/A',
+                    `"${sanitizeInput(slip.fileUrl || '').replace(/"/g, '""')}"`
+                ];
+            });
+            const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `payment_slips_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Payment slips exported successfully', 'success');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        }
+
+        function openFilterModal() {
+            document.getElementById('filterModal').style.display = 'flex';
+            document.getElementById('filterKeyword').focus();
+        }
+
+        function closeFilterModal() {
+            document.getElementById('filterModal').style.display = 'none';
+        }
+
+        async function openSlipModal(fileUrl, slipId) {
+            const viewer = document.getElementById('slipViewer');
+            viewer.innerHTML = '<div class="loader"></div>';
+            document.getElementById('slipModal').style.display = 'flex';
+            document.getElementById('modalDownload').dataset.id = slipId;
+            zoomLevel = 1;
+
+            try {
+                const isImage = fileUrl.match(/\.(jpg|jpeg|png|gif)$/i);
+                if (isImage) {
+                    viewer.innerHTML = DOMPurify.sanitize(
+                        `<img src="${sanitizeInput(fileUrl)}" alt="Payment Slip" style="transform: scale(${zoomLevel})">`
+                    );
+                } else {
+                    const response = await fetch(fileUrl);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    const page = await pdf.getPage(1);
+                    const viewport = page.getViewport({ scale: zoomLevel });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    await page.render({ canvasContext: context, viewport }).promise;
+                    viewer.innerHTML = '';
+                    viewer.appendChild(canvas);
+                }
+            } catch (error) {
+                console.error('Error loading slip:', error);
+                viewer.innerHTML = '<p style="text-align:center;color:var(--danger-color);">Failed to load payment slip.</p>';
+                showToast('Failed to load payment slip', 'error');
+            }
+        }
+
+        function closeSlipModal() {
+            document.getElementById('slipModal').style.display = 'none';
+            document.getElementById('slipViewer').innerHTML = '';
+            zoomLevel = 1;
+        }
+
+        function setupModalClose(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    if (modalId === 'filterModal') closeFilterModal();
+                    else closeSlipModal();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    if (modalId === 'filterModal') closeFilterModal();
+                    else closeSlipModal();
+                }
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Event delegation
+        document.getElementById('paymentSlipsTable').addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            const slipId = target.dataset.id;
+            if (target.classList.contains('view')) {
+                const fileUrl = target.dataset.file;
+                if (fileUrl && slipId) openSlipModal(fileUrl, slipId);
+                else showToast('No file available for preview', 'error');
+            } else if (target.classList.contains('approve')) {
+                handleAction(slipId, 'approve', target);
+            } else if (target.classList.contains('reject')) {
+                handleAction(slipId, 'reject', target);
+            } else if (target.classList.contains('download')) {
+                handleAction(slipId, 'download', target);
+            }
+        });
+
+        // Table sorting
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.dataset.sort;
+                if (currentSort.field === field) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.field = field;
+                    currentSort.direction = 'asc';
+                }
+                document.querySelectorAll('th.sortable').forEach(t => {
+                    t.classList.remove('sort-asc', 'sort-desc');
+                });
+                th.classList.add(`sort-${currentSort.direction}`);
+                sortAndRenderSlips();
+            });
+        });
+
+        // Zoom controls
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            zoomLevel = Math.min(zoomLevel + 0.2, 3);
+            const img = document.querySelector('#slipViewer img');
+            if (img) {
+                img.style.transform = `scale(${zoomLevel})`;
+            } else {
+                openSlipModal(
+                    document.querySelector('#slipViewer').previousElementSibling.querySelector('.view').dataset.file,
+                    document.getElementById('modalDownload').dataset.id
+                );
+            }
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
+            const img = document.querySelector('#slipViewer img');
+            if (img) {
+                img.style.transform = `scale(${zoomLevel})`;
+            } else {
+                openSlipModal(
+                    document.querySelector('#slipViewer').previousElementSibling.querySelector('.view').dataset.file,
+                    document.getElementById('modalDownload').dataset.id
+                );
+            }
+        });
+
+        document.getElementById('modalDownload').addEventListener('click', (e) => {
+            handleDownload(e.target.dataset.id, e.target);
+        });
+
+        (async () => {
+            const user = await checkAuth();
+            if (user) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                document.getElementById('userName').textContent = sanitizeInput(user.name || 'Admin User');
+                fetchPaymentSlips();
+
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+                document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
+
+                // Setup event listeners
+                document.getElementById('searchInput').addEventListener('input', debounce((e) => {
+                    const query = sanitizeInput(e.target.value.trim());
+                    const status = document.getElementById('filterStatus').value;
+                    const startDate = document.getElementById('filterStartDate').value;
+                    const endDate = document.getElementById('filterEndDate').value;
+                    filterSlips(query, status, startDate, endDate);
+                }, 300));
+                document.getElementById('refreshButton').addEventListener('click', fetchPaymentSlips);
+                document.getElementById('filterButton').addEventListener('click', openFilterModal);
+                document.getElementById('closeFilterModal').addEventListener('click', closeFilterModal);
+                document.getElementById('closeFilterModalBtn').addEventListener('click', closeFilterModal);
+                document.getElementById('resetFilter').addEventListener('click', () => {
+                    document.getElementById('filterForm').reset();
+                    document.getElementById('searchInput').value = '';
+                    fetchPaymentSlips();
+                    closeFilterModal();
+                });
+                document.getElementById('exportButton').addEventListener('click', exportToCSV);
+                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                document.getElementById('logoutButton').addEventListener('click', logout);
+                document.querySelector('.hamburger').addEventListener('click', toggleSidebar);
+                document.getElementById('closeSlipModal').addEventListener('click', closeSlipModal);
+                setupModalClose('filterModal');
+                setupModalClose('slipModal');
+                document.getElementById('filterForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const keyword = sanitizeInput(document.getElementById('filterKeyword').value.trim());
+                    const status = document.getElementById('filterStatus').value;
+                    const startDate = document.getElementById('filterStartDate').value;
+                    const endDate = document.getElementById('filterEndDate').value;
+                    filterSlips(keyword, status, startDate, endDate);
+                    closeFilterModal();
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

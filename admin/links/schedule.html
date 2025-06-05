@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adem Baba - Schedule</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/login-form/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+    <style>
+        /* Existing CSS styles remain unchanged */
+        :root {
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #f44336;
+            --info-color: #2196F3;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] {
+            --primary-color: #8b6346;
+            --secondary-color: #ffffff;
+            --text-color: #333333;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --background-color: #f5f5f5;
+            --card-background: #ffffff;
+            --input-background: rgba(0, 0, 0, 0.05);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #8b6346;
+            --secondary-color: rgba(255, 255, 255, 0.03);
+            --text-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #1a1a1a;
+            --card-background: rgba(255, 255, 255, 0.03);
+            --input-background: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: var(--background-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            z-index: 9999;
+        }
+
+        #app {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--secondary-color);
+            padding: 1.5rem;
+            height: 100vh;
+            position: fixed;
+            transition: var(--transition);
+        }
+
+        .brand.logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-container {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+        }
+
+        .logo-container i {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .nav-links a i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 1.5rem;
+            width: calc(100% - 250px);
+            transition: var(--transition);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: var(--card-background);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--card-background);
+        }
+
+        .user-details h4 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .user-details p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .user-icon i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-icon {
+            background: var(--primary-color);
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon i {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .stat-info h3 {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .activity-table-container {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .action-button:hover {
+            background: #3d2e23;
+        }
+
+        .action-button.hidden {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background: var(--secondary-color);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        td {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            text-transform: capitalize;
+            text-align: center;
+        }
+
+        .status.pending {
+            background: var(--warning-color);
+            color: #fff;
+        }
+
+        .status.scheduled {
+            background: var(--success-color);
+            color: #fff;
+        }
+
+        .status.cancelled {
+            background: var(--danger-color);
+            color: #fff;
+        }
+
+        .action-icons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-icons i {
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .action-icons i.fa-edit:hover {
+            color: var(--success-color);
+        }
+
+        .action-icons i.fa-trash:hover {
+            color: var(--danger-color);
+        }
+
+        .action-icons i.fa-spinner {
+            color: var(--text-muted);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group label {
+            position: absolute;
+            top: 0.75rem;
+            left: 1rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label,
+        .form-group select:focus + label,
+        .form-group select:not([value=""]) + label,
+        .form-group textarea:focus + label,
+        .form-group textarea:not(:placeholder-shown) + label {
+            top: -0.5rem;
+            left: 0.5rem;
+            font-size: 0.75rem;
+            background: var(--card-background);
+            padding: 0 0.25rem;
+            color: var(--primary-color);
+        }
+
+        .add-button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .add-button:hover {
+            background: #3d2e23;
+        }
+
+        .close-btn {
+            background: var(--border-color);
+            color: var(--text-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            background: var(--danger-color);
+            color: #fff;
+        }
+
+        .close-btn#resetFilter {
+            background: var(--warning-color);
+            color: #fff;
+        }
+
+        .close-btn#resetFilter:hover {
+            background: #b7791f;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .custom-toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+            z-index: 2000;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+
+        .custom-toast.success {
+            background: var(--success-color);
+        }
+
+        .custom-toast.error {
+            background: var(--danger-color);
+        }
+
+        .custom-toast.info {
+            background: var(--info-color);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .action-button {
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            th, td {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading...</div>
+    <div id="app" style="display: none;">
+        <div class="sidebar">
+            <div class="brand logo">
+                <div class="logo-container logo-icon">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <h1>Adem Baba</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="./rooms.html" class="nav-link"><i class="fas fa-door-open"></i> Rooms</a>
+                <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
+                <a href="./schedule.html" class="nav-link active"><i class="fas fa-calendar"></i> Schedule</a>
+                <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
+                <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
+                <a href="#" class="nav-link" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <header>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search events..." aria-label="Search events">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-info">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-details">
+                        <h4 id="userName">User</h4>
+                        <p id="userType">Role</p>
+                    </div>
+                    <div class="user-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+                        <div class="stat-info">
+                            <h3>Today's Events</h3>
+                            <p class="stat-value" id="todaysEvents">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-week"></i></div>
+                        <div class="stat-info">
+                            <h3>Weekly Events</h3>
+                            <p class="stat-value" id="weeklyEvents">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-ban"></i></div>
+                        <div class="stat-info">
+                            <h3>Cancelled Events</h3>
+                            <p class="stat-value" id="cancelledEvents">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="activity-table-container">
+                    <div class="activity-table">
+                        <div class="table-header">
+                            <h2>Event Schedule</h2>
+                            <div class="table-actions">
+                                <button class="action-button" id="addEventButton" aria-label="Add new event">
+                                    <i class="fas fa-plus"></i> Add Event
+                                </button>
+                                <button class="action-button" id="filterButton" aria-label="Filter events">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <button class="action-button" id="exportButton" aria-label="Export events">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="addEventModal" class="modal" role="dialog" aria-labelledby="addEventTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeAddEventModalBtn" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="addEventTitle">Add New Event</h2>
+            <form id="addEventForm">
+                <div class="form-group">
+                    <input type="text" id="eventTitle" required aria-label="Event title" placeholder=" ">
+                    <label for="eventTitle">Title</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="eventDate" required aria-label="Event date" placeholder=" ">
+                    <label for="eventDate">Date</label>
+                </div>
+                <div class="form-group">
+                    <input type="time" id="eventTime" required aria-label="Event time" placeholder=" ">
+                    <label for="eventTime">Time</label>
+                </div>
+                <div class="form-group">
+                    <textarea id="eventDescription" aria-label="Event description" placeholder=" "></textarea>
+                    <label for="eventDescription">Description</label>
+                </div>
+                <button type="submit" class="add-button" aria-label="Add event">Add Event</button>
+                <button type="button" class="close-btn" id="closeAddEventModal" aria-label="Cancel">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editEventModal" class="modal" role="dialog" aria-labelledby="editEventTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeEditEventModalBtn" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="editEventTitle">Edit Event</h2>
+            <form id="editEventForm">
+                <input type="hidden" id="editEventId">
+                <div class="form-group">
+                    <input type="text" id="editEventTitle" required aria-label="Event title" placeholder=" ">
+                    <label for="editEventTitle">Title</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="editEventDate" required aria-label="Event date" placeholder=" ">
+                    <label for="editEventDate">Date</label>
+                </div>
+                <div class="form-group">
+                    <input type="time" id="editEventTime" required aria-label="Event time" placeholder=" ">
+                    <label for="editEventTime">Time</label>
+                </div>
+                <div class="form-group">
+                    <textarea id="editEventDescription" aria-label="Event description" placeholder=" "></textarea>
+                    <label for="editEventDescription">Description</label>
+                </div>
+                <div class="form-group">
+                    <select id="editEventStatus" required aria-label="Event status">
+                        <option value="Pending">Pending</option>
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <label for="editEventStatus">Status</label>
+                </div>
+                <button type="submit" class="add-button" aria-label="Update event">Update Event</button>
+                <button type="button" class="close-btn" id="closeEditEventModal" aria-label="Cancel">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="filterModal" class="modal" role="dialog" aria-labelledby="filterEventsTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeFilterModalBtn" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="filterEventsTitle">Filter Events</h2>
+            <form id="filterForm">
+                <div class="form-group">
+                    <input type="text" id="filterKeyword" aria-label="Search keyword" placeholder=" ">
+                    <label for="filterKeyword">Keyword</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="filterStartDate" aria-label="Start date" placeholder=" ">
+                    <label for="filterStartDate">Start Date</label>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="filterEndDate" aria-label="End date" placeholder=" ">
+                    <label for="filterEndDate">End Date</label>
+                </div>
+                <div class="form-group">
+                    <select id="filterStatus" aria-label="Event status">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <label for="filterStatus">Status</label>
+                </div>
+                <button type="submit" class="add-button" aria-label="Apply filter">Apply Filter</button>
+                <button type="button" class="close-btn" id="closeFilterModal" aria-label="Cancel">Cancel</button>
+                <button type="button" class="close-btn" id="resetFilter" aria-label="Reset filter">Reset</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmDeleteModal" class="modal" role="dialog" aria-labelledby="confirmDeleteTitle">
+        <div class="modal-content">
+            <h2 id="confirmDeleteTitle">Confirm Deletion</h2>
+            <p>Are you sure you want to delete "<span id="deleteEventTitle"></span>"? This action cannot be undone.</p>
+            <button class="add-button" id="confirmDeleteButton" aria-label="Confirm deletion">Delete</button>
+            <button class="close-btn" id="closeConfirmDeleteModal" aria-label="Cancel">Cancel</button>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast"></div>
+
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+            try {
+                const data = await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return data.user;
+            } catch (error) {
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+        }
+
+        async function fetchEventData(filters = {}) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                // Fetch event stats (only for admins)
+                let stats = { todaysEvents: 0, weeklyEvents: 0, cancelledEvents: 0 };
+                if (window.userType === 'admin') {
+                    stats = await fetchWithRetry(`${API_URL}/events/stats`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                }
+                document.getElementById('todaysEvents').textContent = sanitizeInput(String(stats.todaysEvents || 0));
+                document.getElementById('weeklyEvents').textContent = sanitizeInput(String(stats.weeklyEvents || 0));
+                document.getElementById('cancelledEvents').textContent = sanitizeInput(String(stats.cancelledEvents || 0));
+
+                // Fetch events with filters
+                const queryParams = new URLSearchParams();
+                if (filters.keyword) queryParams.append('keyword', filters.keyword);
+                if (filters.start) queryParams.append('start', filters.start);
+                if (filters.end) queryParams.append('end', filters.end);
+                if (filters.status && window.userType === 'admin') {
+                    queryParams.append('status', filters.status);
+                }
+
+                const events = await fetchWithRetry(`${API_URL}/events?${queryParams}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.currentEvents = events || [];
+                renderEventList(window.currentEvents);
+
+                if (!events || events.length === 0) {
+                    showToast('No events found', 'info');
+                    document.getElementById('eventList').innerHTML = '<tr><td colspan="6">No events available</td></tr>';
+                }
+            } catch (error) {
+                let message = error.error?.message || 'Failed to load events';
+                if (error.status === 401) {
+                    message = 'Session expired. Please log in again.';
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else if (error.status === 403) {
+                    message = 'Access denied.';
+                } else if (error.message.includes('network')) {
+                    message = 'Network error. Please check your connection.';
+                }
+                showToast(message, 'error');
+                document.getElementById('eventList').innerHTML = '<tr><td colspan="6">Failed to load events</td></tr>';
+            }
+        }
+
+        function renderEventList(events) {
+            const tableBody = document.getElementById('eventList');
+            tableBody.innerHTML = '';
+            if (!events || events.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6">No events to display</td></tr>';
+                return;
+            }
+            events.forEach(event => {
+                const isAdmin = window.userType === 'admin';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sanitizeInput(event.title || 'N/A')}</td>
+                    <td>${event.date ? new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</td>
+                    <td>${sanitizeInput(event.time || 'N/A')}</td>
+                    <td>${sanitizeInput(event.description || 'N/A')}</td>
+                    <td><span class="status ${sanitizeInput(event.status?.toLowerCase() || 'scheduled')}">${sanitizeInput(event.status || 'Scheduled')}</span></td>
+                    <td>
+                        ${isAdmin ? `
+                            <div class="action-icons">
+                                <i class="fas fa-edit edit-event" data-id="${sanitizeInput(event._id || '')}" aria-label="Edit event"></i>
+                                <i class="fas fa-trash delete-event" data-id="${sanitizeInput(event._id || '')}" data-title="${sanitizeInput(event.title || 'N/A')}" aria-label="Delete event"></i>
+                            </div>
+                        ` : ''}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function openAddEventModal() {
+            if (window.userType !== 'admin') {
+                showToast('Only admins can add events', 'error');
+                return;
+            }
+            document.getElementById('addEventModal').style.display = 'flex';
+            document.getElementById('addEventForm').reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('eventDate').value = today;
+            document.getElementById('eventDate').setAttribute('min', today);
+            document.querySelectorAll('#addEventForm .form-group label').forEach(label => {
+                label.style.top = '0.75rem';
+                label.style.fontSize = '1rem';
+            });
+            document.getElementById('eventTitle').focus();
+        }
+
+        function closeAddEventModal() {
+            document.getElementById('addEventModal').style.display = 'none';
+        }
+
+        function openEditEventModal(event) {
+            if (window.userType !== 'admin') {
+                showToast('Only admins can edit events', 'error');
+                return;
+            }
+            document.getElementById('editEventId').value = sanitizeInput(event._id || '');
+            document.getElementById('editEventTitle').value = sanitizeInput(event.title || '');
+            document.getElementById('editEventDate').value = event.date ? new Date(event.date).toISOString().split('T')[0] : '';
+            document.getElementById('editEventTime').value = sanitizeInput(event.time || '');
+            document.getElementById('editEventDescription').value = sanitizeInput(event.description || '');
+            document.getElementById('editEventStatus').value = sanitizeInput(event.status || 'Pending');
+            document.getElementById('editEventModal').style.display = 'flex';
+            document.querySelectorAll('#editEventForm .form-group label').forEach(label => {
+                const input = document.getElementById(label.getAttribute('for'));
+                if (input.value) {
+                    label.style.top = '-0.5rem';
+                    label.style.fontSize = '0.75rem';
+                } else {
+                    label.style.top = '0.75rem';
+                    label.style.fontSize = '1rem';
+                }
+            });
+            document.getElementById('editEventTitle').focus();
+        }
+
+        function closeEditEventModal() {
+            document.getElementById('editEventModal').style.display = 'none';
+        }
+
+        function openFilterModal() {
+            document.getElementById('filterModal').style.display = 'flex';
+            document.getElementById('filterKeyword').focus();
+            if (window.userType !== 'admin') {
+                document.getElementById('filterStatus').disabled = true;
+                document.getElementById('filterStatus').value = 'Scheduled';
+            }
+        }
+
+        function closeFilterModal() {
+            document.getElementById('filterModal').style.display = 'none';
+        }
+
+        function openConfirmDeleteModal(eventId, title) {
+            if (window.userType !== 'admin') {
+                showToast('Only admins can delete events', 'error');
+                return;
+            }
+            document.getElementById('deleteEventTitle').textContent = sanitizeInput(title);
+            document.getElementById('confirmDeleteModal').dataset.eventId = sanitizeInput(eventId);
+            document.getElementById('confirmDeleteModal').style.display = 'flex';
+        }
+
+        function closeConfirmDeleteModal() {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+            document.getElementById('confirmDeleteModal').dataset.eventId = '';
+        }
+
+        document.getElementById('addEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = sanitizeInput(document.getElementById('eventTitle').value.trim());
+            const date = document.getElementById('eventDate').value;
+            const time = document.getElementById('eventTime').value;
+            const description = sanitizeInput(document.getElementById('eventDescription').value.trim());
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+            if (!title || title.length < 3) {
+                showToast('Title must be at least 3 characters', 'error');
+                return;
+            }
+            const today = new Date().toISOString().split('T')[0];
+            if (!date || date < today) {
+                showToast('Date must be today or in the future', 'error');
+                return;
+            }
+            if (!time || !/^[0-2][0-9]:[0-5][0-9]$/.test(time)) {
+                showToast('Invalid time format (HH:mm)', 'error');
+                return;
+            }
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/events/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ title, date, time, description })
+                });
+                showToast(data.message || 'Event added successfully', 'success');
+                closeAddEventModal();
+                fetchEventData();
+            } catch (error) {
+                const errorMessage = error.error?.message || error.message || 'Failed to add event';
+                if (error.error?.code === 'VALIDATION_ERROR') {
+                    const details = error.error?.details?.map(detail => detail.message).join(', ') || 'Validation failed';
+                    showToast(`Validation error: ${details}`, 'error');
+                } else if (error.status === 401) {
+                    showToast('Session expired. Please log in again.', 'error');
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else {
+                    showToast(errorMessage, 'error');
+                }
+            }
+        });
+
+        document.getElementById('editEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editEventId').value;
+            const title = sanitizeInput(document.getElementById('editEventTitle').value.trim());
+            const date = document.getElementById('editEventDate').value;
+            const time = document.getElementById('editEventTime').value;
+            const description = sanitizeInput(document.getElementById('editEventDescription').value.trim());
+            const status = document.getElementById('editEventStatus').value;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+            if (!title || title.length < 3) {
+                showToast('Title must be at least 3 characters', 'error');
+                return;
+            }
+            const today = new Date().toISOString().split('T')[0];
+            if (!date || date < today) {
+                showToast('Date must be today or in the future', 'error');
+                return;
+            }
+            if (!time || !/^[0-2][0-9]:[0-5][0-9]$/.test(time)) {
+                showToast('Invalid time format (HH:mm)', 'error');
+                return;
+            }
+            if (!status) {
+                showToast('Please select a valid status', 'error');
+                return;
+            }
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/events/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ title, date, time, description, status })
+                });
+                showToast(data.message || 'Event updated successfully', 'success');
+                closeEditEventModal();
+                fetchEventData();
+            } catch (error) {
+                const errorMessage = error.error?.message || error.message || 'Failed to update event';
+                if (error.error?.code === 'VALIDATION_ERROR') {
+                    const details = error.error?.details?.map(detail => detail.message).join(', ') || 'Validation failed';
+                    showToast(`Validation error: ${details}`, 'error');
+                } else if (error.status === 401) {
+                    showToast('Session expired. Please log in again.', 'error');
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else {
+                    showToast(errorMessage, 'error');
+                }
+            }
+        });
+
+        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keyword = sanitizeInput(document.getElementById('filterKeyword').value.trim());
+            const start = document.getElementById('filterStartDate').value;
+            const end = document.getElementById('filterEndDate').value;
+            const status = document.getElementById('filterStatus').value;
+
+            if (start && end && start > end) {
+                showToast('Start date cannot be after end date', 'error');
+                return;
+            }
+
+            const filters = {};
+            if (keyword) filters.keyword = keyword;
+            if (start) filters.start = start;
+            if (end) filters.end = end;
+            if (status && window.userType === 'admin') filters.status = status;
+
+            fetchEventData(filters);
+            closeFilterModal();
+        });
+
+        document.getElementById('eventList').addEventListener('click', (e) => {
+            const target = e.target;
+            if (target.classList.contains('edit-event')) {
+                const event = window.currentEvents.find(e => e._id === target.dataset.id);
+                if (event) openEditEventModal(event);
+            } else if (target.classList.contains('delete-event')) {
+                openConfirmDeleteModal(target.dataset.id, target.dataset.title);
+            }
+        });
+
+        document.getElementById('confirmDeleteButton').addEventListener('click', async () => {
+            const id = document.getElementById('confirmDeleteModal').dataset.eventId;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/events/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showToast(data.message || 'Event deleted successfully', 'success');
+                closeConfirmDeleteModal();
+                fetchEventData();
+            } catch (error) {
+                const errorMessage = error.error?.message || error.message || 'Failed to delete event';
+                if (error.status === 401) {
+                    showToast('Session expired. Please log in again.', 'error');
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else {
+                    showToast(errorMessage, 'error');
+                }
+            }
+        });
+
+        document.getElementById('closeConfirmDeleteModal').addEventListener('click', closeConfirmDeleteModal);
+
+        function exportToCSV() {
+            if (!window.currentEvents || window.currentEvents.length === 0) {
+                showToast('No events to export', 'info');
+                return;
+            }
+            const headers = ['ID', 'Title', 'Date', 'Time', 'Status', 'Description'];
+            const rows = window.currentEvents.map(event => [
+                sanitizeInput(event._id || ''),
+                `"${sanitizeInput(event.title || 'N/A').replace(/"/g, '""')}"`,
+                event.date ? new Date(event.date).toISOString().split('T')[0] : 'N/A',
+                sanitizeInput(event.time || 'N/A'),
+                sanitizeInput(event.status || 'Scheduled'),
+                `"${sanitizeInput(event.description || 'N/A').replace(/"/g, '""')}"`
+            ]);
+            const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `events_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Events exported successfully', 'success');
+        }
+
+        function resetFilter() {
+            document.getElementById('filterForm').reset();
+            fetchEventData();
+            closeFilterModal();
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        }
+
+        function setupModalClose(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(modalId);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    closeModal(modalId);
+                }
+            });
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        (async () => {
+            const user = await checkAuth();
+            if (user) {
+                window.userType = user.userType; // Store user type globally
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                document.getElementById('userName').textContent = sanitizeInput(user.name || 'User');
+                document.getElementById('userType').textContent = sanitizeInput(user.userType.charAt(0).toUpperCase() + user.userType.slice(1) || 'Role');
+
+                // Hide admin-specific buttons for students
+                if (user.userType !== 'admin') {
+                    document.getElementById('addEventButton').classList.add('hidden');
+                    document.getElementById('filterStatus').disabled = true;
+                    if (user.userType === 'student') {
+                        document.getElementById('filterStatus').value = 'Scheduled';
+                    }
+                }
+
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+                document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
+
+                const debouncedSearch = debounce(e => {
+                    const query = sanitizeInput(e.target.value.trim().toLowerCase());
+                    fetchEventData({ keyword: query });
+                }, 300);
+
+                document.getElementById('searchInput').addEventListener('input', debouncedSearch);
+                document.getElementById('addEventButton').addEventListener('click', openAddEventModal);
+                document.getElementById('closeAddEventModal').addEventListener('click', closeAddEventModal);
+                document.getElementById('closeAddEventModalBtn').addEventListener('click', closeAddEventModal);
+                document.getElementById('filterButton').addEventListener('click', openFilterModal);
+                document.getElementById('closeFilterModal').addEventListener('click', closeFilterModal);
+                document.getElementById('closeFilterModalBtn').addEventListener('click', closeFilterModal);
+                document.getElementById('resetFilter').addEventListener('click', resetFilter);
+                document.getElementById('exportButton').addEventListener('click', exportToCSV);
+                document.getElementById('closeEditEventModal').addEventListener('click', closeEditEventModal);
+                document.getElementById('closeEditEventModalBtn').addEventListener('click', closeEditEventModal);
+                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                document.getElementById('logoutButton').addEventListener('click', logout);
+                document.querySelector('.hamburger').addEventListener('click', toggleSidebar);
+                setupModalClose('addEventModal');
+                setupModalClose('editEventModal');
+                setupModalClose('filterModal');
+                setupModalClose('confirmDeleteModal');
+
+                fetchEventData();
+            }
+        })();
+    </script>
+</body>
+</html>
