@@ -21,7 +21,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 1001;
         }
 
         .modal-content {
@@ -266,6 +266,99 @@
         .custom-toast.error {
             background: var(--danger-color);
         }
+
+        /* Deadline styles */
+        .stat-card .stat-icon.deadline {
+            background: var(--warning-color);
+        }
+
+        #registrationDeadline {
+            font-size: 1rem;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .deadline-passed {
+            color: var(--danger-color);
+        }
+
+        .deadline-active {
+            color: var(--success-color);
+        }
+
+        /* Notification Popup Styles */
+        .notification-popup {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .notification-list {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .notification-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .notification-item.unread {
+            background: rgba(var(--primary-rgb), 0.1);
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .notification-message {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .empty-notifications {
+            padding: 2rem 1rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 
@@ -289,7 +382,8 @@
                 <a href="./links/schedule.html" class="nav-link"><i class="fas fa-calendar"></i> Schedule</a>
                 <a href="./links/payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
                 <a href="./links/settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
-                <a href="../login-form/index.html" class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a href="../login-form/index.html" class="nav-link" onclick="logout()"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
             </nav>
         </div>
         <div class="main-content">
@@ -347,6 +441,19 @@
                         <p class="stat-value" id="pendingRequests">0</p>
                     </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon deadline"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h3 class="stat-label">Registration Deadline</h3>
+                        <p class="stat-value" id="registrationDeadline">Not set</p>
+                        <div class="table-actions">
+                            <button class="action-button" id="setDeadlineBtn"><i class="fas fa-calendar"></i> Set
+                                Deadline</button>
+                            <button class="action-button" id="extendDeadlineBtn"><i class="fas fa-calendar-plus"></i>
+                                Extend</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="activity-containers">
                 <div class="activity-table-container">
@@ -391,6 +498,35 @@
     </div>
 
     <div id="toast" class="custom-toast"></div>
+
+    <!-- Deadline Modal -->
+    <div id="deadlineModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="deadlineModalTitle">Set Registration Deadline</h2>
+            <form id="deadlineForm">
+                <div class="form-group">
+                    <input type="datetime-local" id="deadlineInput" required aria-label="Deadline date and time">
+                    <label for="deadlineInput">Deadline Date & Time</label>
+                    <i class="fas fa-calendar-alt"></i>
+                    <div id="deadlineError" class="error-message"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="action-button close-btn" onclick="closeDeadlineModal()">Cancel</button>
+                    <button type="submit" class="action-button" id="saveDeadlineBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Notification Popup -->
+    <div id="notificationPopup" class="notification-popup" style="display: none;">
+        <div class="notification-header">
+            <h3>Notifications</h3>
+            <button id="closeNotifications" class="close-btn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <!-- Notifications will be loaded here -->
+        </div>
+    </div>
 
     <script type="module">
         import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '../login-form/utils.js';
@@ -442,6 +578,9 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 renderActivityList(activities);
+
+                // Update deadline display
+                await updateDeadlineDisplay();
             } catch (error) {
                 console.error('Fetch error:', error);
                 showToast(error.message || 'Failed to load dashboard data', 'error');
@@ -723,6 +862,147 @@
             }
         }
 
+        // Deadline Management Functions
+        function openDeadlineModal(isExtension = false) {
+            const modal = document.getElementById('deadlineModal');
+            const title = document.getElementById('deadlineModalTitle');
+            const saveBtn = document.getElementById('saveDeadlineBtn');
+
+            if (isExtension) {
+                title.textContent = 'Extend Registration Deadline';
+                saveBtn.textContent = 'Extend';
+            } else {
+                title.textContent = 'Set Registration Deadline';
+                saveBtn.textContent = 'Set';
+            }
+
+            // Set minimum datetime to current time
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(now - offset).toISOString().slice(0, 16);
+            document.getElementById('deadlineInput').min = localISOTime;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeDeadlineModal() {
+            document.getElementById('deadlineModal').style.display = 'none';
+        }
+
+        async function fetchRegistrationDeadline() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetchWithRetry(`${API_URL}/registration-deadline`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                return response;
+            } catch (error) {
+                console.error('Failed to fetch registration deadline:', error);
+                showToast('Failed to load registration deadline', 'error');
+                return null;
+            }
+        }
+
+        async function updateDeadlineDisplay() {
+            const deadlineData = await fetchRegistrationDeadline();
+            const deadlineElement = document.getElementById('registrationDeadline');
+
+            if (!deadlineData || !deadlineData.deadline) {
+                deadlineElement.textContent = 'Not set';
+                deadlineElement.className = 'stat-value';
+                return;
+            }
+
+            const now = new Date();
+            const currentDeadline = deadlineData.extended ? deadlineData.extendedDeadline : deadlineData.deadline;
+            const deadlineDate = new Date(currentDeadline);
+
+            if (now > deadlineDate) {
+                deadlineElement.textContent = 'Closed (passed)';
+                deadlineElement.className = 'stat-value deadline-passed';
+            } else {
+                deadlineElement.textContent = deadlineDate.toLocaleString();
+                deadlineElement.className = 'stat-value deadline-active';
+
+                // Start countdown timer
+                startCountdown(deadlineDate);
+            }
+        }
+
+        function startCountdown(deadlineDate) {
+            const deadlineElement = document.getElementById('registrationDeadline');
+
+            // Clear any existing interval
+            if (window.registrationCountdownInterval) {
+                clearInterval(window.registrationCountdownInterval);
+            }
+
+            function updateCountdown() {
+                const now = new Date();
+                const diff = deadlineDate - now;
+
+                if (diff <= 0) {
+                    deadlineElement.textContent = 'Closed (passed)';
+                    deadlineElement.className = 'stat-value deadline-passed';
+                    clearInterval(window.registrationCountdownInterval);
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                deadlineElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
+            }
+
+            updateCountdown();
+            window.registrationCountdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        async function saveDeadline(isExtension = false) {
+            const deadlineInput = document.getElementById('deadlineInput');
+            const deadlineError = document.getElementById('deadlineError');
+            const saveBtn = document.getElementById('saveDeadlineBtn');
+
+            deadlineError.textContent = '';
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            const deadlineValue = deadlineInput.value;
+            if (!deadlineValue) {
+                deadlineError.textContent = 'Please select a date and time';
+                saveBtn.disabled = false;
+                saveBtn.textContent = isExtension ? 'Extend' : 'Set';
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const endpoint = isExtension ? '/extend' : '';
+                const response = await fetchWithRetry(`${API_URL}/registration-deadline${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(isExtension ? { extendedDeadline: deadlineValue } : { deadline: deadlineValue })
+                });
+
+                showToast(response.message, 'success');
+                closeDeadlineModal();
+                await updateDeadlineDisplay();
+            } catch (error) {
+                console.error('Failed to save deadline:', error);
+                deadlineError.textContent = error.message || 'Failed to save deadline';
+                showToast(error.message || 'Failed to save deadline', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = isExtension ? 'Extend' : 'Set';
+            }
+        }
+
         // Toggle theme
         function toggleTheme() {
             const html = document.documentElement;
@@ -762,6 +1042,17 @@
                 document.getElementById('userName').textContent = sanitizeInput(user.name) || 'Admin User';
                 fetchDashboardData();
 
+                // Set up deadline button event listeners
+                document.getElementById('setDeadlineBtn').addEventListener('click', () => openDeadlineModal(false));
+                document.getElementById('extendDeadlineBtn').addEventListener('click', () => openDeadlineModal(true));
+
+                // Handle deadline form submission
+                document.getElementById('deadlineForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const isExtension = document.getElementById('deadlineModalTitle').textContent.includes('Extend');
+                    await saveDeadline(isExtension);
+                });
+
                 const savedTheme = localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', savedTheme);
                 document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
@@ -794,6 +1085,86 @@
                 });
             }
         })();
+
+        // Notification Popup Functionality
+        function toggleNotificationPopup() {
+            const popup = document.getElementById('notificationPopup');
+            if (popup.style.display === 'none' || !popup.style.display) {
+                popup.style.display = 'block';
+                loadNotifications();
+            } else {
+                popup.style.display = 'none';
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetchWithRetry(`${API_URL}/notifications`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const notificationList = document.getElementById('notificationList');
+                notificationList.innerHTML = '';
+
+                if (!response.notifications || response.notifications.length === 0) {
+                    notificationList.innerHTML = '<div class="empty-notifications">No new notifications</div>';
+                    return;
+                }
+
+                response.notifications.forEach(notification => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.className = `notification-item ${notification.read ? '' : 'unread'}`;
+                    notificationItem.innerHTML = `
+                <div class="notification-title">
+                    <span>${sanitizeInput(notification.title)}</span>
+                    <span class="notification-time">${sanitizeInput(new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</span>
+                </div>
+                <div class="notification-message">${sanitizeInput(notification.message)}</div>
+            `;
+                    notificationItem.addEventListener('click', () => markNotificationAsRead(notification._id));
+                    notificationList.appendChild(notificationItem);
+                });
+
+                // Update notification badge count
+                const unreadCount = response.notifications.filter(n => !n.read).length;
+                document.getElementById('notificationCount').textContent = unreadCount;
+            } catch (error) {
+                console.error('Failed to load notifications:', error);
+                showToast('Failed to load notifications', 'error');
+            }
+        }
+
+        async function markNotificationAsRead(notificationId) {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                await fetchWithRetry(`${API_URL}/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                // Reload notifications
+                loadNotifications();
+            } catch (error) {
+                console.error('Failed to mark notification as read:', error);
+            }
+        }
+
+        // Add event listener to the notification bell
+        document.querySelector('.notifications').addEventListener('click', toggleNotificationPopup);
+        document.getElementById('closeNotifications').addEventListener('click', toggleNotificationPopup);
+
+        // Close notification popup when clicking outside
+        document.addEventListener('click', (e) => {
+            const popup = document.getElementById('notificationPopup');
+            const notificationBell = document.querySelector('.notifications');
+
+            if (popup.style.display === 'block' &&
+                !popup.contains(e.target) &&
+                !notificationBell.contains(e.target)) {
+                popup.style.display = 'none';
+            }
+        });
     </script>
 </body>
 

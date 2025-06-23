@@ -9,8 +9,8 @@ import crypto from 'crypto';
 import { body, param, validationResult, query } from 'express-validator';
 import multer from 'multer';
 import { CloudinaryStorage } from 'multer-storage-cloudinary'; // NEW: Import Cloudinary storage for Multer
-import { v2 as cloudinary } from 'cloudinary'; 
-import path from 'path'; 
+import { v2 as cloudinary } from 'cloudinary';
+import path from 'path';
 
 dotenv.config();
 
@@ -196,6 +196,26 @@ const PaymentSlipSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now, index: true },
 });
 
+const RegistrationDeadlineSchema = new mongoose.Schema({
+    deadline: { type: Date, required: true },
+    extended: { type: Boolean, default: false },
+    extendedDeadline: { type: Date },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+
+const NotificationSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    title: { type: String, required: true },
+    message: { type: String, required: true },
+    read: { type: Boolean, default: false },
+    type: { type: String, enum: ['info', 'warning', 'alert'], default: 'info' },
+    createdAt: { type: Date, default: Date.now }
+});
+
+
+const Notification = mongoose.model('Notification', NotificationSchema);
+const RegistrationDeadline = mongoose.model('RegistrationDeadline', RegistrationDeadlineSchema);
 const User = mongoose.model('User', UserSchema);
 const Room = mongoose.model('Room', RoomSchema);
 const Event = mongoose.model('Event', EventSchema);
@@ -314,7 +334,7 @@ app.get('/api/protected', verifyToken, async (req, res) => {
     }
 });
 
-// Register Route
+// Updated Register Route with Deadline Check
 app.post(
     '/api/register',
     [
@@ -359,6 +379,25 @@ app.post(
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
+            }
+
+            // Check registration deadline first
+            const deadline = await RegistrationDeadline.findOne();
+            const now = new Date();
+
+            if (req.body.userType === 'student') {
+                if (deadline) {
+                    const currentDeadline = deadline.extended ? deadline.extendedDeadline : deadline.deadline;
+                    if (now > currentDeadline) {
+                        return res.status(400).json({
+                            error: {
+                                message: 'Registration is closed. The deadline has passed.',
+                                code: 'REGISTRATION_CLOSED',
+                                deadline: currentDeadline
+                            }
+                        });
+                    }
+                }
             }
 
             const { email, password, userType, name, matricNumber, phone, gender, dateOfBirth, faculty, level, department } = req.body;
@@ -1684,7 +1723,7 @@ app.get('/api/maintenance', verifyToken, isAdmin, async (req, res) => {
 app.get('/api/events/stats', verifyToken, isAdmin, async (req, res) => {
     try {
         const today = new Date();
-        today.setHours(0,0,0,0);
+        today.setHours(0, 0, 0, 0);
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - today.getDay());
 
@@ -2127,6 +2166,159 @@ app.use((err, req, res, next) => {
             details: process.env.NODE_ENV === 'development' ? err.message : undefined,
         },
     });
+});
+
+// Registration Deadline Routes
+app.post(
+    '/api/registration-deadline',
+    verifyToken,
+    isAdmin,
+    [
+        body('deadline').isISO8601().toDate().withMessage('Invalid deadline date')
+            .custom((value) => {
+                const deadline = new Date(value);
+                const now = new Date();
+                if (deadline <= now) {
+                    throw new Error('Deadline must be in the future');
+                }
+                return true;
+            }),
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
+            }
+
+            const { deadline } = req.body;
+
+            // Check if there's an existing deadline
+            let existingDeadline = await RegistrationDeadline.findOne();
+
+            if (existingDeadline) {
+                // Update existing deadline
+                existingDeadline.deadline = deadline;
+                existingDeadline.extended = false;
+                existingDeadline.extendedDeadline = undefined;
+                existingDeadline.updatedAt = new Date();
+                await existingDeadline.save();
+            } else {
+                // Create new deadline
+                existingDeadline = new RegistrationDeadline({ deadline });
+                await existingDeadline.save();
+            }
+
+            res.json({
+                message: 'Registration deadline set successfully',
+                deadline: existingDeadline.deadline,
+                extended: existingDeadline.extended,
+                extendedDeadline: existingDeadline.extendedDeadline
+            });
+        } catch (error) {
+            console.error('❌ Set Registration Deadline Error:', error);
+            res.status(500).json({ error: { message: 'Failed to set registration deadline', code: 'SERVER_ERROR' } });
+        }
+    }
+);
+
+app.post(
+    '/api/registration-deadline/extend',
+    verifyToken,
+    isAdmin,
+    [
+        body('extendedDeadline').isISO8601().toDate().withMessage('Invalid extended deadline date')
+            .custom((value) => {
+                const extendedDeadline = new Date(value);
+                const now = new Date();
+                if (extendedDeadline <= now) {
+                    throw new Error('Extended deadline must be in the future');
+                }
+                return true;
+            }),
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
+            }
+
+            const { extendedDeadline } = req.body;
+
+            let deadline = await RegistrationDeadline.findOne();
+            if (!deadline) {
+                return res.status(400).json({ error: { message: 'No registration deadline set', code: 'NO_DEADLINE' } });
+            }
+
+            deadline.extended = true;
+            deadline.extendedDeadline = extendedDeadline;
+            deadline.updatedAt = new Date();
+            await deadline.save();
+
+            res.json({
+                message: 'Registration deadline extended successfully',
+                deadline: deadline.deadline,
+                extended: deadline.extended,
+                extendedDeadline: deadline.extendedDeadline
+            });
+        } catch (error) {
+            console.error('❌ Extend Registration Deadline Error:', error);
+            res.status(500).json({ error: { message: 'Failed to extend registration deadline', code: 'SERVER_ERROR' } });
+        }
+    }
+);
+
+app.get(
+    '/api/registration-deadline',
+    verifyToken,
+    async (req, res) => {
+        try {
+            const deadline = await RegistrationDeadline.findOne();
+
+            if (!deadline) {
+                return res.json({
+                    message: 'No registration deadline set',
+                    deadline: null,
+                    extended: false,
+                    extendedDeadline: null
+                });
+            }
+
+            res.json({
+                deadline: deadline.deadline,
+                extended: deadline.extended,
+                extendedDeadline: deadline.extendedDeadline
+            });
+        } catch (error) {
+            console.error('❌ Get Registration Deadline Error:', error);
+            res.status(500).json({ error: { message: 'Failed to get registration deadline', code: 'SERVER_ERROR' } });
+        }
+    }
+);
+
+// Get Notifications (add to your routes)
+app.get('/api/notifications', verifyToken, async (req, res) => {
+    try {
+        const notifications = await Notification.find({ user: req.user.id })
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .lean();
+
+        res.json({ notifications });
+    } catch (error) {
+        res.status(500).json({ error: { message: 'Failed to get notifications' } });
+    }
+});
+
+// Mark Notification as Read
+app.post('/api/notifications/:id/read', verifyToken, async (req, res) => {
+    try {
+        await Notification.findByIdAndUpdate(req.params.id, { read: true });
+        res.json({ message: 'Notification marked as read' });
+    } catch (error) {
+        res.status(500).json({ error: { message: 'Failed to mark notification as read' } });
+    }
 });
 
 // Start Server
