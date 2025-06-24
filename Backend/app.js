@@ -431,19 +431,40 @@ app.post(
                     if (settings?.notifications.newStudent) {
                         await sendEmail(
                             admin.email,
-                            'New Student Registration Request',
-                            `Student ${name} (${email}) has registered and is awaiting your approval.`,
-                            `<h1>New Student Registration</h1><p>Student: ${name}<br>Email: ${email}<br>Matric Number: ${matricNumber}</p><p>Please review the request in the admin dashboard.</p>`
+                            'Student Registration Request – Approval Needed',
+                            `A new student named ${name} (${email}) with Matric Number ${matricNumber} has submitted a registration request and is awaiting your approval.`,
+                            `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">📌 New Student Registration Request</h2>
+        <p><strong>Student Name:</strong> ${name}</p>
+        <p><strong>Email Address:</strong> ${email}</p>
+        <p><strong>Matric Number:</strong> ${matricNumber}</p>
+        <hr style="margin: 20px 0;" />
+        <p>Please log in to the Admin Dashboard to review and approve this request.</p>
+        <p style="font-size: 12px; color: #666;">If you did not expect this email or believe it was sent in error, please disregard it.</p>
+    </div>
+    `
                         );
+
                     }
                 }
             } else {
                 await sendEmail(
                     email,
-                    'Welcome Admin',
-                    `You have been registered as an Admin for Adem Baba.`,
-                    `<h1>Welcome ${name}</h1><p>Your admin account is active.</p>`
-                );
+                    'Welcome to Adem Baba – Admin Access Granted',
+                    `Hello ${name}, you have been successfully registered as an Admin for Adem Baba. Your account is now active.`,
+                    `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">🎉 Welcome to Adem Baba</h2>
+        <p>Hi <strong>${name}</strong>,</p>
+        <p>We're excited to let you know that your admin account has been successfully activated.</p>
+        <p>You now have full access to the Admin Dashboard and can begin managing the platform.</p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you have any questions or need help getting started, feel free to contact support.</p>
+    </div>
+    `
+                )
+
             }
 
             res.status(201).json({ message: 'Registration successful.' });
@@ -487,9 +508,23 @@ app.post(
             const frontendUrl = 'http://127.0.0.1:5500/login-form/verify-otp.html';
             await sendEmail(
                 student.email,
-                'Your OTP for Adem Baba',
-                `Your registration request has been approved. Your OTP is ${otp}. It expires in 1 day. Verify at ${frontendUrl}`,
-                `<h1>Your OTP</h1><p>Your registration request has been approved.</p><p>Use this OTP to activate your account: <strong>${otp}</strong></p><p>Expires in 1 day.</p><p><a href="${frontendUrl}">Verify OTP</a></p>`
+                'Adem Baba – Your One-Time Password (OTP)',
+                `Hello ${student.name}, your registration has been approved. Use the OTP ${otp} to activate your account. It will expire in 24 hours. Verify at ${frontendUrl}.`,
+                `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">✅ Account Approved – Your OTP</h2>
+        <p>Hi <strong>${student.name}</strong>,</p>
+        <p>Your registration request for Adem Baba has been approved.</p>
+        <p>Please use the following One-Time Password (OTP) to activate your account:</p>
+        <p style="font-size: 24px; font-weight: bold; background-color: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center;">${otp}</p>
+        <p>This OTP will expire in <strong>24 hours</strong>.</p>
+        <p>
+            <a href="${frontendUrl}" style="display: inline-block; background-color: #0073bb; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Verify OTP</a>
+        </p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you did not request this, please ignore this message.</p>
+    </div>
+    `
             );
 
             res.json({ message: 'OTP generated and sent to student' });
@@ -800,20 +835,52 @@ app.post(
                 const attachment = await fetchFileForAttachment(interviewFileUrl, 'interview-instructions.pdf');
                 await sendEmail(
                     student.email,
-                    'Adem Baba - Interview Scheduled',
-                    `Your registration request has been accepted. You are invited for an interview on ${interviewDateTime.toLocaleString()}. Please attend at the Adem Baba Hostel Office. See the attached interview instructions.`,
-                    `<h1>Interview Scheduled</h1><p>Your registration request has been accepted.</p><p><strong>Interview Details:</strong><br>Date: ${interviewDateTime.toLocaleDateString()}<br>Time: ${interviewTime}<br>Location: Adem Baba Hostel Office</p><p>Please see the attached interview instructions.</p>`,
+                    'Adem Baba – Interview Invitation',
+                    `Hello ${student.name}, your registration has been accepted. You are invited for an interview on ${interviewDateTime.toLocaleString()} at the Adem Baba Hostel Office. Please review the attached interview instructions.`,
+                    `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">📅 Interview Scheduled</h2>
+        <p>Hi <strong>${student.name}</strong>,</p>
+        <p>Congratulations! Your registration request has been accepted.</p>
+        <p>You are invited to attend an in-person interview. Please find the details below:</p>
+        <ul style="line-height: 1.6;">
+            <li><strong>Date:</strong> ${interviewDateTime.toLocaleDateString()}</li>
+            <li><strong>Time:</strong> ${interviewTime}</li>
+            <li><strong>Location:</strong> Adem Baba Hostel Office</li>
+        </ul>
+        <p>📎 Please refer to the attached document for interview guidelines and expectations.</p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you have any questions or are unable to attend, please contact the office as soon as possible.</p>
+    </div>
+    `,
                     [attachment]
                 );
+
             } catch (fetchError) {
                 console.error('❌ Failed to fetch interview document:', fetchError);
                 // Fallback: Send email without attachment
                 await sendEmail(
                     student.email,
-                    'Adem Baba - Interview Scheduled',
-                    `Your registration request has been accepted. You are invited for an interview on ${interviewDateTime.toLocaleString()}. Please attend at the Adem Baba Hostel Office.`,
-                    `<h1>Interview Scheduled</h1><p>Your registration request has been accepted.</p><p><strong>Interview Details:</strong><br>Date: ${interviewDateTime.toLocaleDateString()}<br>Time: ${interviewTime}<br>Location: Adem Baba Hostel Office</p>`
+                    'Adem Baba – Interview Invitation',
+                    `Hello ${student.name}, your registration has been accepted. You are invited for an interview on ${interviewDateTime.toLocaleString()} at the Adem Baba Hostel Office.`,
+                    `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">🎓 Interview Invitation</h2>
+        <p>Hi <strong>${student.name}</strong>,</p>
+        <p>We’re pleased to inform you that your registration has been accepted.</p>
+        <p><strong>You are scheduled for an interview with the following details:</strong></p>
+        <ul style="line-height: 1.6;">
+            <li><strong>Date:</strong> ${interviewDateTime.toLocaleDateString()}</li>
+            <li><strong>Time:</strong> ${interviewTime}</li>
+            <li><strong>Location:</strong> Adem Baba Hostel Office</li>
+        </ul>
+        <p>Please ensure you arrive a few minutes early and bring any necessary documents.</p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you have any questions or are unable to attend, please notify the office in advance.</p>
+    </div>
+    `
                 );
+
             }
 
             res.json({ message: 'Interview scheduled and details sent to student.' });
@@ -867,11 +934,23 @@ app.post(
             for (const admin of admins) {
                 sendEmail(
                     admin.email,
-                    'New Payment Slip Uploaded',
-                    `Student ${student.name} has uploaded a payment slip of ₦${amount.toLocaleString()}. Please review in the admin dashboard.`,
-                    `<h1>New Payment Slip</h1><p>Student: ${student.name}<br>Amount: ₦${amount.toLocaleString()}<br><a href="${paymentSlip.fileUrl}">View Payment Slip</a></p>`
-                ).catch((emailError) => console.error('Email failed for', admin.email, emailError));
+                    'Adem Baba – New Payment Slip Uploaded',
+                    `Hello, student ${student.name} has uploaded a payment slip of ₦${amount.toLocaleString()}. Please log in to the Admin Dashboard to review the submission.`,
+                    `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+            <h2 style="color: #232f3e;">💰 New Payment Slip Uploaded</h2>
+            <p><strong>Student:</strong> ${student.name}</p>
+            <p><strong>Amount:</strong> ₦${amount.toLocaleString()}</p>
+            <p><a href="${paymentSlip.fileUrl}" style="display: inline-block; background-color: #0073bb; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none;">View Payment Slip</a></p>
+            <hr style="margin: 20px 0;" />
+            <p style="font-size: 12px; color: #666;">Please take appropriate action in the Admin Dashboard.</p>
+        </div>
+        `
+                ).catch((emailError) =>
+                    console.error('Email failed for', admin.email, emailError)
+                );
             }
+
 
             res.status(201).json({ message: 'Payment slip uploaded successfully' });
         } catch (error) {
@@ -927,10 +1006,23 @@ app.post(
 
             await sendEmail(
                 paymentSlip.student.email,
-                'Payment Slip Approved',
-                `Your payment slip for ₦${paymentSlip.amount.toLocaleString()} has been approved. You can now access your dashboard.`,
-                `<h1>Payment Approved</h1><p>Your payment slip for ₦${paymentSlip.amount.toLocaleString()} has been approved.</p><p>You can now access your dashboard.</p>`
+                'Adem Baba – Payment Slip Approved',
+                `Hello ${paymentSlip.student.name}, your payment slip for ₦${paymentSlip.amount.toLocaleString()} has been approved. You now have full access to your dashboard.`,
+                `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">✅ Payment Approved</h2>
+        <p>Hi <strong>${paymentSlip.student.name}</strong>,</p>
+        <p>We're pleased to inform you that your payment slip for <strong>₦${paymentSlip.amount.toLocaleString()}</strong> has been approved.</p>
+        <p>You can now access your student dashboard and continue with your application process.</p>
+        <p>
+            <a href="${frontendUrl}" style="display: inline-block; background-color: #0073bb; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Go to Dashboard</a>
+        </p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you have any questions, feel free to contact support.</p>
+    </div>
+    `
             );
+
 
             res.json({ message: 'Payment slip approved successfully' });
         } catch (error) {
@@ -968,10 +1060,23 @@ app.post(
 
             await sendEmail(
                 paymentSlip.student.email,
-                'Payment Slip Rejected',
-                `Your payment slip for ₦${paymentSlip.amount.toLocaleString()} has been rejected. Please upload a valid payment slip.`,
-                `<h1>Payment Rejected</h1><p>Your payment slip for ₦${paymentSlip.amount.toLocaleString()} has been rejected.</p><p>Please upload a valid payment slip.</p>`
+                'Adem Baba – Payment Slip Rejected',
+                `Hello ${paymentSlip.student.name}, your payment slip for ₦${paymentSlip.amount.toLocaleString()} has been reviewed and unfortunately, it was rejected. Please upload a valid payment slip to proceed.`,
+                `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #c0392b;">⚠️ Payment Slip Rejected</h2>
+        <p>Hi <strong>${paymentSlip.student.name}</strong>,</p>
+        <p>We’ve reviewed your payment slip for <strong>₦${paymentSlip.amount.toLocaleString()}</strong> and found it to be invalid or unclear.</p>
+        <p>Please upload a valid and clearly visible payment slip in your dashboard to continue the process.</p>
+        <p>
+            <a href="${frontendUrl}" style="display: inline-block; background-color: #c0392b; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Upload New Slip</a>
+        </p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you believe this was an error, please contact support for clarification.</p>
+    </div>
+    `
             );
+
 
             res.json({ message: 'Payment slip rejected successfully' });
         } catch (error) {
@@ -1057,20 +1162,51 @@ app.post(
                 const attachment = await fetchFileForAttachment(welcomeFileUrl);
                 await sendEmail(
                     student.email,
-                    'Your OTP for Adem Baba',
-                    `Your registration request has been approved. Your OTP is ${otp}. It expires in 1 day. Verify at ${frontendUrl}. Please find the welcome guide attached.`,
-                    `<h1>Your OTP</h1><p>Your registration request has been approved.</p><p>Use this OTP to activate your account: <strong>${otp}</strong></p><p>Expires in 1 day.</p><p><a href="${frontendUrl}">Verify OTP</a></p><p>Please find the welcome guide attached.</p>`,
+                    'Adem Baba – Your OTP & Welcome Guide',
+                    `Hello ${student.name}, your registration has been approved. Use the OTP ${otp} to activate your account. It expires in 1 day. Please verify at ${frontendUrl}. We've also attached a welcome guide to help you get started.`,
+                    `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">🎉 Welcome to Adem Baba</h2>
+        <p>Hi <strong>${student.name}</strong>,</p>
+        <p>Your registration request has been approved.</p>
+        <p><strong>Use the OTP below to activate your account:</strong></p>
+        <p style="font-size: 24px; font-weight: bold; background-color: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center;">${otp}</p>
+        <p>This OTP will expire in <strong>1 day</strong>.</p>
+        <p>
+            <a href="${frontendUrl}" style="display: inline-block; background-color: #0073bb; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Verify OTP</a>
+        </p>
+        <p>📎 We've also attached a welcome guide to help you get started.</p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you did not request this, please disregard this message.</p>
+    </div>
+    `,
                     [attachment]
                 );
+
             } catch (fetchError) {
                 console.error('❌ Failed to fetch welcome document:', fetchError);
                 // Fallback: Send email without attachment
                 await sendEmail(
                     student.email,
-                    'Your OTP for Adem Baba',
-                    `Your registration request has been approved. Your OTP is ${otp}. It expires in 1 day. Verify at ${frontendUrl}`,
-                    `<h1>Your OTP</h1><p>Your registration request has been approved.</p><p>Use this OTP to activate your account: <strong>${otp}</strong></p><p>Expires in 1 day.</p><p><a href="${frontendUrl}">Verify OTP</a></p>`
+                    'Adem Baba – Your One-Time Password (OTP)',
+                    `Hello ${student.name}, your registration has been approved. Use the OTP ${otp} to activate your account. It expires in 1 day. You can verify your account at ${frontendUrl}.`,
+                    `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">🔐 Your One-Time Password</h2>
+        <p>Hi <strong>${student.name}</strong>,</p>
+        <p>Your registration request has been approved.</p>
+        <p>Please use the following One-Time Password (OTP) to activate your account:</p>
+        <p style="font-size: 24px; font-weight: bold; background-color: #f9f9f9; padding: 10px; border-radius: 6px; text-align: center;">${otp}</p>
+        <p>This OTP will expire in <strong>24 hours</strong>.</p>
+        <p>
+            <a href="${frontendUrl}" style="display: inline-block; background-color: #0073bb; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Verify Account</a>
+        </p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you did not initiate this registration, please ignore this message.</p>
+    </div>
+    `
                 );
+
             }
 
             res.json({ message: 'Student approved and OTP sent.' });
@@ -1105,10 +1241,21 @@ app.post(
 
             await sendEmail(
                 student.email,
-                'Adem Baba - Registration Declined',
-                `We regret to inform you that your registration request has been declined. Thank you for your interest in Adem Baba Hostel.`,
-                `<h1>Registration Declined</h1><p>We regret to inform you that your registration request has been declined.</p><p>Thank you for your interest in Adem Baba Hostel.</p>`
+                'Adem Baba – Registration Declined',
+                `Hello ${student.name}, we regret to inform you that your registration request has been declined. We appreciate your interest in Adem Baba Hostel and wish you all the best.`,
+                `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #c0392b;">🚫 Registration Declined</h2>
+        <p>Hi <strong>${student.name}</strong>,</p>
+        <p>Thank you for your interest in Adem Baba Hostel.</p>
+        <p>After careful review, we regret to inform you that your registration request has not been approved.</p>
+        <p>We wish you success in your future endeavors and appreciate the time you took to apply.</p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you believe this was an error or have any questions, feel free to contact our team.</p>
+    </div>
+    `
             );
+
 
             res.json({ message: 'Request declined and notification sent to student.' });
         } catch (error) {
@@ -1150,10 +1297,39 @@ app.post(
             const resetUrl = `http://127.0.0.1:5500/login-form/reset-password.html?token=${resetToken}`;
             await sendEmail(
                 email,
-                'Adem Baba - Password Reset',
-                `You requested a password reset for your Adem Baba account. Click the link to reset your password: ${resetUrl}\nThis link expires in 1 hour.\nIf you did not request this, please ignore this email.`,
-                `<h1>Password Reset Request</h1><p>You requested a password reset for your Adem Baba account.</p><p>Click <a href="${resetUrl}">here</a> to reset your password.</p><p>This link expires in 1 hour.</p><p>If you did not request this, please ignore this email.</p>`
+                'Adem Baba – Password Reset Instructions',
+                `Hello, you requested to reset the password for your Adem Baba account. \
+Use the link below to choose a new password:\n${resetUrl}\n\n\
+This link will expire in 1 hour for your security. \
+If you did not request this reset, please ignore this message.`,
+                `
+    <div style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:auto; padding:20px; border:1px solid #e2e2e2; border-radius:8px;">
+        <h2 style="color:#232f3e;">🔑 Password Reset Request</h2>
+
+        <p>You recently requested to reset your password for your Adem Baba account.</p>
+
+        <p>Click the button below to set a new password:</p>
+
+        <p style="text-align:center;">
+            <a href="${resetUrl}"
+               style="display:inline-block; background-color:#0073bb; color:#fff;
+                      padding:12px 24px; border-radius:6px; text-decoration:none;
+                      font-weight:bold;">
+                Reset Password
+            </a>
+        </p>
+
+        <p>This link will expire in <strong>1&nbsp;hour</strong>.</p>
+
+        <hr style="margin:20px 0;" />
+
+        <p style="font-size:12px; color:#666;">
+            If you did not request this reset, please ignore this email or contact support.
+        </p>
+    </div>
+    `
             );
+
 
             console.log('Reset email sent:', { email, resetUrl });
             res.json({ message: 'Password reset email sent. Check your email.' });
@@ -1195,10 +1371,27 @@ app.post(
 
             await sendEmail(
                 user.email,
-                'Adem Baba - Password Reset Successful',
-                'Your password has been successfully reset. You can now log in with your new password.',
-                `<h1>Password Reset Successful</h1><p>Your password has been successfully reset.</p><p>You can now log in with your new password.</p>`
+                'Adem Baba – Password Reset Successful',
+                `Hello ${user.name}, your password has been successfully reset. You can now log in using your new password. If you did not perform this action, please contact support immediately.`,
+                `
+    <div style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:auto; padding:20px; border:1px solid #e2e2e2; border-radius:8px;">
+        <h2 style="color:#232f3e;">✅ Password Reset Successful</h2>
+
+        <p>Hi <strong>${user.name}</strong>,</p>
+
+        <p>Your password has been successfully reset.</p>
+
+        <p>You can now log in to your Adem Baba account using your new credentials.</p>
+
+        <hr style="margin:20px 0;" />
+
+        <p style="font-size:12px; color:#666;">
+            If you did not request this change, please contact support immediately to secure your account.
+        </p>
+    </div>
+    `
             );
+
 
             res.json({ message: 'Password reset successful' });
         } catch (error) {
@@ -1402,10 +1595,25 @@ app.post(
             if (settings?.notifications.email) {
                 await sendEmail(
                     student.email,
-                    'Room Assignment',
-                    `You have been assigned to Room ${room.roomNumber}.`,
-                    `<h1>Room Assignment</h1><p>You have been assigned to Room ${room.roomNumber} (${room.type}).</p>`
+                    'Adem Baba – Room Assignment Notification',
+                    `Hello ${student.name}, you have been assigned to Room ${room.roomNumber} (${room.type}). Please check your dashboard for more details.`,
+                    `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">🛏️ Room Assignment</h2>
+        <p>Hi <strong>${student.name}</strong>,</p>
+        <p>We’re pleased to inform you that you’ve been assigned a room.</p>
+        <p><strong>Room Details:</strong></p>
+        <ul style="line-height: 1.6;">
+            <li><strong>Room Number:</strong> ${room.roomNumber}</li>
+            <li><strong>Room Type:</strong> ${room.type}</li>
+        </ul>
+        <p>You can log in to your dashboard for more information.</p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">If you have any questions or concerns, please contact the hostel management.</p>
+    </div>
+    `
                 );
+
             }
 
             res.json({ message: 'Room assigned successfully' });
@@ -1646,10 +1854,24 @@ app.post(
                 if (settings?.notifications.maintenance) {
                     await sendEmail(
                         admin.email,
-                        'New Maintenance Request',
-                        `Room ${room.roomNumber}: ${issue}`,
-                        `<h1>Maintenance Request</h1><p>Room: ${room.roomNumber}<br>Issue: ${issue}<br>Type: ${type}</p>`
+                        'Adem Baba – New Maintenance Request Submitted',
+                        `A new maintenance request has been submitted for Room ${room.roomNumber}. Issue: ${issue} (Type: ${type}). Please review and take appropriate action.`,
+                        `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">🛠️ New Maintenance Request</h2>
+        <p>A maintenance request has been submitted for the following room:</p>
+        <ul style="line-height: 1.6;">
+            <li><strong>Room Number:</strong> ${room.roomNumber}</li>
+            <li><strong>Issue:</strong> ${issue}</li>
+            <li><strong>Type:</strong> ${type}</li>
+        </ul>
+        <p>Please review the request in the admin dashboard and take appropriate action.</p>
+        <hr style="margin: 20px 0;" />
+        <p style="font-size: 12px; color: #666;">This is an automated notification from the Adem Baba maintenance system.</p>
+    </div>
+    `
                     );
+
                 }
             }
 
@@ -2093,12 +2315,32 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         const resetUrl = `http://127.0.0.1:5501/login-form/reset-password.html?token=${token}`;
         await sendEmail(
             email,
-            'Adem Baba - Password Reset',
-            `You requested a password reset for your Adem Baba account. Click the link to reset your password: ${resetUrl}. This link expires in 1 hour.`,
-            `<p>You requested a password reset for your Adem Baba account.</p>
-            <p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>
-            <p>If you did not request this, please ignore this email.</p>`
+            'Adem Baba – Password Reset Request',
+            `Hello, you requested to reset your password for your Adem Baba account. Use the link below to choose a new password:\n${resetUrl}\n\nThis link will expire in 1 hour. If you did not request this, please ignore this message.`,
+            `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+        <h2 style="color: #232f3e;">🔐 Password Reset Request</h2>
+
+        <p>You have requested to reset your password for your <strong>Adem Baba</strong> account.</p>
+
+        <p>Click the button below to reset your password:</p>
+
+        <p style="text-align: center;">
+            <a href="${resetUrl}" 
+               style="display: inline-block; background-color: #0073bb; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+               Reset Password
+            </a>
+        </p>
+
+        <p>This link will expire in <strong>1 hour</strong>.</p>
+
+        <hr style="margin: 20px 0;" />
+
+        <p style="font-size: 12px; color: #666;">If you did not request this reset, you can safely ignore this email.</p>
+    </div>
+    `
         );
+
 
         res.json({ message: 'Password reset email sent. Check your email.' });
     } catch (error) {
@@ -2142,9 +2384,31 @@ app.post(
 
             await sendEmail(
                 user.email,
-                'Adem Baba - Password Reset Successful',
-                'Your password has been successfully reset. You can now log in with your new password.',
-                `<h1>Password Reset Successful</h1><p>Your password has been successfully reset.</p><p>You can now log in with your new password.</p>`
+                'Adem Baba – Password Reset Successful',
+                `Hello ${user.name}, your password has been successfully reset. You can now log in to your Adem Baba account using your new password. If you did not perform this action, please contact support immediately.`,
+                `
+    <div style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:auto; padding:20px; border:1px solid #e2e2e2; border-radius:8px;">
+        <h2 style="color:#232f3e;">✅ Password Reset Successful</h2>
+
+        <p>Hi <strong>${user.name}</strong>,</p>
+
+        <p>This is to confirm that your password has been successfully reset.</p>
+
+        <p>You can now log in to your <strong>Adem Baba</strong> account using your new password.</p>
+
+        <p style="margin-top: 20px;">
+            <a href="${frontendUrl}/login" style="display: inline-block; background-color: #0073bb; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                Log In Now
+            </a>
+        </p>
+
+        <hr style="margin: 20px 0;" />
+
+        <p style="font-size: 12px; color: #666;">
+            If you did not perform this action, please contact support immediately to secure your account.
+        </p>
+    </div>
+    `
             );
 
             console.log('Password reset successful for:', user.email);
