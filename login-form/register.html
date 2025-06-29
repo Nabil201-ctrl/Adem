@@ -64,6 +64,13 @@
                         <div id="password-error" class="error-message"></div>
                     </div>
 
+                    <div class="form-group admin-field" style="display: none;">
+                        <input type="password" id="adminSecretKey" aria-label="Admin Secret Key">
+                        <label for="adminSecretKey">Admin Secret Key</label>
+                        <i class="fas fa-key"></i>
+                        <div id="adminSecretKey-error" class="error-message"></div>
+                    </div>
+
                     <div class="form-group student-field">
                         <input type="text" id="matricNumber" required aria-label="Matric number" placeholder="e.g., 23/208CSC/586">
                         <label for="matricNumber">Matric Number</label>
@@ -155,16 +162,16 @@
         async function checkRegistrationDeadline() {
             try {
                 const data = await fetchWithRetry(`${API_URL}/settings/deadline`);
-                const deadline = new Date(data.deadline);
+                const deadline = new Date(data.deadline || data.extendedDeadline);
                 const now = new Date();
                 if (now > deadline) {
-                    showToast('Registration is closed. The deadline has passed.', 'error');
+                    showToast('The Adem Baba Hostel has closed the page for booking hostel.', 'error');
                     return false;
                 }
                 return true;
             } catch (error) {
                 console.error('checkRegistrationDeadline: Error:', error);
-                showToast('Failed to check registration deadline', 'error');
+                showToast('The Adem Baba Hostel has closed the page for booking hostel.', 'error');
                 return false;
             }
         }
@@ -196,6 +203,7 @@
 
         const typeButtons = document.querySelectorAll('.type-btn');
         const studentFields = document.querySelectorAll('.student-field');
+        const adminField = document.querySelector('.admin-field');
 
         typeButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -208,6 +216,9 @@
                     const input = field.querySelector('input');
                     if (input) input.required = userType === 'student';
                 });
+                adminField.style.display = userType === 'admin' ? 'block' : 'none';
+                const adminInput = adminField.querySelector('input');
+                if (adminInput) adminInput.required = userType === 'admin';
             });
         });
 
@@ -219,18 +230,21 @@
             submitButton.disabled = true;
             submitButton.querySelector('span').textContent = 'Registering...';
 
-            // Check registration deadline
-            const isRegistrationOpen = await checkRegistrationDeadline();
-            if (!isRegistrationOpen) {
-                submitButton.disabled = false;
-                submitButton.querySelector('span').textContent = 'Register';
-                return;
+            // Check registration deadline for students only
+            const userType = document.querySelector('.type-btn.active').dataset.type;
+            if (userType === 'student') {
+                const isRegistrationOpen = await checkRegistrationDeadline();
+                if (!isRegistrationOpen) {
+                    submitButton.disabled = false;
+                    submitButton.querySelector('span').textContent = 'Register';
+                    return;
+                }
             }
 
             const name = sanitizeInput(document.getElementById('name').value.trim());
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const userType = document.querySelector('.type-btn.active').dataset.type;
+            const adminSecretKey = userType === 'admin' ? document.getElementById('adminSecretKey').value : '';
             const matricNumber = sanitizeInput(document.getElementById('matricNumber').value.trim().toUpperCase());
             const dateOfBirth = document.getElementById('dateOfBirth').value;
             const phone = sanitizeInput(document.getElementById('phone').value.trim());
@@ -242,9 +256,7 @@
 
             // Clear previous error messages
             document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-            document.querySelectorAll('.form-group input, .form-group select').forEach(input => {
-                input.classList.remove('error');
-            });
+            document.querySelectorAll('.form-group input').forEach(input => input.classList.remove('error'));
 
             // Validate name
             if (!name) {
@@ -277,11 +289,21 @@
                 return;
             }
 
+            // Validate admin secret key
+            if (userType === 'admin' && !adminSecretKey) {
+                showToast('Admin secret key is required', 'error');
+                document.getElementById('adminSecretKey-error').textContent = 'Admin secret key is required';
+                document.getElementById('adminSecretKey').classList.add('error');
+                submitButton.disabled = false;
+                submitButton.querySelector('span').textContent = 'Register';
+                return;
+            }
+
             // Validate student fields
             if (userType === 'student') {
                 sessionStorage.setItem('registerEmail', email);
 
-                // Validate matric number (e.g., 23/208CSC/586)
+                // Validate matric number
                 const matricRegex = /^\d{2}\/[A-Z0-9]{6}\/\d{3}$/;
                 if (!matricRegex.test(matricNumber)) {
                     showToast('Invalid matric number (e.g., 23/208CSC/586)', 'error');
@@ -322,7 +344,7 @@
                     return;
                 }
 
-                // Validate level (e.g., 100level, 200level, etc.)
+                // Validate level
                 const levelRegex = /^(100|200|300|400|500|600|700)level$/;
                 if (!levelRegex.test(level)) {
                     showToast('Invalid level (e.g., 400level)', 'error');
@@ -367,7 +389,9 @@
                 password,
                 userType
             };
-            if (userType === 'student') {
+            if (userType === 'admin') {
+                payload.adminSecretKey = adminSecretKey;
+            } else {
                 payload.matricNumber = matricNumber;
                 payload.dateOfBirth = dateOfBirth;
                 payload.phone = phone;
@@ -378,7 +402,7 @@
             }
 
             try {
-                console.log('registerForm: Sending payload:', payload);
+                console.log('registerForm: Sending payload:', { ...payload, password: '[REDACTED]', adminSecretKey: '[REDACTED]' });
                 const data = await fetchWithRetry(`${API_URL}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -415,7 +439,17 @@
                     document.getElementById('email').classList.add('error');
                     showToast(errorMessage, 'error');
                 } else if (error.error?.code === 'DEADLINE_EXPIRED') {
-                    errorMessage = 'Registration is closed. The deadline has passed.';
+                    errorMessage = 'The Adem Baba Hostel has closed the page for booking hostel.';
+                    showToast(errorMessage, 'error');
+                } else if (error.error?.code === 'INVALID_ADMIN_KEY') {
+                    errorMessage = 'Invalid admin secret key';
+                    document.getElementById('adminSecretKey-error').textContent = errorMessage;
+                    document.getElementById('adminSecretKey').classList.add('error');
+                    showToast(errorMessage, 'error');
+                } else if (error.error?.code === 'ADMIN_LIMIT_EXCEEDED') {
+                    errorMessage = 'Maximum number of admin accounts reached';
+                    document.getElementById('adminSecretKey-error').textContent = errorMessage;
+                    document.getElementById('adminSecretKey').classList.add('error');
                     showToast(errorMessage, 'error');
                 } else {
                     showToast(errorMessage, 'error');

@@ -33,7 +33,8 @@ const requiredEnv = [
     'GMAIL_PASS',
     'CLOUDINARY_CLOUD_NAME',
     'CLOUDINARY_API_KEY',
-    'CLOUDINARY_API_SECRET'
+    'CLOUDINARY_API_SECRET',
+    'ADMIN_SECRET_KEY'
 ];
 for (const env of requiredEnv) {
     if (!process.env[env]) {
@@ -100,7 +101,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true,
-        match:  [/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/, 'Invalid matric number format (e.g., 23/208CSE/786)'],
+        match: [/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/, 'Invalid matric number format (e.g., 23/208CSE/786)'],
         required: function () { return this.userType === 'student'; }
     },
     phone: {
@@ -351,7 +352,6 @@ app.get('/api/protected', verifyToken, async (req, res) => {
     }
 });
 
-// Updated Register Route with Deadline Check
 app.post(
     '/api/register',
     [
@@ -359,10 +359,13 @@ app.post(
         body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
         body('name').trim().notEmpty().withMessage('Name is required'),
         body('userType').isIn(['admin', 'student']).withMessage('Invalid user type'),
+        body('adminSecretKey')
+            .if(body('userType').equals('admin'))
+            .notEmpty().withMessage('Admin secret key is required for admin registration'),
         body('matricNumber')
             .if(body('userType').equals('student'))
             .notEmpty().withMessage('Matric number is required for students')
-            .matches(/^[A-Z0-9]+$/).withMessage('Invalid matric number format'),
+            .matches(/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/).withMessage('Invalid matric number format (e.g., 23/208CSE/786)'),
         body('phone')
             .if(body('userType').equals('student'))
             .notEmpty().withMessage('Phone number is required for students')
@@ -386,7 +389,7 @@ app.post(
             .trim().notEmpty().withMessage('Faculty is required for students'),
         body('level')
             .if(body('userType').equals('student'))
-            .isIn(['100', '200', '300', '400', '500']).withMessage('Invalid level'),
+            .matches(/^(100|200|300|400|500|600|700)level$/).withMessage('Invalid level (e.g., 400level)'),
         body('department')
             .if(body('userType').equals('student'))
             .trim().notEmpty().withMessage('Department is required for students'),
@@ -398,26 +401,57 @@ app.post(
                 return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
             }
 
-            // Check registration deadline first
-            const deadline = await RegistrationDeadline.findOne();
-            const now = new Date();
+            const { email, password, userType, name, adminSecretKey, matricNumber, phone, gender, dateOfBirth, faculty, level, department } = req.body;
 
-            if (req.body.userType === 'student') {
+            // Check registration deadline for students
+            if (userType === 'student') {
+                const deadline = await RegistrationDeadline.findOne();
+                const now = new Date();
+
                 if (deadline) {
-                    const currentDeadline = deadline.extended ? deadline.extendedDeadline : deadline.deadline;
+                    const currentDeadline = deadline.extended && deadline.extendedDeadline ? deadline.extendedDeadline : deadline.deadline;
                     if (now > currentDeadline) {
-                        return res.status(400).json({
+                        return res.status(403).json({
                             error: {
-                                message: 'Registration is closed. The deadline has passed.',
+                                message: 'The Adem Baba Hostel has closed the page for booking hostel.',
                                 code: 'REGISTRATION_CLOSED',
                                 deadline: currentDeadline
                             }
                         });
                     }
+                } else {
+                    return res.status(403).json({
+                        error: {
+                            message: 'The Adem Baba Hostel has closed the page for booking hostel.',
+                            code: 'NO_DEADLINE_SET'
+                        }
+                    });
                 }
             }
 
-            const { email, password, userType, name, matricNumber, phone, gender, dateOfBirth, faculty, level, department } = req.body;
+            // Admin-specific checks
+            if (userType === 'admin') {
+                // Verify admin secret key
+                if (adminSecretKey !== process.env.ADMIN_SECRET_KEY) {
+                    return res.status(403).json({
+                        error: {
+                            message: 'Invalid admin secret key. Admin registration is restricted.',
+                            code: 'INVALID_ADMIN_KEY'
+                        }
+                    });
+                }
+
+                // Check admin count
+                const adminCount = await User.countDocuments({ userType: 'admin' });
+                if (adminCount >= 2) {
+                    return res.status(403).json({
+                        error: {
+                            message: 'Maximum number of admin accounts (2) has been reached.',
+                            code: 'ADMIN_LIMIT_EXCEEDED'
+                        }
+                    });
+                }
+            }
 
             const existingUser = await User.findOne({ $or: [{ email }, { matricNumber: matricNumber || null }] });
             if (existingUser) {
@@ -462,7 +496,6 @@ app.post(
     </div>
     `
                         );
-
                     }
                 }
             } else {
@@ -480,8 +513,7 @@ app.post(
         <p style="font-size: 12px; color: #666;">If you have any questions or need help getting started, feel free to contact support.</p>
     </div>
     `
-                )
-
+                );
             }
 
             res.status(201).json({ message: 'Registration successful.' });
@@ -594,7 +626,6 @@ app.post(
     }
 );
 
-// Login Route
 app.post(
     '/api/login',
     [
@@ -611,32 +642,69 @@ app.post(
             const { email, password } = req.body;
             const user = await User.findOne({ email }).select('+password');
             if (!user) {
+                console.log(`Login attempt with non-existent email: ${email}`);
                 return res.status(400).json({ error: { message: 'Invalid email', code: 'NOT_FOUND' } });
             }
 
-            if (user.status === 'Pending' && user.userType === 'student') {
-                return res.status(403).json({ error: { message: 'Account awaiting approval', code: 'PENDING' } });
+            // Admin-specific checks
+            if (user.userType === 'admin') {
+                // Verify admin count to ensure no more than two admins are active
+                const adminCount = await User.countDocuments({ userType: 'admin', status: 'Approved' });
+                if (adminCount > 2) {
+                    console.error(`Login attempt blocked: Too many admin accounts detected (count: ${adminCount})`);
+                    return res.status(403).json({
+                        error: {
+                            message: 'Login restricted: Maximum number of admin accounts exceeded. Contact support.',
+                            code: 'ADMIN_LIMIT_EXCEEDED'
+                        }
+                    });
+                }
+
+                // Ensure admin account is approved
+                if (user.status !== 'Approved') {
+                    console.log(`Admin login attempt with non-approved account: ${email}`);
+                    return res.status(403).json({
+                        error: {
+                            message: 'Admin account not approved. Contact support.',
+                            code: 'ADMIN_NOT_APPROVED'
+                        }
+                    });
+                }
+
+                // Log admin login attempt for auditing
+                console.log(`Admin login attempt: ${email} at ${new Date().toISOString()}`);
             }
 
-            if (user.status === 'Declined' && user.userType === 'student') {
-                return res.status(403).json({ error: { message: 'Account declined', code: 'DECLINED' } });
+            // Student-specific checks
+            if (user.userType === 'student') {
+                if (user.status === 'Pending') {
+                    return res.status(403).json({ error: { message: 'Account awaiting approval', code: 'PENDING' } });
+                }
+
+                if (user.status === 'Declined') {
+                    return res.status(403).json({ error: { message: 'Account declined', code: 'DECLINED' } });
+                }
+
+                if (!user.isVerified) {
+                    return res.status(403).json({ error: { message: 'Account not verified. Please verify your OTP.', code: 'NOT_VERIFIED' } });
+                }
             }
 
-            if (user.userType === 'student' && !user.isVerified) {
-                return res.status(403).json({ error: { message: 'Account not verified. Please verify your OTP.', code: 'NOT_VERIFIED' } });
-            }
-
+            // Verify password
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
+                console.log(`Invalid password attempt for: ${email}`);
                 return res.status(400).json({ error: { message: 'Invalid password', code: 'INVALID_CREDENTIALS' } });
             }
 
+            // Check payment status for students
             let needsPayment = false;
             if (user.userType === 'student') {
                 const paymentSlip = await PaymentSlip.findOne({ student: user._id, status: 'Approved' });
                 needsPayment = !paymentSlip;
             }
 
+            // Generate JWT token
             const token = generateToken(user);
             res.json({
                 message: 'Login successful',
@@ -644,9 +712,11 @@ app.post(
                 user: { id: user._id, name: user.name, email: user.email, userType: user.userType },
                 needsPayment,
             });
+
+            console.log(`Successful login: ${email} (${user.userType}) at ${new Date().toISOString()}`);
         } catch (error) {
             console.error('❌ Login Error:', error);
-            res.status(500).json({ error: { message: 'Server error during login', code: 'SERVER_ERROR' } });
+            res.status(500).json({ error: { message: 'Server error during login', code: 'SERVER_ERROR', details: error.message } });
         }
     }
 );
@@ -1080,7 +1150,7 @@ app.post(
                 'Adem Baba – Payment Slip Rejected',
                 `Hello ${paymentSlip.student.name}, your payment slip for ₦${paymentSlip.amount.toLocaleString()} has been reviewed and unfortunately, it was rejected. Please upload a valid payment slip to proceed.`,
                 `
-    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+    <div style="font-family: Arial, sans-serif; color: #c0392b; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
         <h2 style="color: #c0392b;">⚠️ Payment Slip Rejected</h2>
         <p>Hi <strong>${paymentSlip.student.name}</strong>,</p>
         <p>We’ve reviewed your payment slip for <strong>₦${paymentSlip.amount.toLocaleString()}</strong> and found it to be invalid or unclear.</p>
@@ -1138,7 +1208,7 @@ app.get(
 app.get('/api/student/payment-slips', verifyToken, isStudent, async (req, res) => {
     try {
         const paymentSlips = await PaymentSlip.find({ student: req.user.id })
-            .select('amount status createdAt filePath')
+            .select('amount status createdAt fileUrl')
             .lean();
         res.json(paymentSlips);
     } catch (error) {
@@ -1261,7 +1331,7 @@ app.post(
                 'Adem Baba – Registration Declined',
                 `Hello ${student.name}, we regret to inform you that your registration request has been declined. We appreciate your interest in Adem Baba Hostel and wish you all the best.`,
                 `
-    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+    <div style="font-family: Arial, sans-serif; color: #c0392b; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
         <h2 style="color: #c0392b;">🚫 Registration Declined</h2>
         <p>Hi <strong>${student.name}</strong>,</p>
         <p>Thank you for your interest in Adem Baba Hostel.</p>
@@ -1299,63 +1369,59 @@ app.post(
                 return res.status(404).json({ error: { message: 'Email not found', code: 'NOT_FOUND' } });
             }
 
-            const resetToken = crypto.randomBytes(20).toString('hex');
-            // Update only specific fields to avoid unintended changes
-            await User.updateOne(
-                { _id: user._id },
-                {
-                    $set: {
-                        resetPasswordToken: resetToken,
-                        resetPasswordExpires: Date.now() + 3600000 // 1 hour
+            // Only generate new token if none exists or existing one is expired
+            if (!user.resetPasswordToken || user.resetPasswordExpires < Date.now()) {
+                const resetToken = crypto.randomBytes(32).toString('hex');
+                await User.updateOne(
+                    { _id: user._id },
+                    {
+                        $set: {
+                            resetPasswordToken: resetToken,
+                            resetPasswordExpires: Date.now() + 3600000 // 1 hour
+                        }
                     }
-                }
-            );
+                );
 
-            const resetUrl = `http://127.0.0.1:5500/login-form/reset-password.html?token=${resetToken}`;
-            await sendEmail(
-                email,
-                'Adem Baba – Password Reset Instructions',
-                `Hello, you requested to reset the password for your Adem Baba account. \
-Use the link below to choose a new password:\n${resetUrl}\n\n\
+                const resetUrl = `http://127.0.0.1:5500/login-form/reset-password.html?token=${resetToken}`;
+                await sendEmail(
+                    email,
+                    'Adem Baba – Password Reset Instructions',
+                    `Hello, you requested to reset the password for your Adem Baba account. Use the link below to choose a new password:\n${resetUrl}\n\n\
 This link will expire in 1 hour for your security. \
 If you did not request this reset, please ignore this message.`,
-                `
-    <div style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:auto; padding:20px; border:1px solid #e2e2e2; border-radius:8px;">
-        <h2 style="color:#232f3e;">🔑 Password Reset Request</h2>
+                    `
+<div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+<h2 style="color: #232f3e;">🔑 Password Reset Request</h2>
+<p>You recently requested to reset your password for your Adem Baba account.</p>
+<p>Click the button below to set a new password:</p>
+<p style="text-align:center;">
+<a href="${resetUrl}"
+style="display:inline-block; background-color:#0073bb; color:#fff;
+padding:12px 24px; border-radius:6px; text-decoration:none;
+font-weight:bold;">
+Reset Password
+</a>
+</p>
+<p>This link will expire in <strong>1&nbsp;hour</strong>.</p>
+<hr style="margin:20px 0;" />
+<p style="font-size:12px; color:#666;">
+If you did not request this reset, please ignore this email or contact support.
+</p>
+</div>`
+                );
+                console.log('Reset email sent:', { email, resetUrl });
+            }
 
-        <p>You recently requested to reset your password for your Adem Baba account.</p>
-
-        <p>Click the button below to set a new password:</p>
-
-        <p style="text-align:center;">
-            <a href="${resetUrl}"
-               style="display:inline-block; background-color:#0073bb; color:#fff;
-                      padding:12px 24px; border-radius:6px; text-decoration:none;
-                      font-weight:bold;">
-                Reset Password
-            </a>
-        </p>
-
-        <p>This link will expire in <strong>1&nbsp;hour</strong>.</p>
-
-        <hr style="margin:20px 0;" />
-
-        <p style="font-size:12px; color:#666;">
-            If you did not request this reset, please ignore this email or contact support.
-        </p>
-    </div>
-    `
-            );
-
-
-            console.log('Reset email sent:', { email, resetUrl });
             res.json({ message: 'Password reset email sent. Check your email.' });
+
         } catch (error) {
             console.error('❌ Forgot Password Error:', error);
             res.status(500).json({ error: { message: 'Failed to send reset link', code: 'SERVER_ERROR' } });
         }
     }
 );
+
+
 
 // Reset Password Route
 app.post(
@@ -1364,58 +1430,61 @@ app.post(
         body('token').notEmpty().withMessage('Reset token is required'),
         body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     ],
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
-            }
-
-            const { token, password } = req.body;
-            const user = await User.findOne({
-                resetPasswordToken: token,
-                resetPasswordExpires: { $gt: Date.now() },
-            });
-
-            if (!user) {
-                return res.status(400).json({ error: { message: 'Invalid or expired reset token', code: 'INVALID_TOKEN' } });
-            }
-
-            user.password = await hashing(password);
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
-            await user.save();
-
-            await sendEmail(
-                user.email,
-                'Adem Baba – Password Reset Successful',
-                `Hello ${user.name}, your password has been successfully reset. You can now log in using your new password. If you did not perform this action, please contact support immediately.`,
-                `
-    <div style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:auto; padding:20px; border:1px solid #e2e2e2; border-radius:8px;">
-        <h2 style="color:#232f3e;">✅ Password Reset Successful</h2>
-
-        <p>Hi <strong>${user.name}</strong>,</p>
-
-        <p>Your password has been successfully reset.</p>
-
-        <p>You can now log in to your Adem Baba account using your new credentials.</p>
-
-        <hr style="margin:20px 0;" />
-
-        <p style="font-size:12px; color:#666;">
-            If you did not request this change, please contact support immediately to secure your account.
-        </p>
-    </div>
-    `
-            );
-
-
-            res.json({ message: 'Password reset successful' });
-        } catch (error) {
-            console.error('❌ Reset Password Error:', error);
-            res.status(500).json({ error: { message: 'Failed to reset password', code: 'SERVER_ERROR' } });
+async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
         }
+
+        const { token, password } = req.body;
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() },
+        }).select('+password');
+
+        if (!user) {
+            return res.status(400).json({ error: { message: 'Invalid or expired reset token', code: 'INVALID_TOKEN' } });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+        // Update user document using updateOne to ensure atomic update
+        await User.updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    password: hashedPassword,
+                    resetPasswordToken: null,
+                    resetPasswordExpires: null
+                }
+            }
+        );
+
+        // Send confirmation email
+        await sendEmail(
+            user.email,
+            'Adem Baba – Password Reset Successful',
+            `Hello ${user.name}, your password has been successfully reset. You can now log in using your new password. If you did not perform this action, please contact support immediately.`,
+            `
+                <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+                    <h2 style="color: #232f3e;">✅ Password Reset Successful</h2>
+                    <p>Hi <strong>${user.name}</strong>,</p>
+                    <p>Your password has been successfully reset.</p>
+                    <p>You can now log in to your Adem Baba account using your new credentials.</p>
+                    <hr style="margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #666;">If you did not perform this action, please contact support immediately to secure your account.</p>
+                </div>
+                `
+        );
+
+        res.json({ message: 'Password reset successful' });
+    } catch (error) {
+        console.error('❌ Reset Password Error:', error);
+        res.status(500).json({ error: { message: 'Failed to reset password', code: 'SERVER_ERROR', details: error.message } });
     }
+}
 );
 
 // Add Student (Admin)
@@ -1528,10 +1597,9 @@ app.put(
             res.json({ message: 'Student updated successfully' });
         } catch (error) {
             console.error('❌ Update Student Error:', error);
-            res.status(500).json({ error: { message: 'Failed to update student', code: 'SERVER_ERROR' } });
+            res.status(500).json
         }
-    }
-);
+    });
 
 // Delete Student (Admin)
 app.delete(
@@ -2391,7 +2459,7 @@ app.post(
             const user = await User.findOne({
                 resetPasswordToken: token,
                 resetPasswordExpires: { $gt: Date.now() },
-            });
+            }).select('+password');
 
             if (!user) {
                 console.log('Invalid or expired reset token:', token);
@@ -2401,16 +2469,21 @@ app.post(
             console.log('User found:', user.email);
 
             // Hash the new password
-            const hashedPassword = await hashing(password);
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
             console.log('Password hashed successfully');
 
-            // Update user document
-            user.password = hashedPassword;
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
+            // Update user document with new password and clear reset fields
+            await User.updateOne(
+                { _id: user._id },
+                {
+                    $set: {
+                        password: hashedPassword,
+                        resetPasswordToken: null,
+                        resetPasswordExpires: null
+                    }
+                }
+            );
 
-            // Save the user document
-            await user.save();
             console.log('User password updated successfully for:', user.email);
 
             // Send confirmation email
@@ -2609,212 +2682,212 @@ app.post('/api/notifications/:id/read', verifyToken, async (req, res) => {
 /* Serrings page */
 // Check authentication (admin only)
 app.get('/auth/check', verifyToken, isAdmin, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            notifications: user.notifications,
+            security: user.security,
+            preferences: user.preferences,
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
     }
-    res.json({
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      notifications: user.notifications,
-      security: user.security,
-      preferences: user.preferences,
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
 });
 
 // Update profile (name, email, avatar) (admin only)
 app.put(
-  '/profile',
-  verifyToken, isAdmin,
-  [
-    body('name').trim().notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Invalid email format'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { name, email } = req.body;
-
-    try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      // Check if email is already in use by another user
-      if (email !== user.email) {
-        const emailExists = await User.findOne({ email });
-        if (emailExists) {
-          return res.status(400).json({ message: 'Email already in use' });
+    '/profile',
+    verifyToken, isAdmin,
+    [
+        body('name').trim().notEmpty().withMessage('Name is required'),
+        body('email').isEmail().withMessage('Invalid email format'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
-      }
 
-      user.name = name || user.name;
-      user.email = email || user.email;
+        const { name, email } = req.body;
 
-      // Handle profile picture upload
-      if (req.files && req.files.avatar) {
-        const file = req.files.avatar;
-        const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-          folder: 'profile_pictures',
-        });
-        user.avatar = uploadResult.secure_url;
-      }
+        try {
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
 
-      await user.save();
+            // Check if email is already in use by another user
+            if (email !== user.email) {
+                const emailExists = await User.findOne({ email });
+                if (emailExists) {
+                    return res.status(400).json({ message: 'Email already in use' });
+                }
+            }
 
-      // Send email notification for profile update
-      await sendEmail({
-        to: user.email,
-        subject: 'Profile Updated',
-        text: `Hello ${user.name}, your profile has been successfully updated.`,
-      });
+            user.name = name || user.name;
+            user.email = email || user.email;
 
-      res.json({ message: 'Profile updated successfully', user: { name: user.name, email: user.email, avatar: user.avatar } });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
+            // Handle profile picture upload
+            if (req.files && req.files.avatar) {
+                const file = req.files.avatar;
+                const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+                    folder: 'profile_pictures',
+                });
+                user.avatar = uploadResult.secure_url;
+            }
+
+            await user.save();
+
+            // Send email notification for profile update
+            await sendEmail({
+                to: user.email,
+                subject: 'Profile Updated',
+                text: `Hello ${user.name}, your profile has been successfully updated.`,
+            });
+
+            res.json({ message: 'Profile updated successfully', user: { name: user.name, email: user.email, avatar: user.avatar } });
+        } catch (error) {
+            res.status(500).json({ message: 'Server error' });
+        }
     }
-  }
 );
 
 // Update notification preferences (admin only)
 app.put(
-  '/notifications',
-  verifyToken, isAdmin,
-  [
-    body('emailNotifications').isBoolean().withMessage('Invalid email notifications setting'),
-    body('newStudentNotifications').isBoolean().withMessage('Invalid new student notifications setting'),
-    body('maintenanceNotifications').isBoolean().withMessage('Invalid maintenance notifications setting'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    '/notifications',
+    verifyToken, isAdmin,
+    [
+        body('emailNotifications').isBoolean().withMessage('Invalid email notifications setting'),
+        body('newStudentNotifications').isBoolean().withMessage('Invalid new student notifications setting'),
+        body('maintenanceNotifications').isBoolean().withMessage('Invalid maintenance notifications setting'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { emailNotifications, newStudentNotifications, maintenanceNotifications } = req.body;
+
+        try {
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            user.notifications = {
+                email: emailNotifications,
+                newStudent: newStudentNotifications,
+                maintenance: maintenanceNotifications,
+            };
+
+            await user.save();
+
+            // Send confirmation email if email notifications are enabled
+            if (emailNotifications) {
+                await sendEmail({
+                    to: user.email,
+                    subject: 'Notification Preferences Updated',
+                    text: `Hello ${user.name}, your notification preferences have been updated.`,
+                });
+            }
+
+            res.json({ message: 'Notification preferences saved' });
+        } catch (error) {
+            res.status(500).json({ message: 'Server error' });
+        }
     }
-
-    const { emailNotifications, newStudentNotifications, maintenanceNotifications } = req.body;
-
-    try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      user.notifications = {
-        email: emailNotifications,
-        newStudent: newStudentNotifications,
-        maintenance: maintenanceNotifications,
-      };
-
-      await user.save();
-
-      // Send confirmation email if email notifications are enabled
-      if (emailNotifications) {
-        await sendEmail({
-          to: user.email,
-          subject: 'Notification Preferences Updated',
-          text: `Hello ${user.name}, your notification preferences have been updated.`,
-        });
-      }
-
-      res.json({ message: 'Notification preferences saved' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  }
 );
 
 // Update security settings (password, 2FA) (admin only)
 app.put(
-  '/security',
-  verifyToken, isAdmin,
-  [
-    body('currentPassword').notEmpty().withMessage('Current password is required'),
-    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
-    body('twoFactorAuth').isBoolean().withMessage('Invalid 2FA setting'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    '/security',
+    verifyToken, isAdmin,
+    [
+        body('currentPassword').notEmpty().withMessage('Current password is required'),
+        body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+        body('twoFactorAuth').isBoolean().withMessage('Invalid 2FA setting'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { currentPassword, newPassword, twoFactorAuth } = req.body;
+
+        try {
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            // Verify current password
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Current password is incorrect' });
+            }
+
+            // Update password if provided
+            if (newPassword) {
+                user.password = await bcrypt.hash(newPassword, 10);
+            }
+
+            // Update 2FA setting
+            user.security = { ...user.security, twoFactorAuth };
+
+            await user.save();
+
+            // Send email notification for security update
+            await sendEmail({
+                to: user.email,
+                subject: 'Security Settings Updated',
+                text: `Hello ${user.name}, your security settings have been updated. Two-factor authentication is now ${twoFactorAuth ? 'enabled' : 'disabled'}.`,
+            });
+
+            res.json({ message: 'Security settings updated' });
+        } catch (error) {
+            res.status(500).json({ message: 'Server error' });
+        }
     }
-
-    const { currentPassword, newPassword, twoFactorAuth } = req.body;
-
-    try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      // Verify current password
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Current password is incorrect' });
-      }
-
-      // Update password if provided
-      if (newPassword) {
-        user.password = await bcrypt.hash(newPassword, 10);
-      }
-
-      // Update 2FA setting
-      user.security = { ...user.security, twoFactorAuth };
-
-      await user.save();
-
-      // Send email notification for security update
-      await sendEmail({
-        to: user.email,
-        subject: 'Security Settings Updated',
-        text: `Hello ${user.name}, your security settings have been updated. Two-factor authentication is now ${twoFactorAuth ? 'enabled' : 'disabled'}.`,
-      });
-
-      res.json({ message: 'Security settings updated' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  }
 );
 
 // Update system preferences (language, timezone) (admin only)
 app.put(
-  '/system',
-  verifyToken, isAdmin,
-  [
-    body('language').isIn(['en', 'fr', 'es']).withMessage('Invalid language'),
-    body('timezone').isIn(['GMT+0', 'GMT+1', 'GMT+2']).withMessage('Invalid timezone'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    '/system',
+    verifyToken, isAdmin,
+    [
+        body('language').isIn(['en', 'fr', 'es']).withMessage('Invalid language'),
+        body('timezone').isIn(['GMT+0', 'GMT+1', 'GMT+2']).withMessage('Invalid timezone'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { language, timezone } = req.body;
+
+        try {
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            user.preferences = { language, timezone };
+            await user.save();
+
+            res.json({ message: 'System preferences saved' });
+        } catch (error) {
+            res.status(500).json({ message: 'Server error' });
+        }
     }
-
-    const { language, timezone } = req.body;
-
-    try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      user.preferences = { language, timezone };
-      await user.save();
-
-      res.json({ message: 'System preferences saved' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  }
 );
 
 

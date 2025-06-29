@@ -141,7 +141,7 @@
             submitButton.querySelector('span').textContent = 'Sending...';
 
             if (!emailRegex.test(email)) {
-                showToast('Please enter a valid email (e.g., compute.sec.210@gmail.com)', 'error');
+                showToast('Please enter a valid email (e.g., user@example.com)', 'error');
                 document.getElementById('resetEmail-error').textContent = 'Invalid email format';
                 document.getElementById('resetEmail').setAttribute('aria-invalid', 'true');
                 submitButton.disabled = false;
@@ -200,7 +200,7 @@
 
             const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
             if (!emailRegex.test(email)) {
-                showToast('Please enter a valid email (e.g., compute.sec.210@gmail.com)', 'error');
+                showToast('Please enter a valid email (e.g., user@example.com)', 'error');
                 document.getElementById('email-error').textContent = 'Invalid email format';
                 document.getElementById('email').setAttribute('aria-invalid', 'true');
                 submitButton.disabled = false;
@@ -261,6 +261,14 @@
                 } else if (code === 'VALIDATION_ERROR') {
                     showToast('Invalid email or password.', 'error');
                     document.getElementById('email-error').textContent = 'Invalid email or password';
+                } else if (code === 'ADMIN_LIMIT_EXCEEDED') {
+                    showToast('Login restricted: Maximum number of admin accounts exceeded. Contact support.', 'error');
+                    document.getElementById('email-error').textContent = 'Admin login restricted';
+                    document.getElementById('email').setAttribute('aria-invalid', 'true');
+                } else if (code === 'ADMIN_NOT_APPROVED') {
+                    showToast('Admin account not approved. Contact support.', 'error');
+                    document.getElementById('email-error').textContent = 'Admin account not approved';
+                    document.getElementById('email').setAttribute('aria-invalid', 'true');
                 } else {
                     showToast(message, 'error');
                 }
