@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -7,166 +7,500 @@
     <title>Adem Baba - Settings</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/login-form/style.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
-    <!-- Add this inside the <head> tag of settings.html -->
     <style>
-        body {
-            font-family: 'Poppins', Arial, sans-serif;
-            background: linear-gradient(135deg, #232526 0%, #414345 100%);
-            color: #f5f6fa;
+        /* Common Variables */
+        :root {
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #f44336;
+            --transition: all 0.3s ease;
+        }
+
+        html[data-theme="light"] {
+            --primary-color: #8b6346;
+            --primary-dark: #3d2e23;
+            --text-color: #333333;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --background-color: #f5f5f5;
+            --card-background: #ffffff;
+            --input-background: rgba(0, 0, 0, 0.05);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-background: #ffffff;
+        }
+
+        html[data-theme="dark"] {
+            --primary-color: #8b6346;
+            --primary-dark: #3d2e23;
+            --text-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #1a1a1a;
+            --card-background: rgba(255, 255, 255, 0.03);
+            --input-background: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            --sidebar-background: #121212;
+        }
+
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
             min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
         }
 
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: var(--background-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loader {
+            border: 4px solid var(--text-muted);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Improved Sidebar */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: var(--sidebar-background);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding: 0.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Improved Main Content */
         .main-content {
-            background: transparent;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+            width: calc(100% - 280px);
         }
 
-        .settings-container {
-            background: rgba(34, 40, 49, 0.95);
-            border-radius: 18px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
-            padding: 2.5rem 2rem 2rem 2rem;
-            max-width: 480px;
-            margin: 2.5rem auto 0 auto;
-            border: 1.5px solid rgba(255, 255, 255, 0.08);
+        /* Enhanced Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--card-background);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+            backdrop-filter: blur(10px);
         }
 
-        .settings-container h2 {
+        .page-title {
             font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1.2rem;
-            background: linear-gradient(90deg, #ffb347 0%, #ffcc33 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: var(--input-background);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notifications {
+            position: relative;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.5rem;
+            height: 3.5rem;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Settings Navigation */
+        .settings-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--card-background);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .settings-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .settings-nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .settings-nav-btn:hover:not(.active) {
+            background: var(--input-background);
+        }
+
+        /* Settings Sections */
+        .settings-section {
+            display: none;
+        }
+
+        .settings-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .settings-card {
+            background: var(--card-background);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-title {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             position: relative;
-            margin-bottom: 1.7rem;
-        }
-
-        .form-group input[type="text"],
-        .form-group input[type="email"],
-        .form-group input[type="password"] {
-            width: 100%;
-            padding: 0.85rem 1rem;
-            border: none;
-            border-radius: 8px;
-            background: #23272f;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            transition: box-shadow 0.2s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        .form-group input[type="text"]:focus,
-        .form-group input[type="email"]:focus,
-        .form-group input[type="password"]:focus {
-            box-shadow: 0 0 0 2px #ffcc33;
-            background: #23272f;
         }
 
         .form-group label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .settings-input {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .profile-upload {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .upload-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--input-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--text-muted);
+        }
+
+        .upload-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--input-background);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .save-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            align-self: flex-start;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toggle-label h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .toggle-label p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
             position: absolute;
-            left: 1rem;
-            top: 0.7rem;
-            color: #bbb;
-            font-size: 0.98rem;
-            pointer-events: none;
-            transition: 0.2s;
-            background: transparent;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--input-background);
+            transition: .4s;
+            border-radius: 34px;
         }
 
-        .form-group input:focus+label,
-        .form-group input:not(:placeholder-shown)+label {
-            top: -1.1rem;
-            left: 0.7rem;
-            font-size: 0.85rem;
-            color: #ffcc33;
-            background: #222831;
-            padding: 0 0.3rem;
-            border-radius: 4px;
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
         }
 
-        .form-group .toggle-password {
+        .toggle input:checked+.toggle-slider {
+            background-color: var(--primary-color);
+        }
+
+        .toggle input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Password Toggle */
+        .toggle-password {
             position: absolute;
             right: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #888;
+            color: var(--text-muted);
             cursor: pointer;
             font-size: 1.1rem;
-            transition: color 0.2s;
+            transition: var(--transition);
         }
 
-        .form-group .toggle-password:hover {
-            color: #ffcc33;
+        .toggle-password:hover {
+            color: var(--primary-color);
         }
 
-        .add-button {
-            width: 100%;
-            padding: 0.9rem 0;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(90deg, #ffb347 0%, #ffcc33 100%);
-            color: #232526;
-            font-weight: 700;
-            font-size: 1.08rem;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            margin-top: 0.5rem;
-            box-shadow: 0 2px 8px rgba(255, 204, 51, 0.08);
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .add-button:hover {
-            background: linear-gradient(90deg, #ffcc33 0%, #ffb347 100%);
-            color: #222831;
-        }
-
-        /* Notification checkboxes */
-        .form-group label span {
-            margin-left: 0.7rem;
-            color: #f5f6fa;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .form-group input[type="checkbox"] {
-            accent-color: #ffcc33;
-            width: 1.1rem;
-            height: 1.1rem;
-            vertical-align: middle;
-        }
-
-        /* Toast notification */
-        #toast.custom-toast {
+        /* Toast Notification */
+        #toast {
             position: fixed;
-            bottom: 2.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            min-width: 220px;
-            max-width: 340px;
-            background: linear-gradient(90deg, #ffb347 0%, #ffcc33 100%);
-            color: #232526;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            box-shadow: 0 4px 24px rgba(255, 204, 51, 0.18);
-            z-index: 9999;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--card-background);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: var(--text-color);
+            box-shadow: var(--shadow);
             display: none;
-            text-align: center;
-            letter-spacing: 0.2px;
+            z-index: 1000;
+            max-width: 300px;
+            border-left: 5px solid transparent;
         }
 
-        #toast.custom-toast.show {
+        #toast.success {
+            border-left-color: var(--success-color);
+        }
+
+        #toast.error {
+            border-left-color: var(--danger-color);
+        }
+
+        #toast.show {
             display: block;
             animation: fadeInUp 0.4s;
         }
@@ -174,133 +508,383 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translate(-50%, 40px);
+                transform: translateY(40px);
             }
 
             to {
                 opacity: 1;
-                transform: translate(-50%, 0);
+                transform: translateY(0);
             }
         }
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            .settings-container {
-                padding: 1.2rem 0.7rem 1.5rem 0.7rem;
-                max-width: 98vw;
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.8rem;
+            color: var(--text-color);
+            margin-right: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
             }
 
             .main-content {
-                padding: 0;
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .settings-nav {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .settings-card {
+                padding: 1.5rem;
+            }
+
+            .profile-upload {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .save-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .toggle-group {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+        }
+
+        /* Animation for tab switching */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
 </head>
 
 <body>
-    <div id="loading">Loading...</div>
-    <div id="app" style="display: none;">
-        <div class="sidebar">
-            <div class="brand logo">
-                <div class="logo-container logo-icon">
-                    <i class="fas fa-coffee"></i>
-                </div>
-                <h1>Adem Baba</h1>
-            </div>
-            <nav class="nav-links">
-                <a href="./index.html" class="active nav-link"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="./rooms.html" class="nav-link"><i class="fas fa-door-open"></i> Rooms</a>
-                <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
-                <a href="./schedule.html" class="nav-link"><i class="fas fa-calendar"></i> Schedule</a>
-                <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
-                <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
-                <a href="../../login-form/index.html" class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </nav>
-        </div>
-        <div class="main-content">
-            <header>
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search disabled" aria-label="Search settings"
-                        disabled title="Search is not available on the settings page">
-                    <i class="fas fa-search"></i>
-                </div>
-                <div class="user-info">
-                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-details">
-                        <h4 id="userName">Admin User</h4>
-                        <p>Admin</p>
-                    </div>
-                    <div class="user-icon">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                </div>
-            </header>
-            <div class="content">
-                <div class="settings-container">
-                    <h2>Profile Settings</h2>
-                    <form id="profileForm">
-                        <div class="form-group">
-                            <input type="text" id="profileName" required aria-label="Full name">
-                            <label for="profileName">Full Name</label>
-                            <span class="focus-border"></span>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" id="profileEmail" required aria-label="Email">
-                            <label for="profileEmail">Email</label>
-                            <span class="focus-border"></span>
-                        </div>
-                        <div class="form-group">
-                            <input type="password" id="profilePassword" aria-label="New password">
-                            <label for="profilePassword">New Password</label>
-                            <span class="focus-border"></span>
-                            <i id="togglePassword" class="fas fa-eye-slash toggle-password" role="button"
-                                aria-label="Toggle password visibility"></i>
-                        </div>
-                        <button type="submit" class="add-button">Update Profile</button>
-                    </form>
-
-                    <h2>Notification Settings</h2>
-                    <form id="notificationForm">
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="emailNotifications" aria-label="Email notifications">
-                                <span>Email Notifications</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="newStudentNotifications"
-                                    aria-label="New student notifications">
-                                <span>New Student Notifications</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="maintenanceNotifications"
-                                    aria-label="Maintenance notifications">
-                                <span>Maintenance Notifications</span>
-                            </label>
-                        </div>
-                        <button type="submit" class="add-button">Update Notifications</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <div id="loading">
+        <div class="loader"></div>
     </div>
 
-    <div id="toast" class="custom-toast"></div>
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-coffee"></i>
+            </div>
+            <h2>Adem Baba</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="/admin/index.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/links/student.html" class="nav-link">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </a>
+            <a href="/admin/links/rooms.html" class="nav-link">
+                <i class="fas fa-bed"></i>
+                <span>Rooms</span>
+            </a>
+            <a href="/admin/links/schedule.html" class="nav-link">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Schedule</span>
+            </a>
+            <a href="/admin/links/payment.html" class="nav-link">
+                <i class="fas fa-coins"></i>
+                <span>Payments</span>
+            </a>
+            <a href="/admin/links/settings.html" class="nav-link active">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+            <h1 class="page-title">Settings</h1>
+            <div class="user-profile">
+                <div class="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="user-avatar" id="userAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <h4 id="userName">Admin User</h4>
+                </div>
+            </div>
+        </header>
+
+        <!-- Settings Navigation -->
+        <div class="settings-nav">
+            <button class="settings-nav-btn active" data-tab="account">
+                <i class="fas fa-user-circle"></i> Account
+            </button>
+            <button class="settings-nav-btn" data-tab="notifications">
+                <i class="fas fa-bell"></i> Notifications
+            </button>
+            <button class="settings-nav-btn" data-tab="security">
+                <i class="fas fa-shield-alt"></i> Security
+            </button>
+            <button class="settings-nav-btn" data-tab="system">
+                <i class="fas fa-cog"></i> System
+            </button>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-content">
+            <!-- Account Settings -->
+            <div class="settings-section active" id="account">
+                <div class="settings-card">
+                    <h2 class="settings-title">Profile Information</h2>
+                    <form class="settings-form" id="profileForm">
+                        <div class="form-group">
+                            <label>Profile Picture</label>
+                            <div class="profile-upload">
+                                <div class="upload-preview" id="profilePreview">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <button type="button" class="upload-btn" id="uploadBtn">
+                                    <i class="fas fa-upload"></i> Upload New Picture
+                                </button>
+                                <input type="file" id="profileUpload" accept="image/*" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="profileName" class="settings-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="profileEmail" class="settings-input" required>
+                        </div>
+                        <button type="submit" class="save-btn">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Notifications Settings -->
+            <div class="settings-section" id="notifications">
+                <div class="settings-card">
+                    <h2 class="settings-title">Notification Preferences</h2>
+                    <form class="settings-form" id="notificationForm">
+                        <div class="toggle-group">
+                            <div class="toggle-label">
+                                <h3>Email Notifications</h3>
+                                <p>Receive notifications about payment updates</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="emailNotifications">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-group">
+                            <div class="toggle-label">
+                                <h3>New Student Notifications</h3>
+                                <p>Get alerts when new students register</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="newStudentNotifications">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-group">
+                            <div class="toggle-label">
+                                <h3>Maintenance Notifications</h3>
+                                <p>Receive alerts about system maintenance</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="maintenanceNotifications">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <button type="submit" class="save-btn">Save Preferences</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="settings-section" id="security">
+                <div class="settings-card">
+                    <h2 class="settings-title">Security Settings</h2>
+                    <form class="settings-form" id="securityForm">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPassword" class="settings-input" required>
+                            <i class="fas fa-eye-slash toggle-password" data-target="currentPassword"></i>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" class="settings-input" required>
+                            <i class="fas fa-eye-slash toggle-password" data-target="newPassword"></i>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="settings-input" required>
+                            <i class="fas fa-eye-slash toggle-password" data-target="confirmPassword"></i>
+                        </div>
+                        <div class="toggle-group">
+                            <div class="toggle-label">
+                                <h3>Two-Factor Authentication</h3>
+                                <p>Add an extra layer of security</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="twoFactorAuth">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <button type="submit" class="save-btn">Update Security Settings</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- System Settings -->
+            <div class="settings-section" id="system">
+                <div class="settings-card">
+                    <h2 class="settings-title">System Preferences</h2>
+                    <form class="settings-form" id="systemForm">
+                        <div class="form-group">
+                            <label>Language</label>
+                            <select class="settings-input" id="language">
+                                <option value="en">English</option>
+                                <option value="fr">French</option>
+                                <option value="es">Spanish</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Time Zone</label>
+                            <select class="settings-input" id="timezone">
+                                <option value="GMT+1">GMT+1 (West Africa Time)</option>
+                                <option value="GMT+0">GMT+0 (Greenwich Mean Time)</option>
+                                <option value="GMT+2">GMT+2 (Central Africa Time)</option>
+                            </select>
+                        </div>
+                        <div class="toggle-group">
+                            <div class="toggle-label">
+                                <h3>Dark Mode</h3>
+                                <p>Toggle between light and dark theme</p>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <button type="submit" class="save-btn">Save Preferences</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div id="toast"></div>
 
     <script type="module">
-        import { API_URL, LOGIN_PATH, showToast, togglePasswordVisibility, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
 
-        // Initialize password visibility toggle
-        togglePasswordVisibility('profilePassword', 'togglePassword');
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.querySelector('.sidebar');
+        const settingsNavBtns = document.querySelectorAll('.settings-nav-btn');
+        const settingsSections = document.querySelectorAll('.settings-section');
+        const themeToggle = document.getElementById('themeToggle');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const toast = document.getElementById('toast');
+        const profileForm = document.getElementById('profileForm');
+        const notificationForm = document.getElementById('notificationForm');
+        const securityForm = document.getElementById('securityForm');
+        const systemForm = document.getElementById('systemForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const profileUpload = document.getElementById('profileUpload');
+        const profilePreview = document.getElementById('profilePreview');
+        const userName = document.getElementById('userName');
+        const userType = document.getElementById('userType');
+        const userAvatar = document.getElementById('userAvatar');
+        const togglePasswordBtns = document.querySelectorAll('.toggle-password');
+        const logoutButton = document.getElementById('logoutButton');
 
+        // Initialize the app
+        async function initialize() {
+            const user = await checkAuth();
+            if (user) {
+                window.userType = user.userType; // Store user type globally
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+
+                // Load user data
+                loadUserData(user);
+
+                // Set theme based on preference
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                darkModeToggle.checked = savedTheme === 'dark';
+                themeToggle.querySelector('i').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+
+                // Restrict settings for non-admins
+                if (user.userType !== 'admin') {
+                    settingsNavBtns.forEach(btn => {
+                        if (['notifications', 'security', 'system'].includes(btn.dataset.tab)) {
+                            btn.style.display = 'none';
+                        }
+                    });
+                    settingsSections.forEach(section => {
+                        if (['notifications', 'security', 'system'].includes(section.id)) {
+                            section.style.display = 'none';
+                        }
+                    });
+                    showToast('Only admins can access notification, security, and system settings', 'info');
+                }
+            }
+        }
+
+        // Check authentication
         async function checkAuth() {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             if (!token) {
+                showToast('No token found. Please log in.', 'error');
                 window.location.href = LOGIN_PATH;
                 return null;
             }
@@ -310,130 +894,347 @@
                 });
                 return data.user;
             } catch (error) {
-                localStorage.removeItem('token');
-                sessionStorage.removeItem('token');
-                window.location.href = LOGIN_PATH;
+                let message = error.error?.message || error.message || 'Authentication failed';
+                if (error.status === 401) {
+                    message = 'Session expired. Please log in again.';
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else if (error.status === 403) {
+                    message = 'Access denied. Please log in as an admin.';
+                } else if (error.message.includes('network')) {
+                    message = 'Network error. Please check your connection.';
+                }
+                showToast(message, 'error');
                 return null;
             }
         }
 
-        async function fetchSettingsData() {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        // Load user data
+        async function loadUserData(user) {
             try {
-                const data = await fetchWithRetry(`${API_URL}/settings`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                document.getElementById('profileName').value = data.user.name || '';
-                document.getElementById('profileEmail').value = data.user.email || '';
-                document.getElementById('emailNotifications').checked = data.notifications.email || false;
-                document.getElementById('newStudentNotifications').checked = data.notifications.newStudent || false;
-                document.getElementById('maintenanceNotifications').checked = data.notifications.maintenance || false;
+                userName.textContent = sanitizeInput(user.name || 'User');
+                userType.textContent = sanitizeInput(user.userType.charAt(0).toUpperCase() + user.userType.slice(1) || 'Role');
+
+                // Load profile data
+                document.getElementById('profileName').value = sanitizeInput(user.name || '');
+                document.getElementById('profileEmail').value = sanitizeInput(user.email || '');
+
+                // Load notification preferences
+                if (user.settings && user.settings.notifications) {
+                    document.getElementById('emailNotifications').checked = user.settings.notifications.email || false;
+                    document.getElementById('newStudentNotifications').checked = user.settings.notifications.newStudent || false;
+                    document.getElementById('maintenanceNotifications').checked = user.settings.notifications.maintenance || false;
+                }
+
+                // Load security settings
+                if (user.security) {
+                    document.getElementById('twoFactorAuth').checked = user.security.twoFactorAuth || false;
+                }
+
+                // Load system preferences
+                if (user.preferences) {
+                    document.getElementById('language').value = user.preferences.language || 'en';
+                    document.getElementById('timezone').value = user.preferences.timezone || 'GMT+1';
+                }
+
+                // Set profile picture if available
+                if (user.avatar) {
+                    profilePreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = user.avatar;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    profilePreview.appendChild(img);
+
+                    userAvatar.innerHTML = '';
+                    const avatarImg = document.createElement('img');
+                    avatarImg.src = user.avatar;
+                    avatarImg.style.width = '100%';
+                    avatarImg.style.height = '100%';
+                    avatarImg.style.borderRadius = '50%';
+                    avatarImg.style.objectFit = 'cover';
+                    userAvatar.appendChild(avatarImg);
+                }
             } catch (error) {
-                showToast(error.message || 'Failed to load settings', 'error');
+                showToast('Failed to load user data', 'error');
             }
         }
 
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = sanitizeInput(document.getElementById('profileName').value.trim());
-            const email = sanitizeInput(document.getElementById('profileEmail').value.trim());
-            const password = document.getElementById('profilePassword').value;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        // Hamburger menu toggle
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
 
-            // Enhanced validation
-            if (!name || name.length < 2) {
-                showToast('Name must be at least 2 characters', 'error');
-                return;
-            }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showToast('Invalid email format', 'error');
-                return;
-            }
-            if (password && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
-                showToast('Password must be 8+ characters with uppercase, lowercase, and a number', 'error');
-                return;
-            }
+        // Logout functionality
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        });
 
-            try {
-                const payload = { name, email };
-                if (password) payload.password = password;
-                const data = await fetchWithRetry(`${API_URL}/settings/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    sessionStorage.setItem('token', data.token);
+        // Settings navigation
+        settingsNavBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.userType !== 'admin' && ['notifications', 'security', 'system'].includes(btn.dataset.tab)) {
+                    showToast('Only admins can access this section', 'error');
+                    return;
                 }
-                // Update header name
-                document.getElementById('userName').textContent = name || 'Admin User';
-                showToast('Profile updated successfully', 'success');
-                document.getElementById('profilePassword').value = ''; // Clear password field
-            } catch (error) {
-                showToast(error.message || 'Failed to update profile', 'error');
+                settingsNavBtns.forEach(b => b.classList.remove('active'));
+                settingsSections.forEach(s => s.classList.remove('active'));
+
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Theme toggle
+        themeToggle.addEventListener('click', toggleTheme);
+        darkModeToggle.addEventListener('change', toggleTheme);
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = themeToggle.querySelector('i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+            darkModeToggle.checked = newTheme === 'dark';
+        }
+
+        // Profile picture upload
+        uploadBtn.addEventListener('click', () => profileUpload.click());
+
+        profileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profilePreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    profilePreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+        // Form submissions
+        profileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('emailNotifications').checked;
-            const newStudent = document.getElementById('newStudentNotifications').checked;
-            const maintenance = document.getElementById('maintenanceNotifications').checked;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const name = sanitizeInput(document.getElementById('profileName').value.trim());
+            const email = sanitizeInput(document.getElementById('profileEmail').value.trim());
+            const file = profileUpload.files[0];
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            if (file) {
+                formData.append('avatar', file);
+            }
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`
+                    },
+                    body: formData,
+                });
+
+                userName.textContent = name;
+                userType.textContent = sanitizeInput(window.userType.charAt(0).toUpperCase() + window.userType.slice(1));
+                if (data.user.avatar) {
+                    profilePreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = data.user.avatar;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    profilePreview.appendChild(img);
+
+                    userAvatar.innerHTML = '';
+                    const avatarImg = document.createElement('img');
+                    avatarImg.src = data.user.avatar;
+                    avatarImg.style.width = '100%';
+                    avatarImg.style.height = '100%';
+                    avatarImg.style.borderRadius = '50%';
+                    avatarImg.style.objectFit = 'cover';
+                    userAvatar.appendChild(avatarImg);
+                }
+                showToast('Profile updated successfully', 'success');
+            } catch (error) {
+                let message = error.error?.message || error.message || 'Failed to update profile';
+                if (error.status === 401) {
+                    message = 'Session expired. Please log in again.';
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else if (error.status === 403) {
+                    message = 'Only admins can update profile settings';
+                } else if (error.status === 400) {
+                    message = error.error?.details?.map(detail => detail.message).join(', ') || 'Invalid input data';
+                }
+                showToast(message, 'error');
+            }
+        });
+
+        notificationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.userType !== 'admin') {
+                showToast('Only admins can update notification settings', 'error');
+                return;
+            }
+            const emailNotifications = document.getElementById('emailNotifications').checked;
+            const newStudentNotifications = document.getElementById('newStudentNotifications').checked;
+            const maintenanceNotifications = document.getElementById('maintenanceNotifications').checked;
 
             try {
                 const data = await fetchWithRetry(`${API_URL}/settings/notifications`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`
                     },
-                    body: JSON.stringify({ email, newStudent, maintenance })
+                    body: JSON.stringify({
+                        notifications: {
+                            email: emailNotifications,
+                            newStudent: newStudentNotifications,
+                            maintenance: maintenanceNotifications
+                        }
+                    })
                 });
-                showToast('Notification settings saved successfully', 'success');
+                showToast('Notification preferences saved', 'success');
             } catch (error) {
-                showToast(error.message || 'Failed to update notifications', 'error');
+                let message = error.error?.message || error.message || 'Failed to update notification settings';
+                if (error.status === 401) {
+                    message = 'Session expired. Please log in again.';
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else if (error.status === 403) {
+                    message = 'Only admins can update notification settings';
+                } else if (error.status === 400) {
+                    message = error.error?.details?.map(detail => detail.message).join(', ') || 'Invalid input data';
+                }
+                showToast(message, 'error');
             }
         });
 
-        function toggleTheme() {
-            const html = document.documentElement;
-            const themeIcon = document.querySelector('.theme-toggle i');
-            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
-            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
-            localStorage.setItem('theme', newTheme);
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            sessionStorage.removeItem('token');
-            window.location.href = LOGIN_PATH;
-        }
-
-        (async () => {
-            const user = await checkAuth();
-            if (user) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                document.getElementById('userName').textContent = user.name || 'Admin User';
-                fetchSettingsData();
-
-                const savedTheme = localStorage.getItem('theme') || 'dark';
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
-                document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
-
-                // Add event listeners for buttons
-                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-                document.getElementById('logoutButton').addEventListener('click', logout);
+        securityForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.userType !== 'admin') {
+                showToast('Only admins can update security settings', 'error');
+                return;
             }
-        })();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const twoFactorAuth = document.getElementById('twoFactorAuth').checked;
+
+            if (newPassword !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/settings/security`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        security: {
+                            currentPassword,
+                            newPassword,
+                            twoFactorAuth
+                        }
+                    })
+                });
+                showToast('Security settings updated', 'success');
+                securityForm.reset();
+            } catch (error) {
+                let message = error.error?.message || error.message || 'Failed to update security settings';
+                if (error.status === 401) {
+                    message = 'Session expired. Please log in again.';
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else if (error.status === 403) {
+                    message = 'Only admins can update security settings';
+                } else if (error.status === 400) {
+                    message = error.error?.details?.map(detail => detail.message).join(', ') || 'Invalid input data';
+                }
+                showToast(message, 'error');
+            }
+        });
+
+        systemForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.userType !== 'admin') {
+                showToast('Only admins can update system settings', 'error');
+                return;
+            }
+            const language = document.getElementById('language').value;
+            const timezone = document.getElementById('timezone').value;
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/settings/system`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        preferences: {
+                            language,
+                            timezone
+                        }
+                    })
+                });
+                showToast('System preferences saved', 'success');
+            } catch (error) {
+                let message = error.error?.message || error.message || 'Failed to update system preferences';
+                if (error.status === 401) {
+                    message = 'Session expired. Please log in again.';
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                } else if (error.status === 403) {
+                    message = 'Only admins can update system preferences';
+                } else if (error.status === 400) {
+                    message = error.error?.details?.map(detail => detail.message).join(', ') || 'Invalid input data';
+                }
+                showToast(message, 'error');
+            }
+        });
+
+        // Password toggle
+        togglePasswordBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    btn.className = 'fas fa-eye toggle-password';
+                } else {
+                    input.type = 'password';
+                    btn.className = 'fas fa-eye-slash toggle-password';
+                }
+            });
+        });
+
+        // Initialize
+        initialize();
     </script>
 </body>
 

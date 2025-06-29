@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,8 +53,15 @@
             font-family: 'Poppins', sans-serif;
             background: var(--background-color);
             color: var(--text-color);
-            min-height: 100vh;
             display: flex;
+            flex-direction: column;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
             overflow-x: hidden;
         }
 
@@ -72,6 +80,7 @@
         #app {
             display: flex;
             width: 100%;
+            height: 100vh;
         }
 
         .sidebar {
@@ -134,20 +143,25 @@
 
         .main-content {
             margin-left: 250px;
-            padding: 1.5rem;
             width: calc(100% - 250px);
-            transition: var(--transition);
+            height: 100vh;
+            overflow-y: auto;
+            padding: 0;
+            /* Remove padding from main content */
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 0;
             background: var(--card-background);
-            padding: 1rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 12px;
             box-shadow: var(--shadow);
+            position:sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .hamburger {
@@ -322,7 +336,8 @@
             min-width: 600px;
         }
 
-        th, td {
+        th,
+        td {
             padding: 0.75rem;
             text-align: left;
             font-size: 0.875rem;
@@ -451,12 +466,12 @@
             pointer-events: none;
         }
 
-        .form-group input:focus + label,
-        .form-group input:not(:placeholder-shown) + label,
-        .form-group select:focus + label,
-        .form-group select:not([value=""]) + label,
-        .form-group textarea:focus + label,
-        .form-group textarea:not(:placeholder-shown) + label {
+        .form-group input:focus+label,
+        .form-group input:not(:placeholder-shown)+label,
+        .form-group select:focus+label,
+        .form-group select:not([value=""])+label,
+        .form-group textarea:focus+label,
+        .form-group textarea:not(:placeholder-shown)+label {
             top: -0.5rem;
             left: 0.5rem;
             font-size: 0.75rem;
@@ -589,12 +604,14 @@
                 font-size: 0.75rem;
             }
 
-            th, td {
+            th,
+            td {
                 font-size: 0.8rem;
             }
         }
     </style>
 </head>
+
 <body>
     <div id="loading">Loading...</div>
     <div id="app" style="display: none;">
@@ -1283,4 +1300,5 @@
         })();
     </script>
 </body>
+
 </html>

@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="form-group student-field">
-                        <input type="text" id="matricNumber" required aria-label="Matric number">
+                        <input type="text" id="matricNumber" required aria-label="Matric number" placeholder="e.g., 23/208CSC/586">
                         <label for="matricNumber">Matric Number</label>
                         <i class="fas fa-id-card"></i>
                         <div id="matricNumber-error" class="error-message"></div>
@@ -93,14 +93,7 @@
                     </div>
 
                     <div class="form-group student-field">
-                        <select id="level" required aria-label="Level">
-                            <option value="" disabled selected>Select Level</option>
-                            <option value="100">100 Level</option>
-                            <option value="200">200 Level</option>
-                            <option value="300">300 Level</option>
-                            <option value="400">400 Level</option>
-                            <option value="500">500 Level</option>
-                        </select>
+                        <input type="text" id="level" required aria-label="Level" placeholder="e.g., 400level">
                         <label for="level">Level</label>
                         <i class="fas fa-graduation-cap"></i>
                         <div id="level-error" class="error-message"></div>
@@ -159,6 +152,23 @@
 
         togglePasswordVisibility('password', 'togglePassword');
 
+        async function checkRegistrationDeadline() {
+            try {
+                const data = await fetchWithRetry(`${API_URL}/settings/deadline`);
+                const deadline = new Date(data.deadline);
+                const now = new Date();
+                if (now > deadline) {
+                    showToast('Registration is closed. The deadline has passed.', 'error');
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('checkRegistrationDeadline: Error:', error);
+                showToast('Failed to check registration deadline', 'error');
+                return false;
+            }
+        }
+
         function openTermsModal() {
             console.log('openTermsModal: Showing terms modal');
             document.getElementById('termsModal').style.display = 'flex';
@@ -195,7 +205,7 @@
                 const userType = button.dataset.type;
                 studentFields.forEach(field => {
                     field.style.display = userType === 'student' ? 'block' : 'none';
-                    const input = field.querySelector('input, select');
+                    const input = field.querySelector('input');
                     if (input) input.required = userType === 'student';
                 });
             });
@@ -209,6 +219,14 @@
             submitButton.disabled = true;
             submitButton.querySelector('span').textContent = 'Registering...';
 
+            // Check registration deadline
+            const isRegistrationOpen = await checkRegistrationDeadline();
+            if (!isRegistrationOpen) {
+                submitButton.disabled = false;
+                submitButton.querySelector('span').textContent = 'Register';
+                return;
+            }
+
             const name = sanitizeInput(document.getElementById('name').value.trim());
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -217,7 +235,7 @@
             const dateOfBirth = document.getElementById('dateOfBirth').value;
             const phone = sanitizeInput(document.getElementById('phone').value.trim());
             const faculty = sanitizeInput(document.getElementById('faculty').value.trim());
-            const level = document.getElementById('level').value;
+            const level = sanitizeInput(document.getElementById('level').value.trim().toLowerCase());
             const department = sanitizeInput(document.getElementById('department').value.trim());
             const gender = document.getElementById('gender').value;
             const terms = document.getElementById('terms').checked;
@@ -262,14 +280,19 @@
             // Validate student fields
             if (userType === 'student') {
                 sessionStorage.setItem('registerEmail', email);
-                if (!/^[A-Z0-9]+$/.test(matricNumber)) {
-                    showToast('Valid matric number is required (e.g., ABC123)', 'error');
-                    document.getElementById('matricNumber-error').textContent = 'Invalid matric number (e.g., ABC123)';
+
+                // Validate matric number (e.g., 23/208CSC/586)
+                const matricRegex = /^\d{2}\/[A-Z0-9]{6}\/\d{3}$/;
+                if (!matricRegex.test(matricNumber)) {
+                    showToast('Invalid matric number (e.g., 23/208CSC/586)', 'error');
+                    document.getElementById('matricNumber-error').textContent = 'Invalid matric number (e.g., 23/208CSC/586)';
                     document.getElementById('matricNumber').classList.add('error');
                     submitButton.disabled = false;
                     submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
+
+                // Validate date of birth
                 if (!dateOfBirth) {
                     showToast('Date of birth is required', 'error');
                     document.getElementById('dateOfBirth-error').textContent = 'Date of birth is required';
@@ -278,16 +301,8 @@
                     submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
-                const dobDate = new Date(dateOfBirth);
-                const today = new Date();
-                if (dobDate >= today || today.getFullYear() - dobDate.getFullYear() < 15) {
-                    showToast('You must be at least 15 years old', 'error');
-                    document.getElementById('dateOfBirth-error').textContent = 'Must be at least 15 years old';
-                    document.getElementById('dateOfBirth').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
+
+                // Validate phone number
                 if (!/^\+?[\d\s()-]{10,}$/.test(phone)) {
                     showToast('Valid phone number is required (e.g., +2341234567890)', 'error');
                     document.getElementById('phone-error').textContent = 'Invalid phone number';
@@ -296,6 +311,8 @@
                     submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
+
+                // Validate faculty
                 if (!faculty) {
                     showToast('Faculty is required', 'error');
                     document.getElementById('faculty-error').textContent = 'Faculty is required';
@@ -304,14 +321,19 @@
                     submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
-                if (!level || !['100', '200', '300', '400', '500'].includes(level)) {
-                    showToast('Level is required', 'error');
-                    document.getElementById('level-error').textContent = 'Level is required';
+
+                // Validate level (e.g., 100level, 200level, etc.)
+                const levelRegex = /^(100|200|300|400|500|600|700)level$/;
+                if (!levelRegex.test(level)) {
+                    showToast('Invalid level (e.g., 400level)', 'error');
+                    document.getElementById('level-error').textContent = 'Invalid level (e.g., 400level)';
                     document.getElementById('level').classList.add('error');
                     submitButton.disabled = false;
                     submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
+
+                // Validate department
                 if (!department) {
                     showToast('Department is required', 'error');
                     document.getElementById('department-error').textContent = 'Department is required';
@@ -320,6 +342,8 @@
                     submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
+
+                // Validate gender
                 if (gender !== 'Male') {
                     showToast('Only male students can register', 'error');
                     submitButton.disabled = false;
@@ -373,22 +397,25 @@
                 }
             } catch (error) {
                 console.error('registerForm: Error:', error);
-                let errorMessage = error.message || 'Registration failed';
-                if (error.message === 'Validation failed' && error.details) {
+                let errorMessage = error.error?.message || error.message || 'Registration failed';
+                if (error.error?.code === 'VALIDATION_ERROR') {
                     errorMessage = 'Please fix the following errors:';
-                    error.details.forEach(err => {
-                        const field = err.param;
-                        const message = err.msg;
+                    error.error.details.forEach(err => {
+                        const field = err.path;
+                        const message = err.message;
                         if (document.getElementById(`${field}-error`)) {
                             document.getElementById(`${field}-error`).textContent = message;
                             document.getElementById(field).classList.add('error');
                         }
                     });
                     showToast(errorMessage, 'error');
-                } else if (error.message.includes('DUPLICATE')) {
+                } else if (error.error?.code === 'DUPLICATE') {
                     errorMessage = 'Email or matric number already exists';
                     document.getElementById('email-error').textContent = errorMessage;
                     document.getElementById('email').classList.add('error');
+                    showToast(errorMessage, 'error');
+                } else if (error.error?.code === 'DEADLINE_EXPIRED') {
+                    errorMessage = 'Registration is closed. The deadline has passed.';
                     showToast(errorMessage, 'error');
                 } else {
                     showToast(errorMessage, 'error');

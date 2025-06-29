@@ -89,6 +89,8 @@ async function connectDB() {
 connectDB();
 
 // Schemas
+
+
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, index: true, lowercase: true },
@@ -98,7 +100,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true,
-        match: /^[A-Z0-9]+$/,
+        match:  [/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/, 'Invalid matric number format (e.g., 23/208CSE/786)'],
         required: function () { return this.userType === 'student'; }
     },
     phone: {
@@ -108,7 +110,7 @@ const UserSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ['Male', 'Female', 'Other'],
+        enum: ['Male'],
         required: function () { return this.userType === 'student'; }
     },
     dateOfBirth: {
@@ -122,8 +124,8 @@ const UserSchema = new mongoose.Schema({
     },
     level: {
         type: String,
-        enum: ['100', '200', '300', '400', '500'],
-        required: function () { return this.userType === 'student'; }
+        required: function () { return this.userType === 'student'; },
+        match: [/^(100|200|300|400|500|600|700)level$/, 'Invalid level (e.g., 400level)']
     },
     department: {
         type: String,
@@ -138,8 +140,23 @@ const UserSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date }
+    resetPasswordExpires: { type: Date },
+    avatar: { type: String, default: '' }, // Profile picture URL
+    notifications: {
+        email: { type: Boolean, default: true }, // Email notifications for payments
+        newStudent: { type: Boolean, default: true }, // Notifications for new student registrations
+        maintenance: { type: Boolean, default: false } // Notifications for system maintenance
+    },
+    security: {
+        twoFactorAuth: { type: Boolean, default: false }, // 2FA setting
+        twoFactorSecret: { type: String } // Optional: for storing 2FA secret if implementing TOTP
+    },
+    preferences: {
+        language: { type: String, enum: ['en', 'fr', 'es'], default: 'en' }, // Language preference
+        timezone: { type: String, enum: ['GMT+0', 'GMT+1', 'GMT+2'], default: 'GMT+1' } // Timezone preference
+    }
 });
+
 
 const RoomSchema = new mongoose.Schema({
     roomNumber: { type: String, required: true, unique: true, index: true },
@@ -2313,6 +2330,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
         // Send email
         const resetUrl = `http://127.0.0.1:5501/login-form/reset-password.html?token=${token}`;
+        console.log(resetUrl)
         await sendEmail(
             email,
             'Adem Baba – Password Reset Request',
@@ -2349,73 +2367,76 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     }
 });
 
-// Reset password route
+// Reset Password Route
 app.post(
     '/api/reset-password/:token',
     [
         param('token').notEmpty().withMessage('Reset token is required'),
-        body('password')
-            .matches(/^(?=.*\d)(?=.*[a-zA-Z]).{8,}$/)
-            .withMessage('Password must be at least 8 characters with letters and numbers')
+        body('password').matches(/^(?=.*\d)(?=.*[a-zA-Z]).{8,}$/).withMessage('Password must be at least 8 characters with letters and numbers'),
     ],
     async (req, res) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
+                console.log('Validation errors:', errors.array());
                 return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
             }
 
             const { token } = req.params;
             const { password } = req.body;
 
+            console.log('Received reset password request:', { token, password: '[REDACTED]' });
+
+            // Find user by reset token and check if it's not expired
             const user = await User.findOne({
                 resetPasswordToken: token,
                 resetPasswordExpires: { $gt: Date.now() },
             });
 
             if (!user) {
+                console.log('Invalid or expired reset token:', token);
                 return res.status(400).json({ error: { message: 'Invalid or expired reset token', code: 'INVALID_TOKEN' } });
             }
 
-            user.password = await hashing(password);
+            console.log('User found:', user.email);
+
+            // Hash the new password
+            const hashedPassword = await hashing(password);
+            console.log('Password hashed successfully');
+
+            // Update user document
+            user.password = hashedPassword;
             user.resetPasswordToken = undefined;
             user.resetPasswordExpires = undefined;
-            await user.save();
 
+            // Save the user document
+            await user.save();
+            console.log('User password updated successfully for:', user.email);
+
+            // Send confirmation email
             await sendEmail(
                 user.email,
                 'Adem Baba – Password Reset Successful',
-                `Hello ${user.name}, your password has been successfully reset. You can now log in to your Adem Baba account using your new password. If you did not perform this action, please contact support immediately.`,
+                `Hello ${user.name}, your password has been successfully reset. You can now log in using your new password. If you did not perform this action, please contact support immediately.`,
                 `
-    <div style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:auto; padding:20px; border:1px solid #e2e2e2; border-radius:8px;">
-        <h2 style="color:#232f3e;">✅ Password Reset Successful</h2>
-
-        <p>Hi <strong>${user.name}</strong>,</p>
-
-        <p>This is to confirm that your password has been successfully reset.</p>
-
-        <p>You can now log in to your <strong>Adem Baba</strong> account using your new password.</p>
-
-        <p style="margin-top: 20px;">
-            <a href="${frontendUrl}/login" style="display: inline-block; background-color: #0073bb; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                Log In Now
-            </a>
-        </p>
-
-        <hr style="margin: 20px 0;" />
-
-        <p style="font-size: 12px; color: #666;">
-            If you did not perform this action, please contact support immediately to secure your account.
-        </p>
-    </div>
-    `
+                <div style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:auto; padding:20px; border:1px solid #e2e2e2; border-radius:8px;">
+                    <h2 style="color:#232f3e;">✅ Password Reset Successful</h2>
+                    <p>Hi <strong>${user.name}</strong>,</p>
+                    <p>Your password has been successfully reset.</p>
+                    <p>You can now log in to your Adem Baba account using your new credentials.</p>
+                    <hr style="margin:20px 0;" />
+                    <p style="font-size:12px; color:#666;">
+                        If you did not perform this action, please contact support immediately to secure your account.
+                    </p>
+                </div>
+                `
             );
 
-            console.log('Password reset successful for:', user.email);
+            console.log('Password reset confirmation email sent to:', user.email);
             res.json({ message: 'Password reset successful' });
         } catch (error) {
             console.error('❌ Reset Password Error:', error);
-            res.status(500).json({ error: { message: 'Failed to reset password', code: 'SERVER_ERROR' } });
+            res.status(500).json({ error: { message: 'Failed to reset password', code: 'SERVER_ERROR', details: error.message } });
         }
     }
 );
@@ -2584,6 +2605,218 @@ app.post('/api/notifications/:id/read', verifyToken, async (req, res) => {
         res.status(500).json({ error: { message: 'Failed to mark notification as read' } });
     }
 });
+
+/* Serrings page */
+// Check authentication (admin only)
+app.get('/auth/check', verifyToken, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      notifications: user.notifications,
+      security: user.security,
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update profile (name, email, avatar) (admin only)
+app.put(
+  '/profile',
+  verifyToken, isAdmin,
+  [
+    body('name').trim().notEmpty().withMessage('Name is required'),
+    body('email').isEmail().withMessage('Invalid email format'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, email } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check if email is already in use by another user
+      if (email !== user.email) {
+        const emailExists = await User.findOne({ email });
+        if (emailExists) {
+          return res.status(400).json({ message: 'Email already in use' });
+        }
+      }
+
+      user.name = name || user.name;
+      user.email = email || user.email;
+
+      // Handle profile picture upload
+      if (req.files && req.files.avatar) {
+        const file = req.files.avatar;
+        const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+          folder: 'profile_pictures',
+        });
+        user.avatar = uploadResult.secure_url;
+      }
+
+      await user.save();
+
+      // Send email notification for profile update
+      await sendEmail({
+        to: user.email,
+        subject: 'Profile Updated',
+        text: `Hello ${user.name}, your profile has been successfully updated.`,
+      });
+
+      res.json({ message: 'Profile updated successfully', user: { name: user.name, email: user.email, avatar: user.avatar } });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// Update notification preferences (admin only)
+app.put(
+  '/notifications',
+  verifyToken, isAdmin,
+  [
+    body('emailNotifications').isBoolean().withMessage('Invalid email notifications setting'),
+    body('newStudentNotifications').isBoolean().withMessage('Invalid new student notifications setting'),
+    body('maintenanceNotifications').isBoolean().withMessage('Invalid maintenance notifications setting'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { emailNotifications, newStudentNotifications, maintenanceNotifications } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.notifications = {
+        email: emailNotifications,
+        newStudent: newStudentNotifications,
+        maintenance: maintenanceNotifications,
+      };
+
+      await user.save();
+
+      // Send confirmation email if email notifications are enabled
+      if (emailNotifications) {
+        await sendEmail({
+          to: user.email,
+          subject: 'Notification Preferences Updated',
+          text: `Hello ${user.name}, your notification preferences have been updated.`,
+        });
+      }
+
+      res.json({ message: 'Notification preferences saved' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// Update security settings (password, 2FA) (admin only)
+app.put(
+  '/security',
+  verifyToken, isAdmin,
+  [
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+    body('twoFactorAuth').isBoolean().withMessage('Invalid 2FA setting'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { currentPassword, newPassword, twoFactorAuth } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Verify current password
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+
+      // Update password if provided
+      if (newPassword) {
+        user.password = await bcrypt.hash(newPassword, 10);
+      }
+
+      // Update 2FA setting
+      user.security = { ...user.security, twoFactorAuth };
+
+      await user.save();
+
+      // Send email notification for security update
+      await sendEmail({
+        to: user.email,
+        subject: 'Security Settings Updated',
+        text: `Hello ${user.name}, your security settings have been updated. Two-factor authentication is now ${twoFactorAuth ? 'enabled' : 'disabled'}.`,
+      });
+
+      res.json({ message: 'Security settings updated' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// Update system preferences (language, timezone) (admin only)
+app.put(
+  '/system',
+  verifyToken, isAdmin,
+  [
+    body('language').isIn(['en', 'fr', 'es']).withMessage('Invalid language'),
+    body('timezone').isIn(['GMT+0', 'GMT+1', 'GMT+2']).withMessage('Invalid timezone'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { language, timezone } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.preferences = { language, timezone };
+      await user.save();
+
+      res.json({ message: 'System preferences saved' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
 
 // Start Server
 const PORT = process.env.PORT || 3000;
