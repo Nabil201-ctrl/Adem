@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
 </head>
+
 <body>
     <div class="background-shapes">
         <div class="shape"></div>
@@ -72,7 +74,8 @@
                     </div>
 
                     <div class="form-group student-field">
-                        <input type="text" id="matricNumber" required aria-label="Matric number" placeholder="e.g., 23/208CSC/586">
+                        <input type="text" id="matricNumber" required aria-label="Matric number"
+                            placeholder="e.g., 23/208CSC/586">
                         <label for="matricNumber">Matric Number</label>
                         <i class="fas fa-id-card"></i>
                         <div id="matricNumber-error" class="error-message"></div>
@@ -139,7 +142,8 @@
     <div id="termsModal" class="modal">
         <div class="modal-content">
             <h2>Terms & Conditions</h2>
-            <p>By registering, you agree to abide by the hostel rules and regulations for male students. Ensure all provided information is accurate and complete.</p>
+            <p>By registering, you agree to abide by the hostel rules and regulations for male students. Ensure all
+                provided information is accurate and complete.</p>
             <button type="button" class="close-btn" onclick="closeModal()">Close</button>
         </div>
     </div>
@@ -161,17 +165,28 @@
 
         async function checkRegistrationDeadline() {
             try {
-                const data = await fetchWithRetry(`${API_URL}/settings/deadline`);
-                const deadline = new Date(data.deadline || data.extendedDeadline);
-                const now = new Date();
-                if (now > deadline) {
-                    showToast('The Adem Baba Hostel has closed the page for booking hostel.', 'error');
+                const data = await fetchWithRetry(`${API_URL}/registration-deadline`);
+                if (!data.deadline) {
+                    showToast('No registration deadline set. Please contact support.', 'error');
                     return false;
                 }
+                const deadline = new Date(data.deadline.extended ? data.deadline.extendedDeadline : data.deadline.deadline);
+                const now = new Date();
+                if (now > deadline) {
+                    showToast('The registration period for Adem Baba Hostel has closed.', 'error');
+                    return false;
+                }
+                // Display deadline to user
+                const deadlineDate = deadline.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+                showToast(`Registration is open until ${deadlineDate}`, 'info');
                 return true;
             } catch (error) {
                 console.error('checkRegistrationDeadline: Error:', error);
-                showToast('The Adem Baba Hostel has closed the page for booking hostel.', 'error');
+                if (error.error?.code === 'NOT_FOUND') {
+                    showToast('No registration deadline set. Please contact support.', 'error');
+                } else {
+                    showToast('Failed to check registration deadline. Please try again.', 'error');
+                }
                 return false;
             }
         }
@@ -460,4 +475,5 @@
         });
     </script>
 </body>
+
 </html>

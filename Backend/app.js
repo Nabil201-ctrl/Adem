@@ -1430,44 +1430,44 @@ app.post(
         body('token').notEmpty().withMessage('Reset token is required'),
         body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     ],
-async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
-        }
-
-        const { token, password } = req.body;
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() },
-        }).select('+password');
-
-        if (!user) {
-            return res.status(400).json({ error: { message: 'Invalid or expired reset token', code: 'INVALID_TOKEN' } });
-        }
-
-        // Hash the new password
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-        // Update user document using updateOne to ensure atomic update
-        await User.updateOne(
-            { _id: user._id },
-            {
-                $set: {
-                    password: hashedPassword,
-                    resetPasswordToken: null,
-                    resetPasswordExpires: null
-                }
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
             }
-        );
 
-        // Send confirmation email
-        await sendEmail(
-            user.email,
-            'Adem Baba – Password Reset Successful',
-            `Hello ${user.name}, your password has been successfully reset. You can now log in using your new password. If you did not perform this action, please contact support immediately.`,
-            `
+            const { token, password } = req.body;
+            const user = await User.findOne({
+                resetPasswordToken: token,
+                resetPasswordExpires: { $gt: Date.now() },
+            }).select('+password');
+
+            if (!user) {
+                return res.status(400).json({ error: { message: 'Invalid or expired reset token', code: 'INVALID_TOKEN' } });
+            }
+
+            // Hash the new password
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+            // Update user document using updateOne to ensure atomic update
+            await User.updateOne(
+                { _id: user._id },
+                {
+                    $set: {
+                        password: hashedPassword,
+                        resetPasswordToken: null,
+                        resetPasswordExpires: null
+                    }
+                }
+            );
+
+            // Send confirmation email
+            await sendEmail(
+                user.email,
+                'Adem Baba – Password Reset Successful',
+                `Hello ${user.name}, your password has been successfully reset. You can now log in using your new password. If you did not perform this action, please contact support immediately.`,
+                `
                 <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
                     <h2 style="color: #232f3e;">✅ Password Reset Successful</h2>
                     <p>Hi <strong>${user.name}</strong>,</p>
@@ -1477,14 +1477,14 @@ async (req, res) => {
                     <p style="font-size: 12px; color: #666;">If you did not perform this action, please contact support immediately to secure your account.</p>
                 </div>
                 `
-        );
+            );
 
-        res.json({ message: 'Password reset successful' });
-    } catch (error) {
-        console.error('❌ Reset Password Error:', error);
-        res.status(500).json({ error: { message: 'Failed to reset password', code: 'SERVER_ERROR', details: error.message } });
+            res.json({ message: 'Password reset successful' });
+        } catch (error) {
+            console.error('❌ Reset Password Error:', error);
+            res.status(500).json({ error: { message: 'Failed to reset password', code: 'SERVER_ERROR', details: error.message } });
+        }
     }
-}
 );
 
 // Add Student (Admin)
@@ -1536,70 +1536,96 @@ app.post(
 );
 
 // Update Student (Admin)
-app.put(
+app.patch('/api/students/:id', verifyToken, isAdmin, [
+    param('id').isMongoId().withMessage('Invalid student ID'),
+    body('name').optional().notEmpty().withMessage('Name cannot be empty'),
+    body('email').optional().isEmail().withMessage('Invalid email format'),
+    body('matricNumber').optional().matches(/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/).withMessage('Invalid matric number format'),
+    body('phone').optional().matches(/^\+?[\d\s()-]{10,}$/).withMessage('Invalid phone number'),
+    body('gender').optional().isIn(['Male']).withMessage('Only male students allowed'),
+    body('dateOfBirth').optional().isISO8601().withMessage('Invalid date of birth'),
+    body('faculty').optional().notEmpty().withMessage('Faculty cannot be empty'),
+    body('level').optional().matches(/^(100|200|300|400|500)$/).withMessage('Invalid level'),
+    body('department').optional().notEmpty().withMessage('Department cannot be empty')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
+        }
+
+        const updates = req.body;
+        updates.level = updates.level ? `${updates.level}level` : undefined; // Transform level
+        const student = await User.findOneAndUpdate(
+            { _id: req.params.id, userType: 'student' },
+            { $set: updates },
+            { new: true }
+        ).populate('room', 'roomNumber type');
+
+        if (!student) {
+            return res.status(404).json({ error: { message: 'Student not found', code: 'NOT_FOUND' } });
+        }
+
+        console.log(`Student ${student._id} updated by admin ${req.user.email}`);
+        res.json({ message: 'Student updated successfully', student });
+    } catch (error) {
+        console.error('❌ Update Student Error:', error);
+        res.status(500).json({ error: { message: 'Failed to update student', code: 'SERVER_ERROR', details: error.message } });
+    }
+});
+
+
+// Get Single Student (Admin)
+app.get(
     '/api/students/:id',
     verifyToken,
     isAdmin,
-    [
-        param('id').isMongoId().withMessage('Invalid student ID'),
-        body('name').trim().notEmpty().withMessage('Name is required'),
-        body('email').isEmail().normalizeEmail().withMessage('Invalid email format'),
-        body('matricNumber').notEmpty().matches(/^[A-Z0-9]+$/).withMessage('Invalid matric number format'),
-        body('phone').notEmpty().matches(/^\+?[\d\s()-]{10,}$/).withMessage('Invalid phone number format'),
-        body('gender').isIn(['Male', 'Female', 'Other']).withMessage('Invalid gender'),
-        body('dateOfBirth').isISO8601().toDate().withMessage('Invalid date of birth')
-            .custom((value) => {
-                const dob = new Date(value);
-                const today = new Date();
-                if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
-                    throw new Error('Must be at least 15 years old');
-                }
-                return true;
-            }),
-        body('faculty').trim().notEmpty().withMessage('Faculty is required'),
-        body('level').isIn(['100', '200', '300', '400', '500']).withMessage('Invalid level'),
-        body('department').trim().notEmpty().withMessage('Department is required'),
-    ],
+    [param('id').isMongoId().withMessage('Invalid student ID')],
     async (req, res) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
+                return res.status(400).json({
+                    error: {
+                        message: 'Validation failed',
+                        details: errors.array(),
+                        code: 'VALIDATION_ERROR'
+                    }
+                });
             }
 
-            const { id } = req.params;
-            const { name, email, matricNumber, phone, gender, dateOfBirth, faculty, level, department } = req.body;
+            const student = await User.findById(req.params.id)
+                .populate('room', 'roomNumber type')
+                .lean();
 
-            const student = await User.findById(id);
             if (!student || student.userType !== 'student') {
-                return res.status(404).json({ error: { message: 'Student not found', code: 'NOT_FOUND' } });
+                return res.status(404).json({
+                    error: {
+                        message: 'Student not found',
+                        code: 'NOT_FOUND'
+                    }
+                });
             }
 
-            const existingUser = await User.findOne({
-                $or: [{ email }, { matricNumber }],
-                _id: { $ne: id },
-            });
-            if (existingUser) {
-                return res.status(400).json({ error: { message: 'Email or matric number already exists', code: 'DUPLICATE' } });
-            }
+            // Format the date fields for better readability
+            const formattedStudent = {
+                ...student,
+                dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth).toISOString().split('T')[0] : null,
+                createdAt: new Date(student.createdAt).toLocaleString()
+            };
 
-            student.name = name;
-            student.email = email;
-            student.matricNumber = matricNumber;
-            student.phone = phone;
-            student.gender = gender;
-            student.dateOfBirth = dateOfBirth;
-            student.faculty = faculty;
-            student.level = level;
-            student.department = department;
-            await student.save();
-
-            res.json({ message: 'Student updated successfully' });
+            res.json({ student: formattedStudent });
         } catch (error) {
-            console.error('❌ Update Student Error:', error);
-            res.status(500).json
+            console.error('❌ Get Student Error:', error);
+            res.status(500).json({
+                error: {
+                    message: 'Failed to load student',
+                    code: 'SERVER_ERROR'
+                }
+            });
         }
-    });
+    }
+);
 
 // Delete Student (Admin)
 app.delete(
@@ -1639,75 +1665,60 @@ app.delete(
 );
 
 // Assign Room
-app.post(
-    '/api/students/assign-room',
-    verifyToken,
-    isAdmin,
-    [body('studentId').isMongoId().withMessage('Invalid student ID'), body('roomId').isMongoId().withMessage('Invalid room ID')],
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
-            }
-
-            const { studentId, roomId } = req.body;
-            const student = await User.findById(studentId);
-            if (!student || student.userType !== 'student') {
-                return res.status(404).json({ error: { message: 'Student not found', code: 'NOT_FOUND' } });
-            }
-
-            const room = await Room.findById(roomId);
-            if (!room) {
-                return res.status(404).json({ error: { message: 'Room not found', code: 'NOT_FOUND' } });
-            }
-
-            if (room.status === 'Maintenance' || room.occupants.length >= room.capacity) {
-                return res.status(400).json({ error: { message: 'Room is unavailable or full', code: 'ROOM_UNAVAILABLE' } });
-            }
-
-            if (student.room) {
-                await Room.updateOne({ _id: student.room }, { $pull: { occupants: studentId } });
-            }
-
-            student.room = roomId;
-            room.occupants.push(studentId);
-            room.status = room.occupants.length >= room.capacity ? 'Occupied' : 'Available';
-            await student.save();
-            await room.save();
-
-            const settings = await Settings.findOne({ user: student._id });
-            if (settings?.notifications.email) {
-                await sendEmail(
-                    student.email,
-                    'Adem Baba – Room Assignment Notification',
-                    `Hello ${student.name}, you have been assigned to Room ${room.roomNumber} (${room.type}). Please check your dashboard for more details.`,
-                    `
-    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
-        <h2 style="color: #232f3e;">🛏️ Room Assignment</h2>
-        <p>Hi <strong>${student.name}</strong>,</p>
-        <p>We’re pleased to inform you that you’ve been assigned a room.</p>
-        <p><strong>Room Details:</strong></p>
-        <ul style="line-height: 1.6;">
-            <li><strong>Room Number:</strong> ${room.roomNumber}</li>
-            <li><strong>Room Type:</strong> ${room.type}</li>
-        </ul>
-        <p>You can log in to your dashboard for more information.</p>
-        <hr style="margin: 20px 0;" />
-        <p style="font-size: 12px; color: #666;">If you have any questions or concerns, please contact the hostel management.</p>
-    </div>
-    `
-                );
-
-            }
-
-            res.json({ message: 'Room assigned successfully' });
-        } catch (error) {
-            console.error('❌ Assign Room Error:', error);
-            res.status(500).json({ error: { message: 'Failed to assign room', code: 'SERVER_ERROR' } });
+app.post('/api/students/assign-room', verifyToken, isAdmin, [
+    body('studentId').isMongoId().withMessage('Invalid student ID'),
+    body('roomId').isMongoId().withMessage('Invalid room ID')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
         }
+
+        const { studentId, roomId } = req.body;
+        const student = await User.findOne({ _id: studentId, userType: 'student', status: 'Approved' });
+        if (!student) {
+            return res.status(404).json({ error: { message: 'Approved student not found', code: 'NOT_FOUND' } });
+        }
+
+        const room = await Room.findById(roomId);
+        if (!room || room.status === 'Maintenance' || room.occupants.length >= room.capacity) {
+            return res.status(400).json({ error: { message: 'Invalid or unavailable room', code: 'INVALID_ROOM' } });
+        }
+
+        const session = await mongoose.startSession();
+        try {
+            session.startTransaction();
+            await User.updateOne(
+                { _id: studentId },
+                { $set: { room: roomId } },
+                { session }
+            );
+            await Room.updateOne(
+                { _id: roomId },
+                { $addToSet: { occupants: studentId } },
+                { session }
+            );
+            await Room.updateMany(
+                { _id: { $ne: roomId }, occupants: studentId },
+                { $pull: { occupants: studentId } },
+                { session }
+            );
+            await session.commitTransaction();
+        } catch (error) {
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            session.endSession();
+        }
+
+        console.log(`Room ${roomId} assigned to student ${studentId} by admin ${req.user.email}`);
+        res.json({ message: 'Room assigned successfully' });
+    } catch (error) {
+        console.error('❌ Assign Room Error:', error);
+        res.status(500).json({ error: { message: 'Failed to assign room', code: 'SERVER_ERROR', details: error.message } });
     }
-);
+});
 
 // Activities Endpoint
 app.get('/api/activities', verifyToken, isAdmin, async (req, res) => {
@@ -2532,7 +2543,9 @@ app.post(
     verifyToken,
     isAdmin,
     [
-        body('deadline').isISO8601().toDate().withMessage('Invalid deadline date')
+        body('deadline')
+            .isISO8601()
+            .withMessage('Invalid deadline format')
             .custom((value) => {
                 const deadline = new Date(value);
                 const now = new Date();
@@ -2540,96 +2553,109 @@ app.post(
                     throw new Error('Deadline must be in the future');
                 }
                 return true;
-            }),
+            })
     ],
     async (req, res) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
+                console.log('Validation errors for set deadline:', errors.array());
                 return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
             }
 
             const { deadline } = req.body;
+            const deadlineDate = new Date(deadline);
+            console.log('Attempting to set deadline:', { deadline, admin: req.user.email });
 
-            // Check if there's an existing deadline
-            let existingDeadline = await RegistrationDeadline.findOne();
+            // Delete existing deadlines
+            const deleteResult = await RegistrationDeadline.deleteMany({});
+            console.log('Deleted existing deadlines:', deleteResult);
 
-            if (existingDeadline) {
-                // Update existing deadline
-                existingDeadline.deadline = deadline;
-                existingDeadline.extended = false;
-                existingDeadline.extendedDeadline = undefined;
-                existingDeadline.updatedAt = new Date();
-                await existingDeadline.save();
-            } else {
-                // Create new deadline
-                existingDeadline = new RegistrationDeadline({ deadline });
-                await existingDeadline.save();
-            }
-
-            res.json({
-                message: 'Registration deadline set successfully',
-                deadline: existingDeadline.deadline,
-                extended: existingDeadline.extended,
-                extendedDeadline: existingDeadline.extendedDeadline
+            // Create new deadline
+            const newDeadline = new RegistrationDeadline({
+                deadline: deadlineDate,
+                extended: false,
+                extendedDeadline: null,
+                createdAt: new Date(),
+                updatedAt: new Date()
             });
+
+            const savedDeadline = await newDeadline.save();
+            console.log('New deadline saved:', savedDeadline);
+
+            res.json({ message: 'Registration deadline set successfully', deadline: savedDeadline });
         } catch (error) {
-            console.error('❌ Set Registration Deadline Error:', error);
-            res.status(500).json({ error: { message: 'Failed to set registration deadline', code: 'SERVER_ERROR' } });
+            console.error('❌ Set Deadline Error:', error);
+            res.status(500).json({ error: { message: 'Failed to set deadline', code: 'SERVER_ERROR', details: error.message } });
         }
     }
 );
 
-app.post(
+app.patch(
     '/api/registration-deadline/extend',
     verifyToken,
     isAdmin,
     [
-        body('extendedDeadline').isISO8601().toDate().withMessage('Invalid extended deadline date')
-            .custom((value) => {
+        body('extendedDeadline')
+            .isISO8601()
+            .withMessage('Invalid extended deadline format')
+            .custom(async (value) => {
                 const extendedDeadline = new Date(value);
                 const now = new Date();
+                const currentDeadline = await RegistrationDeadline.findOne({});
+                if (!currentDeadline) {
+                    throw new Error('No registration deadline found');
+                }
+                if (extendedDeadline <= currentDeadline.deadline) {
+                    throw new Error('Extended deadline must be after the current deadline');
+                }
                 if (extendedDeadline <= now) {
                     throw new Error('Extended deadline must be in the future');
                 }
                 return true;
-            }),
+            })
     ],
     async (req, res) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
+                console.log('Validation errors for extend deadline:', errors.array());
                 return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
             }
 
             const { extendedDeadline } = req.body;
+            const extendedDeadlineDate = new Date(extendedDeadline);
+            console.log('Attempting to extend deadline:', { extendedDeadline, admin: req.user.email });
 
-            let deadline = await RegistrationDeadline.findOne();
-            if (!deadline) {
-                return res.status(400).json({ error: { message: 'No registration deadline set', code: 'NO_DEADLINE' } });
+            const result = await RegistrationDeadline.updateOne(
+                {},
+                {
+                    $set: {
+                        extended: true,
+                        extendedDeadline: extendedDeadlineDate,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+
+            if (result.matchedCount === 0) {
+                console.log('No deadline found to extend');
+                return res.status(404).json({ error: { message: 'No deadline found to extend', code: 'NOT_FOUND' } });
             }
 
-            deadline.extended = true;
-            deadline.extendedDeadline = extendedDeadline;
-            deadline.updatedAt = new Date();
-            await deadline.save();
+            const updatedDeadline = await RegistrationDeadline.findOne({});
+            console.log('Deadline extended:', updatedDeadline);
 
-            res.json({
-                message: 'Registration deadline extended successfully',
-                deadline: deadline.deadline,
-                extended: deadline.extended,
-                extendedDeadline: deadline.extendedDeadline
-            });
+            res.json({ message: 'Registration deadline extended successfully', deadline: updatedDeadline });
         } catch (error) {
-            console.error('❌ Extend Registration Deadline Error:', error);
-            res.status(500).json({ error: { message: 'Failed to extend registration deadline', code: 'SERVER_ERROR' } });
+            console.error('❌ Extend Deadline Error:', error);
+            res.status(500).json({ error: { message: 'Failed to extend deadline', code: 'SERVER_ERROR', details: error.message } });
         }
     }
 );
 
 app.get(
     '/api/registration-deadline',
-    verifyToken,
     async (req, res) => {
         try {
             const deadline = await RegistrationDeadline.findOne();
@@ -2890,6 +2916,113 @@ app.put(
     }
 );
 
+// Nuke Data (Admin Only - Deletes all data from the database)
+app.post(
+    '/api/system-nuke-data',
+    verifyToken,
+    isAdmin,
+    [
+        body('confirmation').equals('NUKE_ALL_DATA').withMessage('Confirmation string must be "NUKE_ALL_DATA"'),
+        body('adminPassword').notEmpty().withMessage('Admin password is required')
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ 
+                    error: { 
+                        message: 'Validation failed', 
+                        details: errors.array(), 
+                        code: 'VALIDATION_ERROR' 
+                    }
+                });
+            }
+
+            const { adminPassword } = req.body;
+            
+            // Verify admin password
+            const admin = await User.findById(req.user.id).select('+password');
+            const isMatch = await bcrypt.compare(adminPassword, admin.password);
+            if (!isMatch) {
+                return res.status(401).json({ 
+                    error: { 
+                        message: 'Invalid admin password', 
+                        code: 'INVALID_CREDENTIALS' 
+                    }
+                });
+            }
+
+            // Start a MongoDB session for atomic operations
+            const session = await mongoose.startSession();
+            try {
+                await session.withTransaction(async () => {
+                    // Delete all documents from all collections
+                    await User.deleteMany({}, { session });
+                    await Room.deleteMany({}, { session });
+                    await Event.deleteMany({}, { session });
+                    await Maintenance.deleteMany({}, { session });
+                    await Settings.deleteMany({}, { session });
+                    await Payment.deleteMany({}, { session });
+                    await PaymentSlip.deleteMany({}, { session });
+                    await RegistrationDeadline.deleteMany({}, { session });
+                    await Notification.deleteMany({}, { session });
+
+                    // Delete all files from Cloudinary in the relevant folders
+                    try {
+                        await cloudinary.api.delete_resources_by_prefix('payment-slips', { 
+                            resource_type: 'image' 
+                        });
+                        await cloudinary.api.delete_resources_by_prefix('payment-slips', { 
+                            resource_type: 'raw' 
+                        });
+                        await cloudinary.api.delete_resources_by_prefix('profile_pictures', { 
+                            resource_type: 'image' 
+                        });
+                    } catch (cloudinaryError) {
+                        console.error('❌ Cloudinary Cleanup Error:', cloudinaryError);
+                        // Continue with database cleanup even if Cloudinary fails
+                    }
+                });
+
+                // Send email to all admins notifying about the data deletion
+                const admins = await User.find({ userType: 'admin' });
+                for (const admin of admins) {
+                    await sendEmail(
+                        admin.email,
+                        'Adem Baba – System Data Nuked',
+                        `Hello ${admin.name}, the Adem Baba system data has been completely deleted by ${req.user.email} on ${new Date().toLocaleString()}. All user data, rooms, events, payments, and related records have been removed. This action is irreversible.`,
+                        `
+                        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e2e2; border-radius: 8px;">
+                            <h2 style="color: #c0392b;">⚠️ System Data Nuked</h2>
+                            <p>Hi <strong>${admin.name}</strong>,</p>
+                            <p>The Adem Baba system data has been completely deleted by <strong>${req.user.email}</strong> on <strong>${new Date().toLocaleString()}</strong>.</p>
+                            <p>All records including users, rooms, events, payments, and related data have been permanently removed. This action is irreversible.</p>
+                            <hr style="margin: 20px 0;" />
+                            <p style="font-size: 12px; color: #666;">If you believe this was unauthorized, please contact the system administrator immediately.</p>
+                        </div>
+                        `
+                    ).catch((emailError) => {
+                        console.error('❌ Email Notification Error:', emailError);
+                    });
+                }
+
+                console.log(`System data nuked by admin ${req.user.email} at ${new Date().toLocaleString()}`);
+                res.json({ message: 'All system data has been successfully deleted' });
+            } finally {
+                session.endSession();
+            }
+        } catch (error) {
+            console.error('❌ Nuke Data Error:', error);
+            res.status(500).json({ 
+                error: { 
+                    message: 'Failed to nuke system data', 
+                    code: 'SERVER_ERROR', 
+                    details: error.message 
+                }
+            });
+        }
+    }
+);
 
 // Start Server
 const PORT = process.env.PORT || 3000;
