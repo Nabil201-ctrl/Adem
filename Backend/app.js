@@ -155,7 +155,11 @@ const UserSchema = new mongoose.Schema({
     preferences: {
         language: { type: String, enum: ['en', 'fr', 'es'], default: 'en' }, // Language preference
         timezone: { type: String, enum: ['GMT+0', 'GMT+1', 'GMT+2'], default: 'GMT+1' } // Timezone preference
-    }
+    },
+    avatar: {
+        url: { type: String, default: '' }, // Cloudinary URL
+        publicId: { type: String, default: '' } // Cloudinary public ID for deletion
+  }
 });
 
 
@@ -2230,121 +2234,7 @@ app.put(
     }
 );
 
-// Get Settings (User-specific)
-app.get('/api/settings', verifyToken, async (req, res) => {
-    try {
-        const settings = await Settings.findOne({ user: req.user.id }).lean();
-        if (!settings) {
-            return res.status(404).json({ error: { message: 'Settings not found', code: 'NOT_FOUND' } });
-        }
-        res.json(settings);
-    } catch (error) {
-        console.error('❌ Get Settings Error:', error);
-        res.status(500).json({ error: { message: 'Failed to load settings', code: 'SERVER_ERROR' } });
-    }
-});
 
-// Update Profile Settings
-app.put(
-    '/api/settings/profile',
-    verifyToken,
-    [
-        body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
-        body('email').optional().isEmail().withMessage('Invalid email format'),
-        body('phone').optional().matches(/^\+?[\d\s()-]{10,}$/).withMessage('Invalid phone number format'),
-        body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('Invalid gender'),
-        body('dateOfBirth')
-            .optional()
-            .isISO8601()
-            .toDate()
-            .withMessage('Invalid date of birth')
-            .custom((value) => {
-                const dob = new Date(value);
-                const today = new Date();
-                if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
-                    throw new Error('Must be at least 15 years old');
-                }
-                return true;
-            }),
-        body('faculty').optional().trim().notEmpty().withMessage('Faculty cannot be empty'),
-        body('level').optional().isIn(['100', '200', '300', '400', '500']).withMessage('Invalid level'),
-        body('department').optional().trim().notEmpty().withMessage('Department cannot be empty'),
-    ],
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
-            }
-
-            const { name, email, phone, gender, dateOfBirth, faculty, level, department } = req.body;
-            const user = await User.findById(req.user.id);
-            if (!user) {
-                return res.status(404).json({ error: { message: 'User not found', code: 'NOT_FOUND' } });
-            }
-
-            if (email && email !== user.email) {
-                const existingUser = await User.findOne({ email });
-                if (existingUser) {
-                    return res.status(400).json({ error: { message: 'Email already exists', code: 'DUPLICATE' } });
-                }
-                user.email = email;
-            }
-
-            if (name) user.name = name;
-            if (phone && user.userType === 'student') user.phone = phone;
-            if (gender && user.userType === 'student') user.gender = gender;
-            if (dateOfBirth && user.userType === 'student') user.dateOfBirth = dateOfBirth;
-            if (faculty && user.userType === 'student') user.faculty = faculty;
-            if (level && user.userType === 'student') user.level = level;
-            if (department && user.userType === 'student') user.department = department;
-
-            await user.save();
-            res.json({ message: 'Profile updated successfully' });
-        } catch (error) {
-            console.error('❌ Update Profile Error:', error);
-            res.status(500).json({ error: { message: 'Failed to update profile', code: 'SERVER_ERROR' } });
-        }
-    }
-);
-
-// Update Notification Settings
-app.put(
-    '/api/settings/notifications',
-    verifyToken,
-    [
-        body('notifications.email').optional().isBoolean().withMessage('Email notification must be a boolean'),
-        body('notifications.newStudent').optional().isBoolean().withMessage('New student notification must be a boolean'),
-        body('notifications.maintenance').optional().isBoolean().withMessage('Maintenance notification must be a boolean'),
-    ],
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ error: { message: 'Validation failed', details: errors.array(), code: 'VALIDATION_ERROR' } });
-            }
-
-            const { notifications } = req.body;
-            let settings = await Settings.findOne({ user: req.user.id });
-
-            if (!settings) {
-                settings = new Settings({ user: req.user.id, notifications: {} });
-            }
-
-            if (notifications.email !== undefined) settings.notifications.email = notifications.email;
-            if (notifications.newStudent !== undefined) settings.notifications.newStudent = notifications.newStudent;
-            if (notifications.maintenance !== undefined) settings.notifications.maintenance = notifications.maintenance;
-
-            settings.updatedAt = new Date();
-            await settings.save();
-
-            res.json({ message: 'Notification settings updated successfully' });
-        } catch (error) {
-            console.error('❌ Update Notifications Error:', error);
-            res.status(500).json({ error: { message: 'Failed to update notification settings', code: 'SERVER_ERROR' } });
-        }
-    }
-);
 
 // Get Student Profile (Student)
 app.get('/api/profile', verifyToken, isStudent, async (req, res) => {
@@ -2726,7 +2616,7 @@ app.get('/auth/check', verifyToken, isAdmin, async (req, res) => {
     }
 });
 
-// Update profile (name, email, avatar) (admin only)
+/* // Update profile (name, email, avatar) (admin only)
 app.put(
     '/profile',
     verifyToken, isAdmin,
@@ -2929,25 +2819,25 @@ app.post(
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ 
-                    error: { 
-                        message: 'Validation failed', 
-                        details: errors.array(), 
-                        code: 'VALIDATION_ERROR' 
+                return res.status(400).json({
+                    error: {
+                        message: 'Validation failed',
+                        details: errors.array(),
+                        code: 'VALIDATION_ERROR'
                     }
                 });
             }
 
             const { adminPassword } = req.body;
-            
+
             // Verify admin password
             const admin = await User.findById(req.user.id).select('+password');
             const isMatch = await bcrypt.compare(adminPassword, admin.password);
             if (!isMatch) {
-                return res.status(401).json({ 
-                    error: { 
-                        message: 'Invalid admin password', 
-                        code: 'INVALID_CREDENTIALS' 
+                return res.status(401).json({
+                    error: {
+                        message: 'Invalid admin password',
+                        code: 'INVALID_CREDENTIALS'
                     }
                 });
             }
@@ -2969,14 +2859,14 @@ app.post(
 
                     // Delete all files from Cloudinary in the relevant folders
                     try {
-                        await cloudinary.api.delete_resources_by_prefix('payment-slips', { 
-                            resource_type: 'image' 
+                        await cloudinary.api.delete_resources_by_prefix('payment-slips', {
+                            resource_type: 'image'
                         });
-                        await cloudinary.api.delete_resources_by_prefix('payment-slips', { 
-                            resource_type: 'raw' 
+                        await cloudinary.api.delete_resources_by_prefix('payment-slips', {
+                            resource_type: 'raw'
                         });
-                        await cloudinary.api.delete_resources_by_prefix('profile_pictures', { 
-                            resource_type: 'image' 
+                        await cloudinary.api.delete_resources_by_prefix('profile_pictures', {
+                            resource_type: 'image'
                         });
                     } catch (cloudinaryError) {
                         console.error('❌ Cloudinary Cleanup Error:', cloudinaryError);
@@ -3013,13 +2903,280 @@ app.post(
             }
         } catch (error) {
             console.error('❌ Nuke Data Error:', error);
-            res.status(500).json({ 
-                error: { 
-                    message: 'Failed to nuke system data', 
-                    code: 'SERVER_ERROR', 
-                    details: error.message 
+            res.status(500).json({
+                error: {
+                    message: 'Failed to nuke system data',
+                    code: 'SERVER_ERROR',
+                    details: error.message
                 }
             });
+        }
+    }
+);
+ */
+
+
+/* SETTINGS ROTUES*/
+// Get user settings
+
+// Nuke system data
+app.delete('/api/settings/nuke', verifyToken, isAdmin, async (req, res) => {
+    try {
+        // Delete all non-admin users
+        await User.deleteMany({ userType: { $ne: 'admin' } });
+
+        // Delete all settings except for the current admin
+        await Settings.deleteMany({ user: { $ne: req.user.id } });
+
+        // Delete all students, rooms, schedules, and payments
+        await Student.deleteMany({});
+        await Room.deleteMany({});
+        await Schedule.deleteMany({});
+        await Payment.deleteMany({});
+
+        // Delete all avatars from Cloudinary (except current admin's)
+        const users = await User.find({ _id: { $ne: req.user.id }, avatar: { $exists: true, $ne: '' } });
+        for (const user of users) {
+            if (user.avatar && user.avatar.includes('cloudinary')) {
+                const publicId = user.avatar.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`adem_baba/avatars/${publicId}`);
+            }
+        }
+
+        // Update the current admin's settings to default
+        let settings = await Settings.findOne({ user: req.user.id });
+        if (settings) {
+            settings.notifications = { email: true, newStudent: false, maintenance: true };
+            settings.preferences = { language: 'en', timezone: 'Africa/Lagos', theme: 'dark' };
+            await settings.save();
+        }
+
+        // Notify admin via email
+        const admin = await User.findById(req.user.id);
+        await sendEmail(
+            admin.email,
+            'Adem Baba - System Data Reset',
+            'All system data has been successfully reset.',
+            '<p>All system data has been successfully reset.</p>'
+        );
+
+        res.json({ message: 'System data has been reset successfully' });
+    } catch (error) {
+        console.error('❌ Nuke System Error:', error);
+        res.status(500).json({ error: { message: 'Failed to nuke system data', code: 'SERVER_ERROR' } });
+    }
+});
+
+
+app.get('/api/settings', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('name email avatar userType security');
+        const settings = await Settings.findOne({ user: req.user.id });
+        if (!user) {
+            return res.status(404).json({ error: { message: 'User not found', code: 'NOT_FOUND' } });
+        }
+        res.json({
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar || '',
+            userType: user.userType,
+            settings: settings || {
+                notifications: { email: true, newStudent: false, maintenance: true },
+                preferences: { language: 'en', timezone: 'Africa/Lagos', theme: 'dark' }
+            },
+            security: user.security || { twoFactorAuth: false }
+        });
+    } catch (error) {
+        console.error('❌ Get Settings Error:', error);
+        res.status(500).json({ error: { message: 'Server error', code: 'SERVER_ERROR' } });
+    }
+});
+
+// Update profile
+app.put(
+    '/api/settings/profile',
+    verifyToken,
+    upload.single('avatar'),
+    handleMulterError,
+    [
+        body('name').trim().isLength({ min: 2, max: 50 }).withMessage('Name must be between 2 and 50 characters'),
+        body('email').isEmail().withMessage('Invalid email format')
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: errors.array()[0].msg, code: 'VALIDATION_ERROR' } });
+        }
+        try {
+            const { name, email } = req.body;
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ error: { message: 'User not found', code: 'NOT_FOUND' } });
+            }
+            if (email !== user.email) {
+                const emailExists = await User.findOne({ email, _id: { $ne: user._id } });
+                if (emailExists) {
+                    return res.status(400).json({ error: { message: 'Email already in use', code: 'EMAIL_TAKEN' } });
+                }
+            }
+            let avatarUrl = user.avatar;
+            if (req.file) {
+                const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+                    folder: 'adem_baba/avatars',
+                    resource_type: 'image'
+                });
+                avatarUrl = uploadResult.secure_url;
+                if (user.avatar && user.avatar.includes('cloudinary')) {
+                    const publicId = user.avatar.split('/').pop().split('.')[0];
+                    await cloudinary.uploader.destroy(`adem_baba/avatars/${publicId}`);
+                }
+            }
+            user.name = name;
+            user.email = email;
+            user.avatar = avatarUrl;
+            await user.save();
+            await sendEmail(
+                user.email,
+                'Adem Baba - Profile Updated',
+                `Your profile has been updated successfully.`,
+                `<p>Your profile has been updated successfully.</p>`
+            );
+            res.json({ message: 'Profile updated successfully', data: { name, email, avatar: avatarUrl } });
+        } catch (error) {
+            console.error('❌ Update Profile Error:', error);
+            res.status(500).json({ error: { message: 'Failed to update profile', code: 'SERVER_ERROR' } });
+        }
+    }
+);
+
+// Update notification preferences
+app.put(
+    '/api/settings/notifications',
+    verifyToken,
+    isAdmin,
+    [
+        body('email').isBoolean().withMessage('Email notification must be a boolean'),
+        body('newStudent').isBoolean().withMessage('New student notification must be a boolean'),
+        body('maintenance').isBoolean().withMessage('Maintenance notification must be a boolean')
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: errors.array()[0].msg, code: 'VALIDATION_ERROR' } });
+        }
+        try {
+            const { email, newStudent, maintenance } = req.body;
+            let settings = await Settings.findOne({ user: req.user.id });
+            if (!settings) {
+                settings = new Settings({ user: req.user.id });
+            }
+            settings.notifications = { email, newStudent, maintenance };
+            await settings.save();
+            res.json({ message: 'Notification preferences updated', data: settings.notifications });
+        } catch (error) {
+            console.error('❌ Update Notifications Error:', error);
+            res.status(500).json({ error: { message: 'Failed to update notifications', code: 'SERVER_ERROR' } });
+        }
+    }
+);
+
+// Update security settings
+app.put(
+    '/api/settings/security',
+    verifyToken,
+    isAdmin,
+    [
+        body('currentPassword').notEmpty().withMessage('Current password is required'),
+        body('newPassword').optional().isLength({ min: 8 }).matches(/[A-Z]/).matches(/[0-9]/).withMessage('New password must be at least 8 characters with uppercase and number'),
+        body('confirmPassword').custom((value, { req }) => !req.body.newPassword || value === req.body.newPassword).withMessage('Passwords do not match'),
+        body('twoFactorAuth').isBoolean().withMessage('Two-factor auth must be a boolean')
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: errors.array()[0].msg, code: 'VALIDATION_ERROR' } });
+        }
+        try {
+            const { currentPassword, newPassword, twoFactorAuth } = req.body;
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ error: { message: 'User not found', code: 'NOT_FOUND' } });
+            }
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ error: { message: 'Current password is incorrect', code: 'INVALID_PASSWORD' } });
+            }
+            if (newPassword) {
+                user.password = await bcrypt.hash(newPassword, 10);
+            }
+            if (twoFactorAuth && !user.security.twoFactorAuth) {
+                const secret = speakeasy.generateSecret({ name: `Adem Baba:${user.email}` });
+                user.security.twoFactorSecret = secret.base32;
+            } else if (!twoFactorAuth && user.security.twoFactorAuth) {
+                user.security.twoFactorSecret = null;
+            }
+            user.security.twoFactorAuth = twoFactorAuth;
+            await user.save();
+            res.json({ message: 'Security settings updated' });
+        } catch (error) {
+            console.error('❌ Update Security Error:', error);
+            res.status(500).json({ error: { message: 'Failed to update security settings', code: 'SERVER_ERROR' } });
+        }
+    }
+);
+
+// Generate 2FA QR code
+app.get('/api/settings/2fa-qr', verifyToken, isAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: { message: 'User not found', code: 'NOT_FOUND' } });
+        }
+        if (!user.security.twoFactorSecret) {
+            const secret = speakeasy.generateSecret({ name: `Adem Baba:${user.email}` });
+            user.security.twoFactorSecret = secret.base32;
+            await user.save();
+        }
+        const qrCodeUrl = speakeasy.otpauthURL({
+            secret: user.security.twoFactorSecret,
+            label: `Adem Baba:${user.email}`,
+            issuer: 'Adem Baba'
+        });
+        const qrCodeImage = await qrcode.toDataURL(qrCodeUrl);
+        res.json({ qrCodeUrl: qrCodeImage });
+    } catch (error) {
+        console.error('❌ 2FA QR Code Error:', error);
+        res.status(500).json({ error: { message: 'Failed to generate 2FA QR code', code: 'SERVER_ERROR' } });
+    }
+});
+
+// Update system preferences
+app.put(
+    '/api/settings/system',
+    verifyToken,
+    isAdmin,
+    [
+        body('language').isIn(['en', 'fr', 'es']).withMessage('Invalid language'),
+        body('timezone').isIn(['Africa/Lagos', 'Africa/Accra', 'Africa/Johannesburg']).withMessage('Invalid timezone'),
+        body('theme').isIn(['light', 'dark']).withMessage('Invalid theme')
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: errors.array()[0].msg, code: 'VALIDATION_ERROR' } });
+        }
+        try {
+            const { language, timezone, theme } = req.body;
+            let settings = await Settings.findOne({ user: req.user.id });
+            if (!settings) {
+                settings = new Settings({ user: req.user.id });
+            }
+            settings.preferences = { language, timezone, theme };
+            await settings.save();
+            res.json({ message: 'System preferences updated', data: settings.preferences });
+        } catch (error) {
+            console.error('❌ Update System Error:', error);
+            res.status(500).json({ error: { message: 'Failed to update system preferences', code: 'SERVER_ERROR' } });
         }
     }
 );
