@@ -3080,6 +3080,7 @@ app.put(
     }
 );
 
+
 // Update security settings
 app.put(
     '/api/settings/security',
