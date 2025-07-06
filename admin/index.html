@@ -1007,6 +1007,10 @@
                     <i class="fas fa-cog"></i>
                     <span class="link-text">Settings</span>
                 </a>
+                <a href="./links/uploadLink.html" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    <span class="link-text">Uploadlink</span>
+                </a>
                 <div class="sidebar-footer">
                     <a href="../login-form/index.html" class="nav-link logout-link" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
@@ -1155,31 +1159,31 @@
         </div>
         <div class="notification-list" id="notificationList"></div>
     </div>
-<script>
-    function toggleTheme() {
-        const html = document.documentElement;
-        const themeIcon = document.querySelector('.theme-toggle i');
-        const currentTheme = html.getAttribute('data-theme') || 'dark';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
-        html.setAttribute('data-theme', newTheme);
-        themeIcon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        localStorage.setItem('theme', newTheme);
-    }
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const currentTheme = html.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.querySelector('.sidebar-overlay') || document.createElement('div');
-        
-        if (!overlay.classList.contains('sidebar-overlay')) {
-            overlay.className = 'sidebar-overlay';
-            document.body.appendChild(overlay);
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            localStorage.setItem('theme', newTheme);
         }
-        
-        sidebar.classList.toggle('active');
-        overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
-    }
-</script>
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay') || document.createElement('div');
+
+            if (!overlay.classList.contains('sidebar-overlay')) {
+                overlay.className = 'sidebar-overlay';
+                document.body.appendChild(overlay);
+            }
+
+            sidebar.classList.toggle('active');
+            overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+        }
+    </script>
     <script type="module">
         import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '../login-form/utils.js';
 
@@ -1715,7 +1719,7 @@
             }
         }
 
- 
+
 
         function toggleSidebarCollapse() {
             document.querySelector('.sidebar').classList.toggle('collapsed');

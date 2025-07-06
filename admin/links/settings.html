@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,8 +79,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .sidebar {
@@ -511,8 +517,15 @@
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hamburger {
@@ -576,7 +589,8 @@
                 align-items: flex-start;
             }
 
-            .save-btn, .nuke-btn {
+            .save-btn,
+            .nuke-btn {
                 width: 100%;
                 justify-content: center;
             }
@@ -593,11 +607,19 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
     <div id="loading">
         <div class="loader"></div>
@@ -614,9 +636,12 @@
             <a href="/admin/index.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
             <a href="/admin/links/student.html" class="nav-link"><i class="fas fa-users"></i><span>Students</span></a>
             <a href="/admin/links/rooms.html" class="nav-link"><i class="fas fa-bed"></i><span>Rooms</span></a>
-            <a href="/admin/links/schedule.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Schedule</span></a>
+            <a href="/admin/links/schedule.html" class="nav-link"><i
+                    class="fas fa-calendar-alt"></i><span>Schedule</span></a>
             <a href="/admin/links/payment.html" class="nav-link"><i class="fas fa-coins"></i><span>Payments</span></a>
-            <a href="/admin/links/settings.html" class="nav-link active"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="./uploadLink.html" class="nav-link active"><i class="fas fa-file"></i> Upload Documents</a>
+            <a href="/admin/links/settings.html" class="nav-link active"><i
+                    class="fas fa-cog"></i><span>Settings</span></a>
         </nav>
     </aside>
 
@@ -638,7 +663,8 @@
         </header>
 
         <div class="settings-nav">
-            <button class="settings-nav-btn active" data-tab="account"><i class="fas fa-user-circle"></i> Account</button>
+            <button class="settings-nav-btn active" data-tab="account"><i class="fas fa-user-circle"></i>
+                Account</button>
             <button class="settings-nav-btn" data-tab="notifications"><i class="fas fa-bell"></i> Notifications</button>
             <button class="settings-nav-btn" data-tab="security"><i class="fas fa-shield-alt"></i> Security</button>
             <button class="settings-nav-btn" data-tab="system"><i class="fas fa-cog"></i> System</button>
@@ -653,14 +679,17 @@
                             <label for="profilePicture">Profile Picture</label>
                             <div class="profile-upload">
                                 <div class="upload-preview" id="profilePreview"><i class="fas fa-user"></i></div>
-                                <button type="button" class="upload-btn" id="uploadBtn"><i class="fas fa-upload"></i> Upload New Picture</button>
-                                <input type="file" id="profileUpload" accept="image/jpeg,image/png" style="display: none;">
+                                <button type="button" class="upload-btn" id="uploadBtn"><i class="fas fa-upload"></i>
+                                    Upload New Picture</button>
+                                <input type="file" id="profileUpload" accept="image/jpeg,image/png"
+                                    style="display: none;">
                             </div>
                             <div class="error-message" id="profileUploadError"></div>
                         </div>
                         <div class="form-group">
                             <label for="profileName">Full Name</label>
-                            <input type="text" id="profileName" class="settings-input" required minlength="2" maxlength="50">
+                            <input type="text" id="profileName" class="settings-input" required minlength="2"
+                                maxlength="50">
                             <div class="error-message" id="profileNameError"></div>
                         </div>
                         <div class="form-group">
@@ -794,574 +823,575 @@
     <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
     <div id="toast"></div>
 
-<script type="module">
-    import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
 
-    // Validate Email and Password
-    const validateEmail = (email) => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    };
+        // Validate Email and Password
+        const validateEmail = (email) => {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        };
 
-    const validatePassword = (password) => {
-        return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password);
-    };
+        const validatePassword = (password) => {
+            return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password);
+        };
 
-    // DOM Elements
-    const hamburger = document.getElementById('hamburger');
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarOverlay = document.querySelector('.sidebar-overlay') || document.createElement('div');
-    const settingsNavBtns = document.querySelectorAll('.settings-nav-btn');
-    const settingsSections = document.querySelectorAll('.settings-section');
-    const themeToggle = document.getElementById('themeToggle');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const profileForm = document.getElementById('profileForm');
-    const notificationForm = document.getElementById('notificationForm');
-    const securityForm = document.getElementById('securityForm');
-    const systemForm = document.getElementById('systemForm');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const profileUpload = document.getElementById('profileUpload');
-    const profilePreview = document.getElementById('profilePreview');
-    const userName = document.getElementById('userName');
-    const userAvatar = document.getElementById('userAvatar');
-    const togglePasswordBtns = document.querySelectorAll('.toggle-password');
-    const logoutButton = document.getElementById('logoutButton');
-    const notificationBadge = document.getElementById('notificationBadge');
-    const qrCodeContainer = document.getElementById('qrCodeContainer');
-    const qrCode = document.getElementById('qrCode');
-    const nukeSystemBtn = document.getElementById('nukeSystemBtn');
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.querySelector('.sidebar-overlay') || document.createElement('div');
+        const settingsNavBtns = document.querySelectorAll('.settings-nav-btn');
+        const settingsSections = document.querySelectorAll('.settings-section');
+        const themeToggle = document.getElementById('themeToggle');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const profileForm = document.getElementById('profileForm');
+        const notificationForm = document.getElementById('notificationForm');
+        const securityForm = document.getElementById('securityForm');
+        const systemForm = document.getElementById('systemForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const profileUpload = document.getElementById('profileUpload');
+        const profilePreview = document.getElementById('profilePreview');
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        const togglePasswordBtns = document.querySelectorAll('.toggle-password');
+        const logoutButton = document.getElementById('logoutButton');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const qrCodeContainer = document.getElementById('qrCodeContainer');
+        const qrCode = document.getElementById('qrCode');
+        const nukeSystemBtn = document.getElementById('nukeSystemBtn');
 
-    // Sidebar Toggle
-    function toggleSidebar() {
-        if (!sidebarOverlay.classList.contains('sidebar-overlay')) {
-            sidebarOverlay.className = 'sidebar-overlay';
-            document.body.appendChild(sidebarOverlay);
-        }
-        sidebar.classList.toggle('active');
-        sidebarOverlay.classList.toggle('active', sidebar.classList.contains('active'));
-        sidebarOverlay.onclick = toggleSidebar;
-    }
-
-    // Theme Toggle
-    function toggleTheme() {
-        const html = document.documentElement;
-        const themeIcon = themeToggle.querySelector('i');
-        const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
-        themeIcon.classList.toggle('fa-sun', newTheme === 'light');
-        localStorage.setItem('theme', newTheme);
-        darkModeToggle.checked = newTheme === 'dark';
-    }
-
-    // Client-Side Validation
-    function validateProfileForm() {
-        const name = document.getElementById('profileName').value.trim();
-        const email = document.getElementById('profileEmail').value.trim();
-        const file = profileUpload.files[0];
-        let isValid = true;
-
-        document.getElementById('profileNameError').classList.remove('active');
-        document.getElementById('profileEmailError').classList.remove('active');
-        document.getElementById('profileUploadError').classList.remove('active');
-
-        if (name.length < 2 || name.length > 50) {
-            document.getElementById('profileNameError').textContent = 'Name must be between 2 and 50 characters';
-            document.getElementById('profileNameError').classList.add('active');
-            isValid = false;
-        }
-
-        if (!validateEmail(email)) {
-            document.getElementById('profileEmailError').textContent = 'Please enter a valid email';
-            document.getElementById('profileEmailError').classList.add('active');
-            isValid = false;
-        }
-
-        if (file && !['image/jpeg', 'image/png'].includes(file.type)) {
-            document.getElementById('profileUploadError').textContent = 'Only JPEG or PNG files are allowed';
-            document.getElementById('profileUploadError').classList.add('active');
-            isValid = false;
-        } else if (file && file.size > 5 * 1024 * 1024) {
-            document.getElementById('profileUploadError').textContent = 'File size must be less than 5MB';
-            document.getElementById('profileUploadError').classList.add('active');
-            isValid = false;
-        }
-
-        document.getElementById('profileSaveBtn').disabled = !isValid;
-        return isValid;
-    }
-
-    function validateSecurityForm() {
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        let isValid = true;
-
-        document.getElementById('currentPasswordError').classList.remove('active');
-        document.getElementById('newPasswordError').classList.remove('active');
-        document.getElementById('confirmPasswordError').classList.remove('active');
-
-        if (!currentPassword) {
-            document.getElementById('currentPasswordError').textContent = 'Current password is required';
-            document.getElementById('currentPasswordError').classList.add('active');
-            isValid = false;
-        }
-
-        if (newPassword && !validatePassword(newPassword)) {
-            document.getElementById('newPasswordError').textContent = 'Password must be at least 8 characters with uppercase and number';
-            document.getElementById('newPasswordError').classList.add('active');
-            isValid = false;
-        }
-
-        if (newPassword && newPassword !== confirmPassword) {
-            document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
-            document.getElementById('confirmPasswordError').classList.add('active');
-            isValid = false;
-        }
-
-        document.getElementById('securitySaveBtn').disabled = !isValid;
-        return isValid;
-    }
-
-    // Check Authentication
-    async function checkAuth() {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            console.error('No token found');
-            showToast('No authentication token found. Please log in.', 'error');
-            setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
-            return null;
-        }
-        try {
-            console.log('Attempting to fetch settings with token:', token.substring(0, 10) + '...');
-            const data = await fetchWithRetry(`${API_URL}/settings`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            console.log('Settings response:', JSON.stringify(data, null, 2));
-            if (!data.name || !data.email || !data.userType) {
-                throw new Error('Invalid settings response: Missing required fields');
+        // Sidebar Toggle
+        function toggleSidebar() {
+            if (!sidebarOverlay.classList.contains('sidebar-overlay')) {
+                sidebarOverlay.className = 'sidebar-overlay';
+                document.body.appendChild(sidebarOverlay);
             }
-            return data;
-        } catch (error) {
-            console.error('Auth check failed:', {
-                message: error.message,
-                url: `${API_URL}/settings`,
-                status: error.status || 'N/A'
-            });
-            if (error.message.includes('401') || error.message.includes('Invalid token')) {
-                console.log('Clearing invalid token');
-                localStorage.removeItem('token');
-                sessionStorage.removeItem('token');
-                showToast('Invalid or expired session. Please log in again.', 'error');
-            } else if (error.message.includes('404')) {
-                showToast('Settings not found. Please try again or contact support.', 'error');
-            } else {
-                showToast(`Authentication failed: ${error.message}. Please try again.`, 'error');
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active', sidebar.classList.contains('active'));
+            sidebarOverlay.onclick = toggleSidebar;
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = themeToggle.querySelector('i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+            darkModeToggle.checked = newTheme === 'dark';
+        }
+
+        // Client-Side Validation
+        function validateProfileForm() {
+            const name = document.getElementById('profileName').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+            const file = profileUpload.files[0];
+            let isValid = true;
+
+            document.getElementById('profileNameError').classList.remove('active');
+            document.getElementById('profileEmailError').classList.remove('active');
+            document.getElementById('profileUploadError').classList.remove('active');
+
+            if (name.length < 2 || name.length > 50) {
+                document.getElementById('profileNameError').textContent = 'Name must be between 2 and 50 characters';
+                document.getElementById('profileNameError').classList.add('active');
+                isValid = false;
             }
-            setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
-            return null;
-        }
-    }
 
-    // Load User Data
-    function loadUserData(user) {
-        try {
-            userName.textContent = sanitizeInput(user.name || 'User');
-            document.getElementById('profileName').value = sanitizeInput(user.name || '');
-            document.getElementById('profileEmail').value = sanitizeInput(user.email || '');
-            const notifications = user.settings?.notifications || {
-                email: false,
-                newStudent: false,
-                maintenance: false
-            };
-            document.getElementById('emailNotifications').checked = notifications.email;
-            document.getElementById('newStudentNotifications').checked = notifications.newStudent;
-            document.getElementById('maintenanceNotifications').checked = notifications.maintenance;
-            const security = user.security || { twoFactorAuth: false };
-            document.getElementById('twoFactorAuth').checked = security.twoFactorAuth;
-            const preferences = user.preferences || {
-                language: 'en',
-                timezone: 'Africa/Lagos',
-                theme: 'dark'
-            };
-            document.getElementById('language').value = preferences.language;
-            document.getElementById('timezone').value = preferences.timezone;
-            darkModeToggle.checked = preferences.theme === 'dark';
-            if (user.avatar) {
-                profilePreview.innerHTML = '';
-                const img = document.createElement('img');
-                img.src = user.avatar;
-                img.alt = 'Profile Picture';
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.borderRadius = '50%';
-                img.style.objectFit = 'cover';
-                profilePreview.appendChild(img);
-                userAvatar.innerHTML = '';
-                const avatarImg = document.createElement('img');
-                avatarImg.src = user.avatar;
-                avatarImg.alt = 'User Avatar';
-                avatarImg.style.width = '100%';
-                avatarImg.style.height = '100%';
-                avatarImg.style.borderRadius = '50%';
-                avatarImg.style.objectFit = 'cover';
-                userAvatar.appendChild(avatarImg);
+            if (!validateEmail(email)) {
+                document.getElementById('profileEmailError').textContent = 'Please enter a valid email';
+                document.getElementById('profileEmailError').classList.add('active');
+                isValid = false;
             }
-            fetchNotifications();
-        } catch (error) {
-            showToast('Failed to load user data: ' + error.message, 'error');
-        }
-    }
 
-    // Fetch Notification Count
-    async function fetchNotifications() {
-        try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            if (!token) return;
-            const response = await fetchWithRetry(`${API_URL}/notifications?unread=true`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            notificationBadge.textContent = response.count || 0;
-        } catch (error) {
-            console.error('Failed to fetch notifications:', error);
-        }
-    }
+            if (file && !['image/jpeg', 'image/png'].includes(file.type)) {
+                document.getElementById('profileUploadError').textContent = 'Only JPEG or PNG files are allowed';
+                document.getElementById('profileUploadError').classList.add('active');
+                isValid = false;
+            } else if (file && file.size > 5 * 1024 * 1024) {
+                document.getElementById('profileUploadError').textContent = 'File size must be less than 5MB';
+                document.getElementById('profileUploadError').classList.add('active');
+                isValid = false;
+            }
 
-    // Nuke System Data
-    async function nukeSystemData() {
-        if (window.userType !== 'admin') {
-            showToast('Only admins can nuke system data', 'error');
-            return;
+            document.getElementById('profileSaveBtn').disabled = !isValid;
+            return isValid;
         }
-        if (!confirm('Are you sure you want to nuke all system data? This action is irreversible!')) {
-            return;
-        }
-        try {
-            nukeSystemBtn.disabled = true;
-            await fetchWithRetry(`${API_URL}settings/nuke`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            showToast('System data has been reset. You will be logged out.', 'success');
-            setTimeout(() => {
-                localStorage.removeItem('token');
-                sessionStorage.removeItem('token');
-                window.location.href = LOGIN_PATH;
-            }, 3000);
-        } catch (error) {
-            showToast('Failed to nuke system data: ' + error.message, 'error');
-        } finally {
-            nukeSystemBtn.disabled = false;
-        }
-    }
 
-    // Fetch 2FA QR Code
-    async function fetch2FAQRCode() {
-        try {
+        function validateSecurityForm() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            let isValid = true;
+
+            document.getElementById('currentPasswordError').classList.remove('active');
+            document.getElementById('newPasswordError').classList.remove('active');
+            document.getElementById('confirmPasswordError').classList.remove('active');
+
+            if (!currentPassword) {
+                document.getElementById('currentPasswordError').textContent = 'Current password is required';
+                document.getElementById('currentPasswordError').classList.add('active');
+                isValid = false;
+            }
+
+            if (newPassword && !validatePassword(newPassword)) {
+                document.getElementById('newPasswordError').textContent = 'Password must be at least 8 characters with uppercase and number';
+                document.getElementById('newPasswordError').classList.add('active');
+                isValid = false;
+            }
+
+            if (newPassword && newPassword !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
+                document.getElementById('confirmPasswordError').classList.add('active');
+                isValid = false;
+            }
+
+            document.getElementById('securitySaveBtn').disabled = !isValid;
+            return isValid;
+        }
+
+        // Check Authentication
+        async function checkAuth() {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             if (!token) {
-                showToast('Session expired. Please log in again.', 'error');
+                console.error('No token found');
+                showToast('No authentication token found. Please log in.', 'error');
                 setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
-                return;
+                return null;
             }
-            const response = await fetchWithRetry(`${API_URL}/settings/2fa-qr`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.qrCodeUrl) {
-                qrCode.innerHTML = '';
-                QRCode.toCanvas(qrCode, response.qrCodeUrl, { width: 200 }, (error) => {
-                    if (error) console.error('QR Code Error:', error);
+            try {
+                console.log('Attempting to fetch settings with token:', token.substring(0, 10) + '...');
+                const data = await fetchWithRetry(`${API_URL}/settings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                qrCodeContainer.classList.add('active');
-            }
-        } catch (error) {
-            showToast('Failed to load 2FA QR code: ' + error.message, 'error');
-            document.getElementById('twoFactorAuth').checked = false;
-        }
-    }
-
-    // Initialize
-    async function initialize() {
-        try {
-            console.log('Initializing settings page...');
-            const user = await checkAuth();
-            if (user) {
-                window.userType = user.userType;
-                document.getElementById('loading').style.display = 'none';
-                loadUserData(user);
-                const savedTheme = localStorage.getItem('theme') || user.preferences?.theme || 'dark';
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                darkModeToggle.checked = savedTheme === 'dark';
-                themeToggle.querySelector('i').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-                if (user.userType !== 'admin') {
-                    settingsNavBtns.forEach(btn => {
-                        if (['notifications', 'security', 'system'].includes(btn.dataset.tab)) {
-                            btn.disabled = true;
-                            btn.style.display = 'none';
-                        }
-                    });
-                    settingsSections.forEach(section => {
-                        if (['notifications', 'security', 'system'].includes(section.id)) {
-                            section.style.display = 'none';
-                        }
-                    });
-                    nukeSystemBtn.style.display = 'none';
-                    showToast('Only admins can access notification, security, and system settings', 'error');
+                console.log('Settings response:', JSON.stringify(data, null, 2));
+                if (!data.name || !data.email || !data.userType) {
+                    throw new Error('Invalid settings response: Missing required fields');
                 }
-            } else {
-                console.log('No user data received, redirecting to login...');
-                document.getElementById('loading').style.display = 'none';
+                return data;
+            } catch (error) {
+                console.error('Auth check failed:', {
+                    message: error.message,
+                    url: `${API_URL}/settings`,
+                    status: error.status || 'N/A'
+                });
+                if (error.message.includes('401') || error.message.includes('Invalid token')) {
+                    console.log('Clearing invalid token');
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    showToast('Invalid or expired session. Please log in again.', 'error');
+                } else if (error.message.includes('404')) {
+                    showToast('Settings not found. Please try again or contact support.', 'error');
+                } else {
+                    showToast(`Authentication failed: ${error.message}. Please try again.`, 'error');
+                }
+                setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
+                return null;
             }
-        } catch (error) {
-            console.error('Initialization error:', error);
-            showToast(`Failed to initialize: ${error.message}. Redirecting to login...`, 'error');
-            setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
         }
-    }
 
-    // Event Listeners
-    hamburger.addEventListener('click', toggleSidebar);
+        // Load User Data
+        function loadUserData(user) {
+            try {
+                userName.textContent = sanitizeInput(user.name || 'User');
+                document.getElementById('profileName').value = sanitizeInput(user.name || '');
+                document.getElementById('profileEmail').value = sanitizeInput(user.email || '');
+                const notifications = user.settings?.notifications || {
+                    email: false,
+                    newStudent: false,
+                    maintenance: false
+                };
+                document.getElementById('emailNotifications').checked = notifications.email;
+                document.getElementById('newStudentNotifications').checked = notifications.newStudent;
+                document.getElementById('maintenanceNotifications').checked = notifications.maintenance;
+                const security = user.security || { twoFactorAuth: false };
+                document.getElementById('twoFactorAuth').checked = security.twoFactorAuth;
+                const preferences = user.preferences || {
+                    language: 'en',
+                    timezone: 'Africa/Lagos',
+                    theme: 'dark'
+                };
+                document.getElementById('language').value = preferences.language;
+                document.getElementById('timezone').value = preferences.timezone;
+                darkModeToggle.checked = preferences.theme === 'dark';
+                if (user.avatar) {
+                    profilePreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = user.avatar;
+                    img.alt = 'Profile Picture';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    profilePreview.appendChild(img);
+                    userAvatar.innerHTML = '';
+                    const avatarImg = document.createElement('img');
+                    avatarImg.src = user.avatar;
+                    avatarImg.alt = 'User Avatar';
+                    avatarImg.style.width = '100%';
+                    avatarImg.style.height = '100%';
+                    avatarImg.style.borderRadius = '50%';
+                    avatarImg.style.objectFit = 'cover';
+                    userAvatar.appendChild(avatarImg);
+                }
+                fetchNotifications();
+            } catch (error) {
+                showToast('Failed to load user data: ' + error.message, 'error');
+            }
+        }
 
-    logoutButton.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        window.location.href = LOGIN_PATH;
-    });
+        // Fetch Notification Count
+        async function fetchNotifications() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                if (!token) return;
+                const response = await fetchWithRetry(`${API_URL}/notifications?unread=true`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                notificationBadge.textContent = response.count || 0;
+            } catch (error) {
+                console.error('Failed to fetch notifications:', error);
+            }
+        }
 
-    settingsNavBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (window.userType !== 'admin' && ['notifications', 'security', 'system'].includes(btn.dataset.tab)) {
-                showToast('Only admins can access this section', 'error');
+        // Nuke System Data
+        async function nukeSystemData() {
+            if (window.userType !== 'admin') {
+                showToast('Only admins can nuke system data', 'error');
                 return;
             }
-            settingsNavBtns.forEach(b => b.classList.remove('active'));
-            settingsSections.forEach(s => s.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(btn.dataset.tab).classList.add('active');
-            if (btn.dataset.tab === 'security' && document.getElementById('twoFactorAuth').checked) {
-                fetch2FAQRCode();
+            if (!confirm('Are you sure you want to nuke all system data? This action is irreversible!')) {
+                return;
+            }
+            try {
+                nukeSystemBtn.disabled = true;
+                await fetchWithRetry(`${API_URL}settings/nuke`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                showToast('System data has been reset. You will be logged out.', 'success');
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                }, 3000);
+            } catch (error) {
+                showToast('Failed to nuke system data: ' + error.message, 'error');
+            } finally {
+                nukeSystemBtn.disabled = false;
+            }
+        }
+
+        // Fetch 2FA QR Code
+        async function fetch2FAQRCode() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                if (!token) {
+                    showToast('Session expired. Please log in again.', 'error');
+                    setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
+                    return;
+                }
+                const response = await fetchWithRetry(`${API_URL}/settings/2fa-qr`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.qrCodeUrl) {
+                    qrCode.innerHTML = '';
+                    QRCode.toCanvas(qrCode, response.qrCodeUrl, { width: 200 }, (error) => {
+                        if (error) console.error('QR Code Error:', error);
+                    });
+                    qrCodeContainer.classList.add('active');
+                }
+            } catch (error) {
+                showToast('Failed to load 2FA QR code: ' + error.message, 'error');
+                document.getElementById('twoFactorAuth').checked = false;
+            }
+        }
+
+        // Initialize
+        async function initialize() {
+            try {
+                console.log('Initializing settings page...');
+                const user = await checkAuth();
+                if (user) {
+                    window.userType = user.userType;
+                    document.getElementById('loading').style.display = 'none';
+                    loadUserData(user);
+                    const savedTheme = localStorage.getItem('theme') || user.preferences?.theme || 'dark';
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                    darkModeToggle.checked = savedTheme === 'dark';
+                    themeToggle.querySelector('i').className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+                    if (user.userType !== 'admin') {
+                        settingsNavBtns.forEach(btn => {
+                            if (['notifications', 'security', 'system'].includes(btn.dataset.tab)) {
+                                btn.disabled = true;
+                                btn.style.display = 'none';
+                            }
+                        });
+                        settingsSections.forEach(section => {
+                            if (['notifications', 'security', 'system'].includes(section.id)) {
+                                section.style.display = 'none';
+                            }
+                        });
+                        nukeSystemBtn.style.display = 'none';
+                        showToast('Only admins can access notification, security, and system settings', 'error');
+                    }
+                } else {
+                    console.log('No user data received, redirecting to login...');
+                    document.getElementById('loading').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast(`Failed to initialize: ${error.message}. Redirecting to login...`, 'error');
+                setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
+            }
+        }
+
+        // Event Listeners
+        hamburger.addEventListener('click', toggleSidebar);
+
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        });
+
+        settingsNavBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.userType !== 'admin' && ['notifications', 'security', 'system'].includes(btn.dataset.tab)) {
+                    showToast('Only admins can access this section', 'error');
+                    return;
+                }
+                settingsNavBtns.forEach(b => b.classList.remove('active'));
+                settingsSections.forEach(s => s.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+                if (btn.dataset.tab === 'security' && document.getElementById('twoFactorAuth').checked) {
+                    fetch2FAQRCode();
+                }
+            });
+        });
+
+        themeToggle.addEventListener('click', toggleTheme);
+        darkModeToggle.addEventListener('change', toggleTheme);
+
+        uploadBtn.addEventListener('click', () => profileUpload.click());
+
+        profileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profilePreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.alt = 'Profile Preview';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    profilePreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+            validateProfileForm();
+        });
+
+        document.getElementById('profileName').addEventListener('input', validateProfileForm);
+        document.getElementById('profileEmail').addEventListener('input', validateProfileForm);
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!validateProfileForm()) return;
+            const name = sanitizeInput(document.getElementById('profileName').value.trim());
+            const email = sanitizeInput(document.getElementById('profileEmail').value.trim());
+            const file = profileUpload.files[0];
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            if (file) formData.append('avatar', file);
+            try {
+                document.getElementById('profileSaveBtn').disabled = true;
+                const response = await fetchWithRetry(`${API_URL}/settings/profile`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: formData
+                });
+                userName.textContent = name;
+                if (response.data.avatar) {
+                    profilePreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = response.data.avatar;
+                    img.alt = 'Profile Picture';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    profilePreview.appendChild(img);
+                    userAvatar.innerHTML = '';
+                    const avatarImg = document.createElement('img');
+                    avatarImg.src = response.data.avatar;
+                    avatarImg.alt = 'User Avatar';
+                    avatarImg.style.width = '100%';
+                    avatarImg.style.height = '100%';
+                    avatarImg.style.borderRadius = '50%';
+                    avatarImg.style.objectFit = 'cover';
+                    userAvatar.appendChild(avatarImg);
+                }
+                showToast('Profile updated successfully', 'success');
+            } catch (error) {
+                showToast('Failed to update profile: ' + error.message, 'error');
+            } finally {
+                document.getElementById('profileSaveBtn').disabled = false;
             }
         });
-    });
 
-    themeToggle.addEventListener('click', toggleTheme);
-    darkModeToggle.addEventListener('change', toggleTheme);
-
-    uploadBtn.addEventListener('click', () => profileUpload.click());
-
-    profileUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                profilePreview.innerHTML = '';
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                img.alt = 'Profile Preview';
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.borderRadius = '50%';
-                img.style.objectFit = 'cover';
-                profilePreview.appendChild(img);
+        notificationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.userType !== 'admin') {
+                showToast('Only admins can update notification settings', 'error');
+                return;
+            }
+            const data = {
+                email: document.getElementById('emailNotifications').checked,
+                newStudent: document.getElementById('newStudentNotifications').checked,
+                maintenance: document.getElementById('maintenanceNotifications').checked
             };
-            reader.readAsDataURL(file);
-        }
-        validateProfileForm();
-    });
-
-    document.getElementById('profileName').addEventListener('input', validateProfileForm);
-    document.getElementById('profileEmail').addEventListener('input', validateProfileForm);
-
-    profileForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!validateProfileForm()) return;
-        const name = sanitizeInput(document.getElementById('profileName').value.trim());
-        const email = sanitizeInput(document.getElementById('profileEmail').value.trim());
-        const file = profileUpload.files[0];
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('email', email);
-        if (file) formData.append('avatar', file);
-        try {
-            document.getElementById('profileSaveBtn').disabled = true;
-            const response = await fetchWithRetry(`${API_URL}/settings/profile`, {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                body: formData
-            });
-            userName.textContent = name;
-            if (response.data.avatar) {
-                profilePreview.innerHTML = '';
-                const img = document.createElement('img');
-                img.src = response.data.avatar;
-                img.alt = 'Profile Picture';
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.borderRadius = '50%';
-                img.style.objectFit = 'cover';
-                profilePreview.appendChild(img);
-                userAvatar.innerHTML = '';
-                const avatarImg = document.createElement('img');
-                avatarImg.src = response.data.avatar;
-                avatarImg.alt = 'User Avatar';
-                avatarImg.style.width = '100%';
-                avatarImg.style.height = '100%';
-                avatarImg.style.borderRadius = '50%';
-                avatarImg.style.objectFit = 'cover';
-                userAvatar.appendChild(avatarImg);
-            }
-            showToast('Profile updated successfully', 'success');
-        } catch (error) {
-            showToast('Failed to update profile: ' + error.message, 'error');
-        } finally {
-            document.getElementById('profileSaveBtn').disabled = false;
-        }
-    });
-
-    notificationForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (window.userType !== 'admin') {
-            showToast('Only admins can update notification settings', 'error');
-            return;
-        }
-        const data = {
-            email: document.getElementById('emailNotifications').checked,
-            newStudent: document.getElementById('newStudentNotifications').checked,
-            maintenance: document.getElementById('maintenanceNotifications').checked
-        };
-        try {
-            document.getElementById('notificationSaveBtn').disabled = true;
-            await fetchWithRetry(`${API_URL}/settings/notifications`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-            showToast('Notification preferences saved', 'success');
-        } catch (error) {
-            showToast('Failed to update notification settings: ' + error.message, 'error');
-        } finally {
-            document.getElementById('notificationSaveBtn').disabled = false;
-        }
-    });
-
-    document.getElementById('currentPassword').addEventListener('input', validateSecurityForm);
-    document.getElementById('newPassword').addEventListener('input', validateSecurityForm);
-    document.getElementById('confirmPassword').addEventListener('input', validateSecurityForm);
-
-    document.getElementById('twoFactorAuth').addEventListener('change', async (e) => {
-        if (e.target.checked && window.userType === 'admin') {
-            await fetch2FAQRCode();
-        } else {
-            qrCodeContainer.classList.remove('active');
-            qrCode.innerHTML = '';
-        }
-    });
-
-    securityForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (window.userType !== 'admin') {
-            showToast('Only admins can update security settings', 'error');
-            return;
-        }
-        if (!validateSecurityForm()) return;
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const twoFactorAuth = document.getElementById('twoFactorAuth').checked;
-        try {
-            document.getElementById('securitySaveBtn').disabled = true;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            if (!token) {
-                showToast('Session expired. Please log in again.', 'error');
-                setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
-                return;
-            }
-            await fetchWithRetry(`${API_URL}/settings/security`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ currentPassword, newPassword, confirmPassword, twoFactorAuth })
-            });
-            showToast('Security settings updated', 'success');
-            securityForm.reset();
-            qrCodeContainer.classList.remove('active');
-            qrCode.innerHTML = '';
-        } catch (error) {
-            showToast('Failed to update security settings: ' + error.message, 'error');
-        } finally {
-            document.getElementById('securitySaveBtn').disabled = false;
-        }
-    });
-
-    systemForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (window.userType !== 'admin') {
-            showToast('Only admins can update system settings', 'error');
-            return;
-        }
-        const data = {
-            language: document.getElementById('language').value,
-            timezone: document.getElementById('timezone').value,
-            theme: document.getElementById('darkModeToggle').checked ? 'dark' : 'light'
-        };
-        try {
-            document.getElementById('systemSaveBtn').disabled = true;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            if (!token) {
-                showToast('Session expired. Please log in again.', 'error');
-                setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
-                return;
-            }
-            await fetchWithRetry(`${API_URL}/settings/system`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-            if (data.theme !== document.documentElement.getAttribute('data-theme')) {
-                toggleTheme();
-            }
-            showToast('System preferences saved', 'success');
-        } catch (error) {
-            showToast('Failed to update system preferences: ' + error.message, 'error');
-        } finally {
-            document.getElementById('systemSaveBtn').disabled = false;
-        }
-    });
-
-    nukeSystemBtn.addEventListener('click', nukeSystemData);
-
-    togglePasswordBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetId = btn.getAttribute('data-target');
-            const input = document.getElementById(targetId);
-            if (input) {
-                input.type = input.type === 'password' ? 'text' : 'password';
-                btn.className = input.type === 'password' ? 'fas fa-eye-slash toggle-password' : 'fas fa-eye toggle-password';
+            try {
+                document.getElementById('notificationSaveBtn').disabled = true;
+                await fetchWithRetry(`${API_URL}/settings/notifications`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                showToast('Notification preferences saved', 'success');
+            } catch (error) {
+                showToast('Failed to update notification settings: ' + error.message, 'error');
+            } finally {
+                document.getElementById('notificationSaveBtn').disabled = false;
             }
         });
-    });
 
-    // Execute Initialization
-    try {
-        initialize();
-    } catch (error) {
-        console.error('Failed to execute initialize:', error);
-        showToast('Failed to initialize page. Please refresh.', 'error');
-    }
-</script>
+        document.getElementById('currentPassword').addEventListener('input', validateSecurityForm);
+        document.getElementById('newPassword').addEventListener('input', validateSecurityForm);
+        document.getElementById('confirmPassword').addEventListener('input', validateSecurityForm);
+
+        document.getElementById('twoFactorAuth').addEventListener('change', async (e) => {
+            if (e.target.checked && window.userType === 'admin') {
+                await fetch2FAQRCode();
+            } else {
+                qrCodeContainer.classList.remove('active');
+                qrCode.innerHTML = '';
+            }
+        });
+
+        securityForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.userType !== 'admin') {
+                showToast('Only admins can update security settings', 'error');
+                return;
+            }
+            if (!validateSecurityForm()) return;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const twoFactorAuth = document.getElementById('twoFactorAuth').checked;
+            try {
+                document.getElementById('securitySaveBtn').disabled = true;
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                if (!token) {
+                    showToast('Session expired. Please log in again.', 'error');
+                    setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
+                    return;
+                }
+                await fetchWithRetry(`${API_URL}/settings/security`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword, confirmPassword, twoFactorAuth })
+                });
+                showToast('Security settings updated', 'success');
+                securityForm.reset();
+                qrCodeContainer.classList.remove('active');
+                qrCode.innerHTML = '';
+            } catch (error) {
+                showToast('Failed to update security settings: ' + error.message, 'error');
+            } finally {
+                document.getElementById('securitySaveBtn').disabled = false;
+            }
+        });
+
+        systemForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (window.userType !== 'admin') {
+                showToast('Only admins can update system settings', 'error');
+                return;
+            }
+            const data = {
+                language: document.getElementById('language').value,
+                timezone: document.getElementById('timezone').value,
+                theme: document.getElementById('darkModeToggle').checked ? 'dark' : 'light'
+            };
+            try {
+                document.getElementById('systemSaveBtn').disabled = true;
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                if (!token) {
+                    showToast('Session expired. Please log in again.', 'error');
+                    setTimeout(() => { window.location.href = LOGIN_PATH; }, 3000);
+                    return;
+                }
+                await fetchWithRetry(`${API_URL}/settings/system`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (data.theme !== document.documentElement.getAttribute('data-theme')) {
+                    toggleTheme();
+                }
+                showToast('System preferences saved', 'success');
+            } catch (error) {
+                showToast('Failed to update system preferences: ' + error.message, 'error');
+            } finally {
+                document.getElementById('systemSaveBtn').disabled = false;
+            }
+        });
+
+        nukeSystemBtn.addEventListener('click', nukeSystemData);
+
+        togglePasswordBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                if (input) {
+                    input.type = input.type === 'password' ? 'text' : 'password';
+                    btn.className = input.type === 'password' ? 'fas fa-eye-slash toggle-password' : 'fas fa-eye toggle-password';
+                }
+            });
+        });
+
+        // Execute Initialization
+        try {
+            initialize();
+        } catch (error) {
+            console.error('Failed to execute initialize:', error);
+            showToast('Failed to initialize page. Please refresh.', 'error');
+        }
+    </script>
 </body>
+
 </html>

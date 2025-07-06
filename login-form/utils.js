@@ -1,5 +1,6 @@
 // utils.js
 export const API_URL = 'https://adem-backend.onrender.com/api';
+/* export const API_URL = 'http://localhost:3000/api'; */
 export const LOGIN_PATH = '/login-form/index.html';
 export const BASE_URL = '';
 

@@ -827,6 +827,7 @@
                 <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
                 <a href="./schedule.html" class="nav-link"><i class="fas fa-calendar"></i> Schedule</a>
                 <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
+                <a href="./uploadLink.html" class="nav-link active"><i class="fas fa-file"></i> Upload Documents</a>
                 <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
                 <a href="#" class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </nav>
@@ -1098,61 +1099,61 @@
         <div id="toast" class="custom-toast"></div>
     </div>
 
-<script type="module">
-    import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
 
-    async function checkAuth() {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            window.location.href = LOGIN_PATH;
-            return null;
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+            try {
+                const data = await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return data.user;
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
         }
-        try {
-            const data = await fetchWithRetry(`${API_URL}/protected`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            return data.user;
-        } catch (error) {
-            console.error('Auth check failed:', error);
-            localStorage.removeItem('token');
-            sessionStorage.removeItem('token');
-            window.location.href = LOGIN_PATH;
-            return null;
+
+        async function fetchStudentData() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const stats = await fetchWithRetry(`${API_URL}/students/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                document.getElementById('totalStudents').textContent = stats.totalStudents || 0;
+                document.getElementById('maleStudents').textContent = stats.maleStudents || 0;
+                document.getElementById('pendingApplications').textContent = stats.pendingApplications || 0;
+
+                const students = await fetchWithRetry(`${API_URL}/students`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.currentStudents = students.students || students;
+                renderStudentList(window.currentStudents);
+
+                const rooms = await fetchWithRetry(`${API_URL}/rooms`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.availableRooms = rooms.filter(room => room.status === 'Available' && room.occupants.length < room.capacity);
+            } catch (error) {
+                showToast(error.error?.message || 'Failed to load student data', 'error');
+            }
         }
-    }
 
-    async function fetchStudentData() {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        try {
-            const stats = await fetchWithRetry(`${API_URL}/students/stats`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            document.getElementById('totalStudents').textContent = stats.totalStudents || 0;
-            document.getElementById('maleStudents').textContent = stats.maleStudents || 0;
-            document.getElementById('pendingApplications').textContent = stats.pendingApplications || 0;
-
-            const students = await fetchWithRetry(`${API_URL}/students`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            window.currentStudents = students.students || students;
-            renderStudentList(window.currentStudents);
-
-            const rooms = await fetchWithRetry(`${API_URL}/rooms`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            window.availableRooms = rooms.filter(room => room.status === 'Available' && room.occupants.length < room.capacity);
-        } catch (error) {
-            showToast(error.error?.message || 'Failed to load student data', 'error');
-        }
-    }
-
-    function renderStudentList(students) {
-        const tableBody = document.getElementById('studentList');
-        tableBody.innerHTML = '';
-        students.forEach(student => {
-            const isPending = student.status.toLowerCase() === 'pending';
-            const row = document.createElement('tr');
-            row.innerHTML = `
+        function renderStudentList(students) {
+            const tableBody = document.getElementById('studentList');
+            tableBody.innerHTML = '';
+            students.forEach(student => {
+                const isPending = student.status.toLowerCase() === 'pending';
+                const row = document.createElement('tr');
+                row.innerHTML = `
                 <td>${sanitizeInput(student.name)}</td>
                 <td>${sanitizeInput(student.email)}</td>
                 <td>${sanitizeInput(student.matricNumber || 'N/A')}</td>
@@ -1167,402 +1168,402 @@
                     </div>
                 </td>
             `;
-            tableBody.appendChild(row);
+                tableBody.appendChild(row);
 
-            const viewIcon = row.querySelector('.fa-eye');
-            const editIcon = row.querySelector('.fa-edit');
-            const deleteIcon = row.querySelector('.fa-trash');
-            const assignRoomIcon = row.querySelector('.fa-door-open');
+                const viewIcon = row.querySelector('.fa-eye');
+                const editIcon = row.querySelector('.fa-edit');
+                const deleteIcon = row.querySelector('.fa-trash');
+                const assignRoomIcon = row.querySelector('.fa-door-open');
 
-            viewIcon.addEventListener('click', () => openViewStudentModal(student._id));
-            editIcon.addEventListener('click', () => openEditStudentModal(student._id));
-            deleteIcon.addEventListener('click', () => deleteStudent(student._id));
-            assignRoomIcon.addEventListener('click', () => openAssignRoomModal(student._id));
-        });
-    }
-
-    async function openViewStudentModal(studentId) {
-        console.log('Opening view modal for studentId:', studentId);
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            console.error('No token found');
-            showToast('Please log in again', 'error');
-            window.location.href = LOGIN_PATH;
-            return;
+                viewIcon.addEventListener('click', () => openViewStudentModal(student._id));
+                editIcon.addEventListener('click', () => openEditStudentModal(student._id));
+                deleteIcon.addEventListener('click', () => deleteStudent(student._id));
+                assignRoomIcon.addEventListener('click', () => openAssignRoomModal(student._id));
+            });
         }
 
-        const modal = document.getElementById('viewStudentModal');
-        if (!modal) {
-            console.error('viewStudentModal element not found');
-            showToast('Modal element not found', 'error');
-            return;
-        }
-
-        const detailsContainer = document.getElementById('viewStudentDetails');
-        if (!detailsContainer) {
-            console.error('viewStudentDetails element not found');
-            showToast('Details container not found', 'error');
-            return;
-        }
-
-        console.log('Modal element found:', modal);
-        detailsContainer.classList.add('loading');
-        showToast('Loading student details...', 'info');
-
-        try {
-            console.log('Fetching student data from:', `${API_URL}/students/${studentId}`);
-
-            // Add validation for studentId
-            if (!studentId || typeof studentId !== 'string' || studentId.length < 12) {
-                throw new Error('Invalid student ID format');
+        async function openViewStudentModal(studentId) {
+            console.log('Opening view modal for studentId:', studentId);
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                console.error('No token found');
+                showToast('Please log in again', 'error');
+                window.location.href = LOGIN_PATH;
+                return;
             }
 
-            const response = await fetchWithRetry(`${API_URL}/students/${studentId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+            const modal = document.getElementById('viewStudentModal');
+            if (!modal) {
+                console.error('viewStudentModal element not found');
+                showToast('Modal element not found', 'error');
+                return;
+            }
+
+            const detailsContainer = document.getElementById('viewStudentDetails');
+            if (!detailsContainer) {
+                console.error('viewStudentDetails element not found');
+                showToast('Details container not found', 'error');
+                return;
+            }
+
+            console.log('Modal element found:', modal);
+            detailsContainer.classList.add('loading');
+            showToast('Loading student details...', 'info');
+
+            try {
+                console.log('Fetching student data from:', `${API_URL}/students/${studentId}`);
+
+                // Add validation for studentId
+                if (!studentId || typeof studentId !== 'string' || studentId.length < 12) {
+                    throw new Error('Invalid student ID format');
                 }
+
+                const response = await fetchWithRetry(`${API_URL}/students/${studentId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('API response:', response);
+
+                if (!response || !response.student) {
+                    console.error('No student data in response');
+                    throw new Error('No student data returned from API');
+                }
+
+                const studentData = response.student;
+                console.log('Processed student data:', studentData);
+
+                // Helper function to format dates
+                const formatDate = (dateString) => {
+                    if (!dateString) return 'N/A';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                };
+
+                // Populate modal fields
+                document.getElementById('viewStudentName').textContent = sanitizeInput(studentData.name || 'N/A');
+                document.getElementById('viewStudentEmail').textContent = sanitizeInput(studentData.email || 'N/A');
+                document.getElementById('viewStudentMatricNumber').textContent = sanitizeInput(studentData.matricNumber || 'N/A');
+                document.getElementById('viewStudentPhone').textContent = sanitizeInput(studentData.phone || 'N/A');
+                document.getElementById('viewStudentGender').textContent = sanitizeInput(studentData.gender || 'N/A');
+                document.getElementById('viewStudentDateOfBirth').textContent = formatDate(studentData.dateOfBirth);
+                document.getElementById('viewStudentFaculty').textContent = sanitizeInput(studentData.faculty || 'N/A');
+                document.getElementById('viewStudentLevel').textContent = sanitizeInput(studentData.level || 'N/A');
+                document.getElementById('viewStudentDepartment').textContent = sanitizeInput(studentData.department || 'N/A');
+                document.getElementById('viewStudentRoom').textContent = studentData.room
+                    ? sanitizeInput(studentData.room.roomNumber || 'N/A')
+                    : 'Unassigned';
+                document.getElementById('viewStudentStatus').textContent = sanitizeInput(studentData.status || 'N/A');
+                document.getElementById('viewStudentCreatedAt').textContent = studentData.createdAt
+                    ? new Date(studentData.createdAt).toLocaleString('en-US', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short'
+                    })
+                    : 'N/A';
+
+                modal.style.display = 'flex';
+                console.log('Modal set to display: flex');
+                showToast('Student details loaded', 'success');
+            } catch (error) {
+                console.error('Error in openViewStudentModal:', error.message, error.stack);
+                showToast(`Failed to load student details: ${error.message}`, 'error');
+            } finally {
+                detailsContainer.classList.remove('loading');
+            }
+        }
+
+        function closeViewStudentModal() {
+            document.getElementById('viewStudentModal').style.display = 'none';
+        }
+
+        function openAddStudentModal() {
+            document.getElementById('addStudentModal').style.display = 'flex';
+            document.getElementById('addStudentForm').reset();
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('addStudentModal').style.display = 'none';
+        }
+
+        function openEditStudentModal(studentId) {
+            const student = window.currentStudents.find(s => s._id === studentId);
+            if (!student) {
+                showToast('Student not found', 'error');
+                return;
+            }
+            document.getElementById('editStudentId').value = student._id;
+            document.getElementById('editStudentName').value = student.name;
+            document.getElementById('editStudentEmail').value = student.email;
+            document.getElementById('editStudentMatricNumber').value = student.matricNumber || '';
+            document.getElementById('editStudentPhone').value = student.phone || '';
+            document.getElementById('editStudentDateOfBirth').value = student.dateOfBirth
+                ? new Date(student.dateOfBirth).toISOString().split('T')[0]
+                : '';
+            document.getElementById('editStudentFaculty').value = student.faculty || '';
+            document.getElementById('editStudentLevel').value = student.level || '';
+            document.getElementById('editStudentDepartment').value = student.department || '';
+            document.getElementById('editStudentModal').style.display = 'flex';
+        }
+
+        function closeEditStudentModal() {
+            document.getElementById('editStudentModal').style.display = 'none';
+        }
+
+        function openAssignRoomModal(studentId) {
+            const student = window.currentStudents.find(s => s._id === studentId);
+            if (!student) {
+                showToast('Student not found', 'error');
+                return;
+            }
+            if (student.status.toLowerCase() === 'pending') {
+                showToast('Cannot assign room to a pending student', 'error');
+                return;
+            }
+            document.getElementById('assignStudentId').value = studentId;
+            const select = document.getElementById('assignRoomId');
+            select.innerHTML = '<option value="">Select Room</option>';
+            window.availableRooms.forEach(room => {
+                select.innerHTML += `<option value="${room._id}">${sanitizeInput(room.roomNumber)}</option>`;
             });
+            document.getElementById('assignRoomModal').style.display = 'flex';
+        }
 
-            console.log('API response:', response);
+        function closeAssignRoomModal() {
+            document.getElementById('assignRoomModal').style.display = 'none';
+        }
 
-            if (!response || !response.student) {
-                console.error('No student data in response');
-                throw new Error('No student data returned from API');
+        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = sanitizeInput(document.getElementById('studentName').value.trim());
+            const email = sanitizeInput(document.getElementById('studentEmail').value.trim());
+            const matricNumber = sanitizeInput(document.getElementById('studentMatricNumber').value.trim());
+            const phone = sanitizeInput(document.getElementById('studentPhone').value.trim());
+            const dateOfBirth = document.getElementById('studentDateOfBirth').value;
+            const faculty = sanitizeInput(document.getElementById('studentFaculty').value.trim());
+            const level = document.getElementById('studentLevel').value;
+            const department = sanitizeInput(document.getElementById('studentDepartment').value.trim());
+            const password = document.getElementById('studentPassword').value;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+            if (
+                !name ||
+                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+                !/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/.test(matricNumber) ||
+                !/^\+?[\d\s()-]{10,}$/.test(phone) ||
+                !dateOfBirth ||
+                !faculty ||
+                !['100', '200', '300', '400', '500'].includes(level) ||
+                !department ||
+                password.length < 6
+            ) {
+                showToast('Please fill all fields correctly (e.g., matric number format: 23/208CSC/586)', 'error');
+                return;
             }
 
-            const studentData = response.student;
-            console.log('Processed student data:', studentData);
+            const dob = new Date(dateOfBirth);
+            const today = new Date();
+            if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
+                showToast('Student must be at least 15 years old', 'error');
+                return;
+            }
 
-            // Helper function to format dates
-            const formatDate = (dateString) => {
-                if (!dateString) return 'N/A';
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+            try {
+                const data = await fetchWithRetry(`${API_URL}/students`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        matricNumber,
+                        phone,
+                        gender: 'Male',
+                        userType: 'student',
+                        password,
+                        dateOfBirth,
+                        faculty,
+                        level: `${level}level`,
+                        department
+                    })
                 });
-            };
-
-            // Populate modal fields
-            document.getElementById('viewStudentName').textContent = sanitizeInput(studentData.name || 'N/A');
-            document.getElementById('viewStudentEmail').textContent = sanitizeInput(studentData.email || 'N/A');
-            document.getElementById('viewStudentMatricNumber').textContent = sanitizeInput(studentData.matricNumber || 'N/A');
-            document.getElementById('viewStudentPhone').textContent = sanitizeInput(studentData.phone || 'N/A');
-            document.getElementById('viewStudentGender').textContent = sanitizeInput(studentData.gender || 'N/A');
-            document.getElementById('viewStudentDateOfBirth').textContent = formatDate(studentData.dateOfBirth);
-            document.getElementById('viewStudentFaculty').textContent = sanitizeInput(studentData.faculty || 'N/A');
-            document.getElementById('viewStudentLevel').textContent = sanitizeInput(studentData.level || 'N/A');
-            document.getElementById('viewStudentDepartment').textContent = sanitizeInput(studentData.department || 'N/A');
-            document.getElementById('viewStudentRoom').textContent = studentData.room
-                ? sanitizeInput(studentData.room.roomNumber || 'N/A')
-                : 'Unassigned';
-            document.getElementById('viewStudentStatus').textContent = sanitizeInput(studentData.status || 'N/A');
-            document.getElementById('viewStudentCreatedAt').textContent = studentData.createdAt
-                ? new Date(studentData.createdAt).toLocaleString('en-US', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short'
-                })
-                : 'N/A';
-
-            modal.style.display = 'flex';
-            console.log('Modal set to display: flex');
-            showToast('Student details loaded', 'success');
-        } catch (error) {
-            console.error('Error in openViewStudentModal:', error.message, error.stack);
-            showToast(`Failed to load student details: ${error.message}`, 'error');
-        } finally {
-            detailsContainer.classList.remove('loading');
-        }
-    }
-
-    function closeViewStudentModal() {
-        document.getElementById('viewStudentModal').style.display = 'none';
-    }
-
-    function openAddStudentModal() {
-        document.getElementById('addStudentModal').style.display = 'flex';
-        document.getElementById('addStudentForm').reset();
-    }
-
-    function closeAddStudentModal() {
-        document.getElementById('addStudentModal').style.display = 'none';
-    }
-
-    function openEditStudentModal(studentId) {
-        const student = window.currentStudents.find(s => s._id === studentId);
-        if (!student) {
-            showToast('Student not found', 'error');
-            return;
-        }
-        document.getElementById('editStudentId').value = student._id;
-        document.getElementById('editStudentName').value = student.name;
-        document.getElementById('editStudentEmail').value = student.email;
-        document.getElementById('editStudentMatricNumber').value = student.matricNumber || '';
-        document.getElementById('editStudentPhone').value = student.phone || '';
-        document.getElementById('editStudentDateOfBirth').value = student.dateOfBirth
-            ? new Date(student.dateOfBirth).toISOString().split('T')[0]
-            : '';
-        document.getElementById('editStudentFaculty').value = student.faculty || '';
-        document.getElementById('editStudentLevel').value = student.level || '';
-        document.getElementById('editStudentDepartment').value = student.department || '';
-        document.getElementById('editStudentModal').style.display = 'flex';
-    }
-
-    function closeEditStudentModal() {
-        document.getElementById('editStudentModal').style.display = 'none';
-    }
-
-    function openAssignRoomModal(studentId) {
-        const student = window.currentStudents.find(s => s._id === studentId);
-        if (!student) {
-            showToast('Student not found', 'error');
-            return;
-        }
-        if (student.status.toLowerCase() === 'pending') {
-            showToast('Cannot assign room to a pending student', 'error');
-            return;
-        }
-        document.getElementById('assignStudentId').value = studentId;
-        const select = document.getElementById('assignRoomId');
-        select.innerHTML = '<option value="">Select Room</option>';
-        window.availableRooms.forEach(room => {
-            select.innerHTML += `<option value="${room._id}">${sanitizeInput(room.roomNumber)}</option>`;
+                showToast(data.message || 'Student added successfully', 'success');
+                closeAddStudentModal();
+                fetchStudentData();
+            } catch (error) {
+                showToast(error.error?.message || 'Failed to add student', 'error');
+            }
         });
-        document.getElementById('assignRoomModal').style.display = 'flex';
-    }
 
-    function closeAssignRoomModal() {
-        document.getElementById('assignRoomModal').style.display = 'none';
-    }
+        document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editStudentId').value;
+            const name = sanitizeInput(document.getElementById('editStudentName').value.trim());
+            const email = sanitizeInput(document.getElementById('editStudentEmail').value.trim());
+            const matricNumber = sanitizeInput(document.getElementById('editStudentMatricNumber').value.trim());
+            const phone = sanitizeInput(document.getElementById('editStudentPhone').value.trim());
+            const dateOfBirth = document.getElementById('editStudentDateOfBirth').value;
+            const faculty = sanitizeInput(document.getElementById('editStudentFaculty').value.trim());
+            const level = document.getElementById('editStudentLevel').value;
+            const department = sanitizeInput(document.getElementById('editStudentDepartment').value.trim());
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-    document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = sanitizeInput(document.getElementById('studentName').value.trim());
-        const email = sanitizeInput(document.getElementById('studentEmail').value.trim());
-        const matricNumber = sanitizeInput(document.getElementById('studentMatricNumber').value.trim());
-        const phone = sanitizeInput(document.getElementById('studentPhone').value.trim());
-        const dateOfBirth = document.getElementById('studentDateOfBirth').value;
-        const faculty = sanitizeInput(document.getElementById('studentFaculty').value.trim());
-        const level = document.getElementById('studentLevel').value;
-        const department = sanitizeInput(document.getElementById('studentDepartment').value.trim());
-        const password = document.getElementById('studentPassword').value;
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (
+                !name ||
+                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+                !/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/.test(matricNumber) ||
+                !/^\+?[\d\s()-]{10,}$/.test(phone) ||
+                !dateOfBirth ||
+                !faculty ||
+                !['100', '200', '300', '400', '500'].includes(level) ||
+                !department
+            ) {
+                showToast('Please fill all fields correctly (e.g., matric number format: 23/208CSC/586)', 'error');
+                return;
+            }
 
-        if (
-            !name ||
-            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-            !/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/.test(matricNumber) ||
-            !/^\+?[\d\s()-]{10,}$/.test(phone) ||
-            !dateOfBirth ||
-            !faculty ||
-            !['100', '200', '300', '400', '500'].includes(level) ||
-            !department ||
-            password.length < 6
-        ) {
-            showToast('Please fill all fields correctly (e.g., matric number format: 23/208CSC/586)', 'error');
-            return;
+            const dob = new Date(dateOfBirth);
+            const today = new Date();
+            if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
+                showToast('Student must be at least 15 years old', 'error');
+                return;
+            }
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/students/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        matricNumber,
+                        phone,
+                        gender: 'Male',
+                        dateOfBirth,
+                        faculty,
+                        level: `${level}level`,
+                        department
+                    })
+                });
+                showToast(data.message || 'Student updated successfully', 'success');
+                closeEditStudentModal();
+                fetchStudentData();
+            } catch (error) {
+                showToast(error.error?.message || 'Failed to update student', 'error');
+            }
+        });
+
+        document.getElementById('assignRoomForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('assignStudentId').value;
+            const roomId = document.getElementById('assignRoomId').value;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+            if (!studentId || !roomId) {
+                showToast('Please select a room', 'error');
+                return;
+            }
+
+            try {
+                const data = await fetchWithRetry(`${API_URL}/students/assign-room`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ studentId, roomId })
+                });
+                showToast(data.message || 'Room assigned successfully', 'success');
+                closeAssignRoomModal();
+                fetchStudentData();
+            } catch (error) {
+                showToast(error.error?.message || 'Failed to assign room', 'error');
+            }
+        });
+
+        async function deleteStudent(id) {
+            if (!confirm('Are you sure you want to delete this student?')) return;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/students/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showToast(data.message || 'Student deleted successfully', 'success');
+                fetchStudentData();
+            } catch (error) {
+                showToast(error.error?.message || 'Failed to delete student', 'error');
+            }
         }
 
-        const dob = new Date(dateOfBirth);
-        const today = new Date();
-        if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
-            showToast('Student must be at least 15 years old', 'error');
-            return;
+        function filterStudents(query) {
+            if (!window.currentStudents) return;
+            const filtered = window.currentStudents.filter(student =>
+                student.name.toLowerCase().includes(query) ||
+                student.email.toLowerCase().includes(query) ||
+                (student.matricNumber || '').toLowerCase().includes(query)
+            );
+            renderStudentList(filtered);
         }
 
-        try {
-            const data = await fetchWithRetry(`${API_URL}/students`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    matricNumber,
-                    phone,
-                    gender: 'Male',
-                    userType: 'student',
-                    password,
-                    dateOfBirth,
-                    faculty,
-                    level: `${level}level`,
-                    department
-                })
-            });
-            showToast(data.message || 'Student added successfully', 'success');
-            closeAddStudentModal();
-            fetchStudentData();
-        } catch (error) {
-            showToast(error.error?.message || 'Failed to add student', 'error');
-        }
-    });
-
-    document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('editStudentId').value;
-        const name = sanitizeInput(document.getElementById('editStudentName').value.trim());
-        const email = sanitizeInput(document.getElementById('editStudentEmail').value.trim());
-        const matricNumber = sanitizeInput(document.getElementById('editStudentMatricNumber').value.trim());
-        const phone = sanitizeInput(document.getElementById('editStudentPhone').value.trim());
-        const dateOfBirth = document.getElementById('editStudentDateOfBirth').value;
-        const faculty = sanitizeInput(document.getElementById('editStudentFaculty').value.trim());
-        const level = document.getElementById('editStudentLevel').value;
-        const department = sanitizeInput(document.getElementById('editStudentDepartment').value.trim());
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-        if (
-            !name ||
-            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-            !/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/.test(matricNumber) ||
-            !/^\+?[\d\s()-]{10,}$/.test(phone) ||
-            !dateOfBirth ||
-            !faculty ||
-            !['100', '200', '300', '400', '500'].includes(level) ||
-            !department
-        ) {
-            showToast('Please fill all fields correctly (e.g., matric number format: 23/208CSC/586)', 'error');
-            return;
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
         }
 
-        const dob = new Date(dateOfBirth);
-        const today = new Date();
-        if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
-            showToast('Student must be at least 15 years old', 'error');
-            return;
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
         }
 
-        try {
-            const data = await fetchWithRetry(`${API_URL}/students/${id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    matricNumber,
-                    phone,
-                    gender: 'Male',
-                    dateOfBirth,
-                    faculty,
-                    level: `${level}level`,
-                    department
-                })
-            });
-            showToast(data.message || 'Student updated successfully', 'success');
-            closeEditStudentModal();
-            fetchStudentData();
-        } catch (error) {
-            showToast(error.error?.message || 'Failed to update student', 'error');
-        }
-    });
-
-    document.getElementById('assignRoomForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const studentId = document.getElementById('assignStudentId').value;
-        const roomId = document.getElementById('assignRoomId').value;
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-        if (!studentId || !roomId) {
-            showToast('Please select a room', 'error');
-            return;
+        function logout() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
         }
 
-        try {
-            const data = await fetchWithRetry(`${API_URL}/students/assign-room`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ studentId, roomId })
-            });
-            showToast(data.message || 'Room assigned successfully', 'success');
-            closeAssignRoomModal();
-            fetchStudentData();
-        } catch (error) {
-            showToast(error.error?.message || 'Failed to assign room', 'error');
-        }
-    });
+        (async () => {
+            const user = await checkAuth();
+            if (user) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('userName').textContent = user.name || 'Admin User';
+                fetchStudentData();
 
-    async function deleteStudent(id) {
-        if (!confirm('Are you sure you want to delete this student?')) return;
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        try {
-            const data = await fetchWithRetry(`${API_URL}/students/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            showToast(data.message || 'Student deleted successfully', 'success');
-            fetchStudentData();
-        } catch (error) {
-            showToast(error.error?.message || 'Failed to delete student', 'error');
-        }
-    }
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+                document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
 
-    function filterStudents(query) {
-        if (!window.currentStudents) return;
-        const filtered = window.currentStudents.filter(student =>
-            student.name.toLowerCase().includes(query) ||
-            student.email.toLowerCase().includes(query) ||
-            (student.matricNumber || '').toLowerCase().includes(query)
-        );
-        renderStudentList(filtered);
-    }
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    const query = sanitizeInput(e.target.value.toLowerCase().trim());
+                    filterStudents(query);
+                });
 
-    function toggleTheme() {
-        const html = document.documentElement;
-        const themeIcon = document.querySelector('.theme-toggle i');
-        const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
-        themeIcon.classList.toggle('fa-sun', newTheme === 'light');
-        localStorage.setItem('theme', newTheme);
-    }
-
-    function toggleSidebar() {
-        document.querySelector('.sidebar').classList.toggle('active');
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        window.location.href = LOGIN_PATH;
-    }
-
-    (async () => {
-        const user = await checkAuth();
-        if (user) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            document.getElementById('userName').textContent = user.name || 'Admin User';
-            fetchStudentData();
-
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
-            document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
-
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                const query = sanitizeInput(e.target.value.toLowerCase().trim());
-                filterStudents(query);
-            });
-
-            document.getElementById('addStudentButton').addEventListener('click', openAddStudentModal);
-            document.getElementById('closeAddStudentButton').addEventListener('click', closeAddStudentModal);
-            document.getElementById('closeEditStudentButton').addEventListener('click', closeEditStudentModal);
-            document.getElementById('closeAssignRoomButton').addEventListener('click', closeAssignRoomModal);
-            document.getElementById('closeViewStudentButton').addEventListener('click', closeViewStudentModal);
-            document.getElementById('viewStudentCloseButton').addEventListener('click', closeViewStudentModal);
-            document.getElementById('hamburger').addEventListener('click', toggleSidebar);
-        }
-    })();
-</script>
+                document.getElementById('addStudentButton').addEventListener('click', openAddStudentModal);
+                document.getElementById('closeAddStudentButton').addEventListener('click', closeAddStudentModal);
+                document.getElementById('closeEditStudentButton').addEventListener('click', closeEditStudentModal);
+                document.getElementById('closeAssignRoomButton').addEventListener('click', closeAssignRoomModal);
+                document.getElementById('closeViewStudentButton').addEventListener('click', closeViewStudentModal);
+                document.getElementById('viewStudentCloseButton').addEventListener('click', closeViewStudentModal);
+                document.getElementById('hamburger').addEventListener('click', toggleSidebar);
+            }
+        })();
+    </script>
 </body>
 
 </html>
