@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adem Baba - Student Documents</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+    <style>
+        :root {
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #f44336;
+            --info-color: #17a2b8;
+            --transition: all 0.3s ease;
+        }
+
+        html[data-theme="light"] {
+            --primary-color: #4d9de0;
+            --primary-dark: #3a7bb8;
+            --text-color: #333333;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --background-color: #ffffff;
+            --card-background: #f5f9ff;
+            --input-background: rgba(77, 157, 224, 0.05);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-background: #ffffff;
+        }
+
+        html[data-theme="dark"] {
+            --primary-color: #1a5b9e;
+            --primary-dark: #0d3b6b;
+            --text-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #000000;
+            --card-background: #0a1625;
+            --input-background: rgba(26, 91, 158, 0.1);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --sidebar-background: #050a13;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: var(--background-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loader {
+            border: 4px solid var(--text-muted);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #app {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-background);
+            padding: 2rem 1.5rem;
+            height: 100vh;
+            position: fixed;
+            transition: var(--transition);
+            z-index: 100;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .brand.logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-container {
+            width: 80px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            overflow: hidden;
+            background: var(--input-background);
+        }
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .logo-container i {
+            font-size: 1.8rem;
+            color: #fff;
+        }
+
+        .brand h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .nav-links a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            width: calc(100% - 260px);
+            transition: var(--transition);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            width: calc(100% - 260px);
+            background: var(--card-background);
+            padding: 1.5rem;
+            z-index: 90;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.8rem;
+            color: var(--text-color);
+            background: none;
+            border: none;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 350px;
+            max-width: 100%;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 3rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .theme-toggle {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.8rem;
+            border-radius: 50%;
+            transition: var(--transition);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .user-details h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .user-details p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .user-icon i {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+        }
+
+        .activity-table-container {
+            background: var(--card-background);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .table-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: var(--transition);
+        }
+
+        .action-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .action-button.view {
+            background: var(--info-color);
+        }
+
+        .action-button.view:hover {
+            background: #138496;
+        }
+
+        .action-button:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: var(--sidebar-background);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 1rem;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            vertical-align: top;
+        }
+
+        .action-icons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-icons i {
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-icons i.fa-eye:hover {
+            color: var(--info-color);
+        }
+
+        .action-icons i.fa-trash:hover {
+            color: var(--danger-color);
+        }
+
+        .document-box {
+            background: var(--input-background);
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .document-box.open {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .document-item:last-child {
+            border-bottom: none;
+        }
+
+        .doc-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            max-width: 50%;
+            word-break: break-word;
+        }
+
+        .doc-type {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .doc-date {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .toggle-documents {
+            cursor: pointer;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .toggle-documents:hover {
+            text-decoration: underline;
+        }
+
+        .document-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .document-box::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .document-box::-webkit-scrollbar-track {
+            background: var(--border-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-controls button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-controls button:hover {
+            background: var(--primary-dark);
+        }
+
+        .modal-controls .download-btn {
+            background: var(--info-color);
+        }
+
+        .modal-controls .download-btn:hover {
+            background: #138496;
+        }
+
+        .document-viewer {
+            position: relative;
+            overflow: auto;
+            max-height: 70vh;
+        }
+
+        .document-viewer img {
+            max-width: 100%;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .document-viewer canvas {
+            max-width: 100%;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-color);
+        }
+
+        .document-details p {
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
+
+        .document-details strong {
+            display: inline-block;
+            width: 120px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.85rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-background);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
+        }
+
+        .form-group label {
+            position: absolute;
+            top: 0.85rem;
+            left: 1rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .form-group input:focus+label,
+        .form-group input:not(:placeholder-shown)+label {
+            top: -0.5rem;
+            left: 0.5rem;
+            font-size: 0.8rem;
+            background: var(--card-background);
+            padding: 0 0.3rem;
+        }
+
+        .add-button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .add-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .close-btn {
+            background: var(--danger-color);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            background: #c82333;
+        }
+
+        .close-btn#resetFilter {
+            background: var(--warning-color);
+        }
+
+        .close-btn#resetFilter:hover {
+            background: #e0a800;
+        }
+
+        .custom-toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--card-background);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: var(--text-color);
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            border-left: 5px solid transparent;
+        }
+
+        .custom-toast.success {
+            border-left-color: var(--success-color);
+        }
+
+        .custom-toast.error {
+            border-left-color: var(--danger-color);
+        }
+
+        .custom-toast.info {
+            border-left-color: var(--info-color);
+        }
+
+        .custom-toast.show {
+            display: block;
+            animation: fadeInUp 0.4s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            header {
+                width: 100%;
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th,
+            td {
+                min-width: 150px;
+            }
+
+            .document-box {
+                max-height: 200px;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .action-button {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+
+            .modal-controls {
+                flex-wrap: wrap;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader"></div>
+    </div>
+    <div id="app" style="display: none;">
+        <div class="sidebar">
+            <button class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="brand logo">
+                <div class="logo-container">
+                    <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
+                </div>
+                <h1>Adem Baba</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html" class="nav-link"><i class="fas fa-home"></i> <span>Dashboard</span></a>
+                <a href="./rooms.html" class="nav-link"><i class="fas fa-door-open"></i> <span>Rooms</span></a>
+                <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> <span>Students</span></a>
+                <a href="./schedule.html" class="nav-link"><i class="fas fa-calendar"></i> <span>Schedule</span></a>
+                <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> <span>Payments</span></a>
+                <a href="./uploadLink.html" class="nav-link"><i class="fas fa-file-upload"></i> UploadLink</a>
+                <a href="./admin-student-document.html" class="nav-link active"><i class="fas fa-file"></i>
+                    StudentFiles</a>
+                <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> <span>Settings</span></a>
+                <a href="#" class="nav-link" id="logoutLink"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <header>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by matric number..."
+                        aria-label="Search documents">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-info">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-details">
+                        <h4 id="userName">Admin User</h4>
+                        <p>Admin</p>
+                    </div>
+                    <div class="user-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+                <div class="activity-table-container">
+                    <div class="activity-table">
+                        <div class="table-header">
+                            <h2>Student Documents</h2>
+                            <div class="table-actions">
+                                <button class="action-button" id="filterButton" aria-label="Filter documents">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <button class="action-button" id="exportButton" aria-label="Export documents">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Matric Number</th>
+                                    <th>Email</th>
+                                    <th>Documents</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="filterModal" class="modal" role="dialog" aria-labelledby="filterDocumentsTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeFilterModal" aria-label="Close modal">×</button>
+            <h2 id="filterDocumentsTitle">Filter Documents</h2>
+            <form id="filterForm">
+                <div class="form-group">
+                    <input type="text" id="filterMatricNumber" aria-label="Filter by matric number">
+                    <label for="filterMatricNumber">Matric Number</label>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="filterStudentId" aria-label="Filter by student ID">
+                    <label for="filterStudentId">Student ID</label>
+                </div>
+                <button type="submit" class="add-button" aria-label="Apply filters">Apply Filters</button>
+                <button type="button" class="close-btn" id="resetFilter" aria-label="Reset filters">Reset
+                    Filters</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="viewDocumentModal" class="modal" role="dialog" aria-labelledby="viewDocumentTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeViewDocumentModal" aria-label="Close modal">×</button>
+            <h2 id="viewDocumentTitle">Document Details</h2>
+            <div class="document-details">
+                <p><strong>Student Name:</strong> <span id="viewStudentName"></span></p>
+                <p><strong>Matric Number:</strong> <span id="viewMatricNumber"></span></p>
+                <p><strong>Email:</strong> <span id="viewEmail"></span></p>
+                <p><strong>File Name:</strong> <span id="viewFileName"></span></p>
+                <p><strong>Document Type:</strong> <span id="viewDocumentType"></span></p>
+                <p><strong>Uploaded At:</strong> <span id="viewUploadedAt"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="documentModal" class="modal" role="dialog" aria-labelledby="documentPreviewTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeDocumentModal" aria-label="Close modal">×</button>
+            <h2 id="documentPreviewTitle">Document Preview</h2>
+            <div class="modal-controls">
+                <button id="zoomIn"><i class="fas fa-search-plus"></i> Zoom In</button>
+                <button id="zoomOut"><i class="fas fa-search-minus"></i> Zoom Out</button>
+                <button id="modalDownload" class="download-btn"><i class="fas fa-download"></i> Download</button>
+            </div>
+            <div class="document-viewer" id="documentViewer"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast"></div>
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+
+        let zoomLevel = 1;
+
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Format document type for display
+        function formatDocumentType(type) {
+            const validTypes = ['JAMB_RESULT', 'CGPA', 'ADMISSION_LETTER', 'NIN'];
+            if (!validTypes.includes(type)) {
+                console.warn(`Invalid document type: ${type}`);
+                return 'Unknown';
+            }
+            switch (type) {
+                case 'JAMB_RESULT': return 'JAMB Result';
+                case 'CGPA': return 'CGPA';
+                case 'ADMISSION_LETTER': return 'Admission Letter';
+                case 'NIN': return 'NIN';
+                default: return type;
+            }
+        }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+            try {
+                const data = await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return data.user;
+            } catch (error) {
+                console.error('checkAuth error:', error);
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+                return null;
+            }
+        }
+
+        async function fetchDocumentData(matricNumber = '', studentId = '') {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                let url = `${API_URL}/student-documents`;
+                if (matricNumber) {
+                    url += `?matricNumber=${encodeURIComponent(matricNumber)}`;
+                } else if (studentId) {
+                    url += `?studentId=${encodeURIComponent(studentId)}`;
+                }
+                const documents = await fetchWithRetry(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const groupedDocuments = documents.reduce((acc, doc) => {
+                    const studentId = doc.student._id;
+                    if (!acc[studentId]) {
+                        acc[studentId] = {
+                            student: doc.student,
+                            documents: []
+                        };
+                    }
+                    acc[studentId].documents.push(doc);
+                    return acc;
+                }, {});
+                window.currentDocuments = Object.values(groupedDocuments);
+                renderDocumentList(window.currentDocuments);
+            } catch (error) {
+                console.error('Fetch document error:', error);
+                showToast(error.error?.message || 'Failed to load documents', 'error');
+            }
+        }
+
+        function renderDocumentList(groupedDocuments) {
+            const tableBody = document.getElementById('documentList');
+            tableBody.innerHTML = '';
+            groupedDocuments.forEach(group => {
+                const row = document.createElement('tr');
+                const docCount = group.documents.length;
+                row.innerHTML = DOMPurify.sanitize(`
+                    <td>${sanitizeInput(group.student.name)}</td>
+                    <td>${sanitizeInput(group.student.matricNumber)}</td>
+                    <td>${sanitizeInput(group.student.email)}</td>
+                    <td>
+                        <div class="toggle-documents" aria-label="Toggle documents">
+                            ${docCount} Document${docCount > 1 ? 's' : ''} <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="document-box">
+                            ${group.documents.map(doc => `
+                                <div class="document-item" aria-describedby="doc-type-${doc._id}">
+                                    <div class="doc-info">
+                                        <span>${sanitizeInput(doc.fileName)}</span>
+                                        <span class="doc-type" id="doc-type-${doc._id}">${formatDocumentType(doc.documentType)}</span>
+                                    </div>
+                                    <span class="doc-date">${new Date(doc.uploadedAt).toLocaleString()}</span>
+                                    <div class="action-icons">
+                                        <button class="action-button view" data-file="${sanitizeInput(doc.fileUrl)}" data-id="${doc._id}" data-type="${sanitizeInput(doc.documentType)}" aria-label="View ${formatDocumentType(doc.documentType)} document">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <button class="action-button download" data-id="${doc._id}" data-type="${sanitizeInput(doc.documentType)}" aria-label="Download ${formatDocumentType(doc.documentType)} document">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <i class="fas fa-trash" aria-label="Delete ${formatDocumentType(doc.documentType)} document" data-id="${doc._id}"></i>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-icons">
+                            <i class="fas fa-eye" aria-label="View all documents" data-student-id="${group.student._id}"></i>
+                        </div>
+                    </td>
+                `);
+                tableBody.appendChild(row);
+
+                const toggle = row.querySelector('.toggle-documents');
+                const docBox = row.querySelector('.document-box');
+                toggle.addEventListener('click', () => {
+                    docBox.classList.toggle('open');
+                    toggle.querySelector('i').classList.toggle('fa-chevron-down');
+                    toggle.querySelector('i').classList.toggle('fa-chevron-up');
+                });
+
+                row.querySelectorAll('.view').forEach(button => {
+                    button.addEventListener('click', () => openDocumentModal(button.dataset.file, button.dataset.id, button.dataset.type));
+                });
+                row.querySelectorAll('.download').forEach(button => {
+                    button.addEventListener('click', () => handleDownload(button.dataset.id, button));
+                });
+                row.querySelectorAll('.fa-trash').forEach(icon => {
+                    icon.addEventListener('click', () => deleteDocument(icon.dataset.id));
+                });
+                const viewAllIcon = row.querySelector('.fa-eye[data-student-id]');
+                viewAllIcon.addEventListener('click', () => viewAllDocuments(group.student._id));
+            });
+        }
+
+        async function viewAllDocuments(studentId) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const documents = await fetchWithRetry(`${API_URL}/student-documents?studentId=${encodeURIComponent(studentId)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (documents.length > 0) {
+                    const student = documents[0].student;
+                    document.getElementById('viewStudentName').textContent = sanitizeInput(student.name);
+                    document.getElementById('viewMatricNumber').textContent = sanitizeInput(student.matricNumber);
+                    document.getElementById('viewEmail').textContent = sanitizeInput(student.email);
+                    document.getElementById('viewFileName').textContent = `${documents.length} Document${documents.length > 1 ? 's' : ''}`;
+                    document.getElementById('viewDocumentType').textContent = '';
+                    document.getElementById('viewUploadedAt').textContent = '';
+                    document.getElementById('viewDocumentModal').style.display = 'flex';
+                } else {
+                    showToast('No documents found for this student', 'error');
+                }
+            } catch (error) {
+                console.error('View all documents error:', error);
+                showToast(error.error?.message || 'Failed to load documents', 'error');
+            }
+        }
+
+        async function viewDocument(id) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const document = await fetchWithRetry(`${API_URL}/student-documents/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (document && document.length > 0) {
+                    const doc = document[0];
+                    document.getElementById('viewStudentName').textContent = sanitizeInput(doc.student.name);
+                    document.getElementById('viewMatricNumber').textContent = sanitizeInput(doc.student.matricNumber);
+                    document.getElementById('viewEmail').textContent = sanitizeInput(doc.student.email);
+                    document.getElementById('viewFileName').textContent = sanitizeInput(doc.fileName);
+                    document.getElementById('viewDocumentType').textContent = formatDocumentType(doc.documentType);
+                    document.getElementById('viewUploadedAt').textContent = new Date(doc.uploadedAt).toLocaleString();
+                    document.getElementById('viewDocumentModal').style.display = 'flex';
+                } else {
+                    showToast('Document not found', 'error');
+                }
+            } catch (error) {
+                console.error('View document error:', error);
+                showToast(error.error?.message || 'Failed to load document', 'error');
+            }
+        }
+
+        async function openDocumentModal(fileUrl, documentId, documentType) {
+            const viewer = document.getElementById('documentViewer');
+            viewer.innerHTML = '<div class="loader"></div>';
+            document.getElementById('documentModal').style.display = 'flex';
+            document.getElementById('modalDownload').dataset.id = documentId;
+            document.getElementById('documentPreviewTitle').textContent = `${formatDocumentType(documentType)} Preview`;
+            zoomLevel = 1;
+
+            try {
+                const isImage = fileUrl.match(/\.(jpg|jpeg|png|gif)$/i);
+                if (isImage) {
+                    viewer.innerHTML = DOMPurify.sanitize(
+                        `<img src="${sanitizeInput(fileUrl)}" alt="${formatDocumentType(documentType)}" style="transform: scale(${zoomLevel})">`
+                    );
+                } else {
+                    const response = await fetch(fileUrl);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    const page = await pdf.getPage(1);
+                    const viewport = page.getViewport({ scale: zoomLevel });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    await page.render({ canvasContext: context, viewport }).promise;
+                    viewer.innerHTML = '';
+                    viewer.appendChild(canvas);
+                }
+            } catch (error) {
+                console.error('Error loading document:', error);
+                viewer.innerHTML = '<p style="text-align:center;color:var(--danger-color);">Failed to load document.</p>';
+                showToast('Failed to load document', 'error');
+            }
+        }
+
+        async function handleDownload(documentId, button) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!documentId) {
+                showToast('Invalid document ID', 'error');
+                return;
+            }
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                const response = await fetch(`${API_URL}/student-documents/download/${documentId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `HTTP error ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+
+                const contentDisposition = response.headers.get('content-disposition');
+                const filename = contentDisposition
+                    ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+                    : `document-${documentId}`;
+
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                showToast('Document downloaded successfully', 'success');
+            } catch (error) {
+                console.error('Download error:', error);
+                showToast(error.message || 'Failed to download document', 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-download"></i>';
+            }
+        }
+
+        async function deleteDocument(id) {
+            if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/student-documents/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showToast(data.message, 'success');
+                fetchDocumentData();
+            } catch (error) {
+                console.error('Delete document error:', error);
+                showToast(error.error?.message || 'Failed to delete document', 'error');
+            }
+        }
+
+        function exportDocuments() {
+            if (!window.currentDocuments || window.currentDocuments.length === 0) {
+                showToast('No documents to export', 'error');
+                return;
+            }
+            const headers = ['Student Name', 'Matric Number', 'Email', 'File Name', 'Document Type', 'Uploaded At', 'File URL'];
+            const rows = window.currentDocuments.flatMap(group =>
+                group.documents.map(doc => [
+                    `"${sanitizeInput(group.student.name)}"`,
+                    sanitizeInput(group.student.matricNumber),
+                    sanitizeInput(group.student.email),
+                    `"${sanitizeInput(doc.fileName)}"`,
+                    `"${formatDocumentType(doc.documentType)}"`,
+                    `"${new Date(doc.uploadedAt).toISOString()}"`,
+                    `"${sanitizeInput(doc.fileUrl)}"`
+                ])
+            );
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `documents_export_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function openFilterModal() {
+            document.getElementById('filterModal').style.display = 'flex';
+            document.getElementById('filterForm').reset();
+        }
+
+        function closeFilterModal() {
+            document.getElementById('filterModal').style.display = 'none';
+        }
+
+        function closeViewDocumentModal() {
+            document.getElementById('viewDocumentModal').style.display = 'none';
+        }
+
+        function closeDocumentModal() {
+            document.getElementById('documentModal').style.display = 'none';
+            document.getElementById('documentViewer').innerHTML = '';
+            zoomLevel = 1;
+        }
+
+        function setupModalClose(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    if (modalId === 'filterModal') closeFilterModal();
+                    else if (modalId === 'viewDocumentModal') closeViewDocumentModal();
+                    else closeDocumentModal();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    if (modalId === 'filterModal') closeFilterModal();
+                    else if (modalId === 'viewDocumentModal') closeViewDocumentModal();
+                    else closeDocumentModal();
+                }
+            });
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        }
+
+        // Initialize
+        (async () => {
+            const user = await checkAuth();
+            if (user) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('userName').textContent = sanitizeInput(user.name) || 'Admin User';
+                fetchDocumentData();
+
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+                document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
+
+                const debouncedFilter = debounce((matricNumber) => {
+                    fetchDocumentData(matricNumber);
+                }, 300);
+
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    const matricNumber = sanitizeInput(e.target.value.trim());
+                    debouncedFilter(matricNumber);
+                });
+
+                document.getElementById('filterButton').addEventListener('click', openFilterModal);
+                document.getElementById('exportButton').addEventListener('click', exportDocuments);
+                document.getElementById('closeFilterModal').addEventListener('click', closeFilterModal);
+                document.getElementById('closeViewDocumentModal').addEventListener('click', closeViewDocumentModal);
+                document.getElementById('closeDocumentModal').addEventListener('click', closeDocumentModal);
+                document.getElementById('resetFilter').addEventListener('click', resetFilters);
+                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+                document.getElementById('hamburger').addEventListener('click', toggleSidebar);
+                document.getElementById('logoutLink').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+
+                document.getElementById('zoomIn').addEventListener('click', () => {
+                    zoomLevel = Math.min(zoomLevel + 0.2, 3);
+                    const img = document.querySelector('#documentViewer img');
+                    if (img) {
+                        img.style.transform = `scale(${zoomLevel})`;
+                    } else {
+                        openDocumentModal(
+                            document.querySelector('#documentViewer').previousElementSibling.querySelector('.view').dataset.file,
+                            document.getElementById('modalDownload').dataset.id,
+                            document.querySelector('#documentViewer').previousElementSibling.querySelector('.view').dataset.type
+                        );
+                    }
+                });
+
+                document.getElementById('zoomOut').addEventListener('click', () => {
+                    zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
+                    const img = document.querySelector('#documentViewer img');
+                    if (img) {
+                        img.style.transform = `scale(${zoomLevel})`;
+                    } else {
+                        openDocumentModal(
+                            document.querySelector('#documentViewer').previousElementSibling.querySelector('.view').dataset.file,
+                            document.getElementById('modalDownload').dataset.id,
+                            document.querySelector('#documentViewer').previousElementSibling.querySelector('.view').dataset.type
+                        );
+                    }
+                });
+
+                document.getElementById('modalDownload').addEventListener('click', (e) => {
+                    handleDownload(e.target.dataset.id, e.target);
+                });
+
+                document.getElementById('filterForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const matricNumber = sanitizeInput(document.getElementById('filterMatricNumber').value.trim());
+                    const studentId = sanitizeInput(document.getElementById('filterStudentId').value.trim());
+                    fetchDocumentData(matricNumber, studentId);
+                    closeFilterModal();
+                });
+
+                setupModalClose('filterModal');
+                setupModalClose('viewDocumentModal');
+                setupModalClose('documentModal');
+            }
+        })();
+
+        function resetFilters() {
+            document.getElementById('filterForm').reset();
+            document.getElementById('searchInput').value = '';
+            fetchDocumentData();
+            closeFilterModal();
+        }
+    </script>
+</body>
+
+</html>

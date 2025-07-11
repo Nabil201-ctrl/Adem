@@ -100,23 +100,39 @@
             box-shadow: var(--shadow);
             text-align: center;
         }
-
         .brand {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2.5rem;
         }
 
+
+
         .logo-container {
-            width: 40px;
-            height: 40px;
-            background: var(--primary-color);
-            border-radius: 8px;
+            width: 80px;
+            /* Match Settings page .upload-preview */
+            height: 70px;
+            /* Match Settings page .upload-preview */
+            border-radius: 50%;
+            /* Circular shape */
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 0.75rem;
+            margin-right: 1rem;
+            overflow: hidden;
+            /* Ensure image doesn't overflow */
+            background: var(--input-background);
+            /* Match Settings page background */
+        }
+
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensure image covers container without distortion */
+            border-radius: 50%;
+            /* Maintain circular shape */
         }
 
         .logo-container i {
@@ -346,12 +362,12 @@
     <section id="payment-upload" class="payment-section">
         <div class="payment-container">
             <div class="payment-box">
-                <div class="brand">
+                <div class="brand logo">
                     <div class="logo-container">
-                        <i class="fas fa-coffee"></i>
+                        <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
                     </div>
                     <h1>Adem Baba</h1>
-                </div>
+                    </div>
                 <div class="payment-header">
                     <h2 class="gradient-text">Upload Payment Slip</h2>
                     <p>Upload a JPEG, PNG, or PDF file (&lt;5MB) and enter the amount.</p>

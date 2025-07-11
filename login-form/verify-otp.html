@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,8 +11,39 @@
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
     <style>
         :root {
+            --primary-color: #4d8bf0;
+            /* Light blue */
+            --primary-dark: #1a3e8c;
+            /* Dark blue */
+            --text-color: #333333;
+            /* Dark text for light mode */
+            --text-muted: rgba(51, 51, 51, 0.7);
+            --background-color: #ffffff;
+            /* White background */
+            --input-background: rgba(77, 139, 240, 0.05);
+            --box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --border-color: #dddddd;
+            --danger: #ff4444;
+            --success: #00C851;
+            --card-background: #ffffff;
             --transition: all 0.3s ease;
-            --gradient: linear-gradient(90deg, #6366f1, #a855f7);
+            --gradient: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #1a3e8c;
+            /* Dark blue */
+            --primary-dark: #0d1f4d;
+            /* Darker blue */
+            --text-color: #ffffff;
+            /* White text */
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #121212;
+            /* Dark background */
+            --input-background: rgba(26, 62, 140, 0.1);
+            --box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            --border-color: #333333;
+            --card-background: #1e1e1e;
         }
 
         * {
@@ -30,6 +62,7 @@
             justify-content: center;
             overflow: hidden;
             position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .background-shapes {
@@ -43,6 +76,7 @@
             background: var(--primary-color);
             opacity: 0.1;
             border-radius: 50%;
+            filter: blur(80px);
         }
 
         .shape:nth-child(1) {
@@ -57,6 +91,7 @@
             height: 400px;
             bottom: -150px;
             right: -150px;
+            background: var(--primary-dark);
         }
 
         .login-container {
@@ -73,26 +108,45 @@
             border-radius: 12px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--box-shadow);
             text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2.5rem;
         }
 
+
+
         .logo-container {
-            width: 40px;
-            height: 40px;
-            background: var(--primary-color);
-            border-radius: 8px;
+            width: 80px;
+            /* Match Settings page .upload-preview */
+            height: 70px;
+            /* Match Settings page .upload-preview */
+            border-radius: 50%;
+            /* Circular shape */
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 0.75rem;
+            margin-right: 1rem;
+            overflow: hidden;
+            /* Ensure image doesn't overflow */
+            background: var(--input-background);
+            /* Match Settings page background */
+        }
+
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensure image covers container without distortion */
+            border-radius: 50%;
+            /* Maintain circular shape */
         }
 
         .logo-container i {
@@ -103,6 +157,7 @@
         .brand h1 {
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--primary-color);
         }
 
         .login-header h2 {
@@ -140,11 +195,13 @@
             background: var(--input-background);
             color: var(--text-color);
             font-size: 1rem;
+            transition: var(--transition);
         }
 
         .form-group input:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(77, 139, 240, 0.2);
         }
 
         .form-group label {
@@ -157,13 +214,14 @@
             pointer-events: none;
         }
 
-        .form-group input:focus + label,
-        .form-group input:not(:placeholder-shown) + label {
+        .form-group input:focus+label,
+        .form-group input:not(:placeholder-shown)+label {
             top: -0.5rem;
             left: 1rem;
             font-size: 0.75rem;
             background: var(--card-background);
             padding: 0 0.25rem;
+            color: var(--primary-color);
         }
 
         .form-group i {
@@ -175,7 +233,7 @@
         }
 
         .error-message {
-            color: var(--danger-color);
+            color: var(--danger);
             font-size: 0.75rem;
             margin-top: 0.25rem;
             text-align: left;
@@ -183,7 +241,7 @@
         }
 
         .login-btn {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: #fff;
             border: none;
             padding: 0.75rem;
@@ -198,12 +256,15 @@
         }
 
         .login-btn:hover {
-            background: #4c51bf;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 62, 140, 0.3);
         }
 
         .login-btn:disabled {
             background: var(--text-muted);
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .login-box p {
@@ -216,10 +277,12 @@
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 600;
+            transition: color 0.3s ease;
         }
 
         .login-box a:hover {
             text-decoration: underline;
+            color: var(--primary-dark);
         }
 
         .modal {
@@ -240,15 +303,18 @@
             max-width: 400px;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .modal-content h2 {
             font-size: 1.5rem;
             margin-bottom: 1.5rem;
+            color: var(--primary-color);
         }
 
         .add-button {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: #fff;
             border: none;
             padding: 0.75rem 1.5rem;
@@ -261,11 +327,12 @@
         }
 
         .add-button:hover {
-            background: #4c51bf;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 62, 140, 0.3);
         }
 
         .close-btn {
-            background: var(--danger-color);
+            background: var(--danger);
             color: #fff;
             border: none;
             padding: 0.75rem 1.5rem;
@@ -278,6 +345,7 @@
 
         .close-btn:hover {
             background: #c53030;
+            transform: translateY(-2px);
         }
 
         .custom-toast {
@@ -288,21 +356,40 @@
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
             color: var(--text-color);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--box-shadow);
             display: none;
             z-index: 1000;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .custom-toast.show {
+            display: block;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .custom-toast.success {
-            border-left: 4px solid var(--success-color);
+            border-left-color: var(--success);
         }
 
         .custom-toast.error {
-            border-left: 4px solid var(--danger-color);
+            border-left-color: var(--danger);
         }
 
         .custom-toast.info {
-            border-left: 4px solid var(--info-color);
+            border-left-color: var(--primary-color);
         }
 
         @media (max-width: 480px) {
@@ -318,6 +405,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="background-shapes">
         <div class="shape"></div>
@@ -327,9 +415,9 @@
     <section id="otp-verify" class="login-section">
         <div class="login-container">
             <div class="login-box">
-                <div class="brand">
+                <div class="brand logo">
                     <div class="logo-container">
-                        <i class="fas fa-coffee"></i>
+                        <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
                     </div>
                     <h1>Adem Baba</h1>
                 </div>
@@ -370,6 +458,7 @@
                 <div class="form-group">
                     <input type="email" id="resendEmail" required aria-label="Email address" placeholder=" ">
                     <label for="resendEmail">Email</label>
+                    <i class="fas fa-envelope"></i>
                     <div id="resend-email-error" class="error-message"></div>
                 </div>
                 <button type="submit" class="add-button">Resend OTP</button>
@@ -560,4 +649,5 @@
         setupModalClose('emailModal');
     </script>
 </body>
+
 </html>

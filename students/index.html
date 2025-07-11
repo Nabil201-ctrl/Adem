@@ -15,32 +15,34 @@
             --success-color: #4CAF50;
             --warning-color: #FFC107;
             --danger-color: #f44336;
+            --info-color: #17a2b8;
             --transition: all 0.3s ease;
-            --border-radius: 12px;
         }
 
-        html[data-theme="light"] {
-            --primary-color: #8b6346;
-            --primary-dark: #3d2e23;
+        [data-theme="light"] {
+            --primary-color: #4d9de0;
+            --primary-dark: #3a7bb8;
             --text-color: #333333;
             --text-muted: rgba(0, 0, 0, 0.6);
-            --background-color: #f5f5f5;
-            --card-background: #ffffff;
-            --input-background: rgba(0, 0, 0, 0.05);
+            --background-color: #ffffff;
+            --card-background: #f5f9ff;
+            --input-background: rgba(77, 157, 224, 0.05);
             --border-color: rgba(0, 0, 0, 0.1);
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-background: #ffffff;
         }
 
-        html[data-theme="dark"] {
-            --primary-color: #8b6346;
-            --primary-dark: #3d2e23;
+        [data-theme="dark"] {
+            --primary-color: #1a5b9e;
+            --primary-dark: #0d3b6b;
             --text-color: #ffffff;
             --text-muted: rgba(255, 255, 255, 0.7);
-            --background-color: #1a1a1a;
-            --card-background: #242424;
-            --input-background: rgba(255, 255, 255, 0.05);
+            --background-color: #000000;
+            --card-background: #0a1625;
+            --input-background: rgba(26, 91, 158, 0.1);
             --border-color: rgba(255, 255, 255, 0.05);
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --sidebar-background: #050a13;
         }
 
         * {
@@ -76,44 +78,47 @@
         .sidebar {
             width: 280px;
             min-height: 100vh;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
+            background: var(--sidebar-background);
             padding: 2rem;
             position: fixed;
             left: 0;
             top: 0;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid var(--border-color);
             overflow-y: auto;
             z-index: 1000;
             scrollbar-width: thin;
             scrollbar-color: var(--primary-color) var(--background-color);
         }
 
-        .logo {
+        .brand {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
-            padding: 0.5rem;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 2.5rem;
         }
 
-        .logo-icon {
-            width: 40px;
-            height: 40px;
+        .logo-container {
+            width: 80px;
+            height: 70px;
             border-radius: 50%;
-            background: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1.25rem;
+            margin-right: 1rem;
+            overflow: hidden;
+            background: var(--input-background);
+        }
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .logo h1 {
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .nav-links {
@@ -159,12 +164,12 @@
             margin-bottom: 2rem;
             padding: 1.5rem;
             background: var(--card-background);
-            border-radius: 16px;
+            border-radius: 12px;
             border: 1px solid var(--border-color);
             position: sticky;
             top: 1rem;
             z-index: 100;
-            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
         }
 
         .hamburger {
@@ -172,6 +177,8 @@
             cursor: pointer;
             font-size: 1.5rem;
             color: var(--text-color);
+            background: none;
+            border: none;
         }
 
         @media (max-width: 1024px) {
@@ -201,7 +208,7 @@
             width: 300px;
             padding: 1rem 1rem 1rem 3rem;
             background: var(--input-background);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             color: var(--text-color);
             font-size: 0.95rem;
@@ -210,6 +217,7 @@
         .search-bar input:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
         }
 
         .search-bar i {
@@ -230,17 +238,25 @@
             font-size: 1.2rem;
             color: var(--text-color);
             cursor: pointer;
-            background: none;
+            background: var(--primary-color);
+            color: white;
             border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .theme-toggle:hover {
-            color: var(--primary-color);
+            transform: scale(1.1);
         }
 
         .user-info h4 {
             font-size: 0.9rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .user-info p {
@@ -280,7 +296,7 @@
 
         .stat-card {
             background: var(--card-background);
-            border-radius: 16px;
+            border-radius: 12px;
             padding: 2rem;
             border: 1px solid var(--border-color);
             display: flex;
@@ -312,6 +328,7 @@
         .stat-info p {
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .stat-card .action-button {
@@ -331,7 +348,7 @@
 
         .activity-table-container {
             background: var(--card-background);
-            border-radius: 16px;
+            border-radius: 12px;
             padding: 1.5rem;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
@@ -361,6 +378,7 @@
         .table-header h2 {
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--primary-color);
         }
 
         .table-actions {
@@ -373,7 +391,7 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            border-radius: var(--border-radius);
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -386,24 +404,22 @@
 
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             min-width: 600px;
         }
 
         th {
-            background: rgba(255, 255, 255, 0.02);
-            font-weight: 500;
+            background: var(--sidebar-background);
+            font-weight: 600;
             padding: 1.25rem 1rem;
             text-align: left;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            color: var(--text-muted);
+            color: var(--text-color);
         }
 
         td {
             padding: 1.25rem 1rem;
             border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
         }
 
         tbody tr:hover {
@@ -417,7 +433,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 2000;
             justify-content: center;
             align-items: center;
@@ -425,7 +441,7 @@
 
         .modal-content {
             background: var(--card-background);
-            border-radius: var(--border-radius);
+            border-radius: 12px;
             padding: 2rem;
             width: 90%;
             max-width: 600px;
@@ -433,6 +449,7 @@
             overflow-y: auto;
             position: relative;
             box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
             scrollbar-width: thin;
             scrollbar-color: var(--primary-color) var(--border-color);
         }
@@ -440,6 +457,7 @@
         .modal-content h2 {
             font-size: 1.5rem;
             margin-bottom: 1.5rem;
+            color: var(--text-color);
         }
 
         .close-btn {
@@ -470,18 +488,22 @@
             z-index: 2000;
             display: none;
             box-shadow: var(--shadow);
+            border-left: 5px solid transparent;
         }
 
         .custom-toast.success {
             background-color: var(--success-color);
+            border-left-color: var(--success-color);
         }
 
         .custom-toast.error {
             background-color: var(--danger-color);
+            border-left-color: var(--danger-color);
         }
 
         .custom-toast.info {
-            background-color: var(--primary-color);
+            background-color: var(--info-color);
+            border-left-color: var(--info-color);
         }
 
         @keyframes fadeIn {
@@ -497,8 +519,7 @@
         }
 
         .stat-card,
-        .activity-table-container,
-        .payment-upload-container {
+        .activity-table-container {
             animation: fadeIn 0.3s ease-out;
         }
 
@@ -547,9 +568,9 @@
     <div id="loading" class="loading">Loading...</div>
     <div id="app" style="display: none;">
         <div class="sidebar">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-coffee"></i>
+            <div class="brand logo">
+                <div class="logo-container">
+                    <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
                 </div>
                 <h1>Adem Baba</h1>
             </div>
@@ -654,7 +675,7 @@
                     <input type="date" id="filterEndDate" aria-label="End date" placeholder=" ">
                     <label for="filterEndDate">End Date</label>
                 </div>
-                <button type="submit" class="add-button">Apply Filter</button>
+                <button type="submit" class="action-button">Apply Filter</button>
                 <button type="button" class="close-btn" id="closeFilterModal">Cancel</button>
                 <button type="button" class="close-btn" id="resetFilter">Reset</button>
             </form>
@@ -663,289 +684,289 @@
 
     <div id="toast" class="custom-toast"></div>
 
-<script type="module">
-    import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
+    <script type="module">
+        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
 
-    async function checkAuth() {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            console.log('No token found, redirecting to login');
-            window.location.href = LOGIN_PATH;
-            return null;
-        }
-        try {
-            const data = await fetchWithRetry(`${API_URL}/protected`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            console.log('Auth check successful, user:', data.user);
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            console.log('Token payload:', payload);
-            return data.user;
-        } catch (error) {
-            console.error('Auth check failed:', error);
-            localStorage.removeItem('token');
-            sessionStorage.removeItem('token');
-            window.location.href = LOGIN_PATH;
-            return null;
-        }
-    }
-
-    async function checkPaymentStatus() {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        console.log('Checking payment status with token:', token ? 'Present' : 'Missing');
-        try {
-            const data = await fetchWithRetry(`${API_URL}/student/dashboard`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            console.log('Dashboard data:', data);
-            if (!data.paymentStatus) {
-                showToast('No payment slip uploaded. Please upload one.', 'info');
-                setTimeout(() => {
-                    console.log('Redirecting to payment upload: no payment');
-                    window.location.href = '/login-form/payment-upload.html';
-                }, 2000);
-                return false;
+        async function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                console.log('No token found, redirecting to login');
+                window.location.href = LOGIN_PATH;
+                return null;
             }
-            const status = data.paymentStatus.status;
-            console.log('Payment status:', status);
-            if (status === 'Approved') {
-                console.log('Payment approved, loading dashboard');
-                return data; // Proceed to dashboard
-            } else if (status === 'Rejected') {
-                showToast('Your payment was rejected. Please upload a new payment slip.', 'error');
-                setTimeout(() => {
-                    console.log('Redirecting to payment upload: rejected');
-                    window.location.href = '/login-form/payment-upload.html';
-                }, 2000);
-                return false;
-            } else if (status === 'Pending') {
-                showToast('Your payment is pending approval. Please wait or upload a new slip.', 'info');
-                setTimeout(() => {
-                    console.log('Redirecting to payment upload: pending');
-                    window.location.href = '/login-form/payment-upload.html';
-                }, 2000);
-                return false;
-            } else {
-                showToast('Invalid payment status. Please upload a payment slip.', 'error');
-                setTimeout(() => {
-                    console.log('Redirecting to payment upload: invalid status');
-                    window.location.href = '/login-form/payment-upload.html';
-                }, 2000);
-                return false;
-            }
-        } catch (error) {
-            console.error('Payment status check error:', error, 'Status:', error.status);
-            if (error.status === 403 || error.message.includes('403')) {
-                const errorData = error.error || {};
-                const message = errorData.message || 'Access restricted';
-                const redirect = errorData.redirect || errorData.redirectTo || '/login-form/payment-upload.html';
-
-                if (message.includes('Students only')) {
-                    showToast('Access denied. Please log in with a student account.', 'error');
-                    localStorage.removeItem('token');
-                    sessionStorage.removeItem('token');
-                    setTimeout(() => {
-                        console.log('Redirecting to login: non-student role');
-                        window.location.href = LOGIN_PATH;
-                    }, 2000);
-                    return false;
-                }
-
-                showToast(message, 'error');
-                setTimeout(() => {
-                    console.log(`Redirecting to: ${redirect}`);
-                    window.location.href = redirect;
-                }, 2000);
-                return false;
-            } else if (error.status === 401 || error.message.includes('401')) {
-                showToast('Session expired. Please log in again.', 'error');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/protected`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log('Auth check successful, user:', data.user);
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('Token payload:', payload);
+                return data.user;
+            } catch (error) {
+                console.error('Auth check failed:', error);
                 localStorage.removeItem('token');
                 sessionStorage.removeItem('token');
                 window.location.href = LOGIN_PATH;
-                return false;
-            } else if (error.name === 'network' || error.message.includes('network')) {
-                showToast('Network error. Please check your connection.', 'error');
+                return null;
+            }
+        }
+
+        async function checkPaymentStatus() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            console.log('Checking payment status with token:', token ? 'Present' : 'Missing');
+            try {
+                const data = await fetchWithRetry(`${API_URL}/student/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log('Dashboard data:', data);
+                if (!data.paymentStatus) {
+                    showToast('No payment slip uploaded. Please upload one.', 'info');
+                    setTimeout(() => {
+                        console.log('Redirecting to payment upload: no payment');
+                        window.location.href = '/login-form/payment-upload.html';
+                    }, 2000);
+                    return false;
+                }
+                const status = data.paymentStatus.status;
+                console.log('Payment status:', status);
+                if (status === 'Approved') {
+                    console.log('Payment approved, loading dashboard');
+                    return data; // Proceed to dashboard
+                } else if (status === 'Rejected') {
+                    showToast('Your payment was rejected. Please upload a new payment slip.', 'error');
+                    setTimeout(() => {
+                        console.log('Redirecting to payment upload: rejected');
+                        window.location.href = '/login-form/payment-upload.html';
+                    }, 2000);
+                    return false;
+                } else if (status === 'Pending') {
+                    showToast('Your payment is pending approval. Please wait or upload a new slip.', 'info');
+                    setTimeout(() => {
+                        console.log('Redirecting to payment upload: pending');
+                        window.location.href = '/login-form/payment-upload.html';
+                    }, 2000);
+                    return false;
+                } else {
+                    showToast('Invalid payment status. Please upload a payment slip.', 'error');
+                    setTimeout(() => {
+                        console.log('Redirecting to payment upload: invalid status');
+                        window.location.href = '/login-form/payment-upload.html';
+                    }, 2000);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Payment status check error:', error, 'Status:', error.status);
+                if (error.status === 403 || error.message.includes('403')) {
+                    const errorData = error.error || {};
+                    const message = errorData.message || 'Access restricted';
+                    const redirect = errorData.redirect || errorData.redirectTo || '/login-form/payment-upload.html';
+
+                    if (message.includes('Students only')) {
+                        showToast('Access denied. Please log in with a student account.', 'error');
+                        localStorage.removeItem('token');
+                        sessionStorage.removeItem('token');
+                        setTimeout(() => {
+                            console.log('Redirecting to login: non-student role');
+                            window.location.href = LOGIN_PATH;
+                        }, 2000);
+                        return false;
+                    }
+
+                    showToast(message, 'error');
+                    setTimeout(() => {
+                        console.log(`Redirecting to: ${redirect}`);
+                        window.location.href = redirect;
+                    }, 2000);
+                    return false;
+                } else if (error.status === 401 || error.message.includes('401')) {
+                    showToast('Session expired. Please log in again.', 'error');
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
+                    window.location.href = LOGIN_PATH;
+                    return false;
+                } else if (error.name === 'network' || error.message.includes('network')) {
+                    showToast('Network error. Please check your connection.', 'error');
+                    return false;
+                }
+                showToast(`Failed to verify payment status: ${error.message || 'Unknown error'}`, 'error');
                 return false;
             }
-            showToast(`Failed to verify payment status: ${error.message || 'Unknown error'}`, 'error');
-            return false;
         }
-    }
 
-    async function fetchDashboardData(data) {
-        document.getElementById('studentName').textContent = sanitizeInput(data.student.name || 'N/A');
-        document.getElementById('matricNumber').textContent = sanitizeInput(data.student.matricNumber || 'N/A');
-        document.getElementById('roomInfo').textContent = data.student.room ? `${sanitizeInput(data.student.room.roomNumber)} (${sanitizeInput(data.student.room.type)})` : 'Unassigned';
-        document.getElementById('paymentStatus').textContent = data.paymentStatus ? `${sanitizeInput(data.paymentStatus.status)} (₦${data.paymentStatus.amount.toLocaleString()})` : 'No Payment Slip';
-        await fetchEvents();
-    }
-
-    async function fetchEvents(filters = {}) {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            const defaultFilters = {
-                start: today,
-                status: 'Scheduled'
-            };
-            const combinedFilters = { ...defaultFilters, ...filters };
-            const params = new URLSearchParams(combinedFilters).toString();
-            const response = await fetchWithRetry(`${API_URL}/events?${params}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            window.currentEvents = response;
-            renderEventList(response);
-            return response;
-        } catch (error) {
-            showToast(error.error?.message || 'Failed to load events', 'error');
-            return [];
+        async function fetchDashboardData(data) {
+            document.getElementById('studentName').textContent = sanitizeInput(data.student.name || 'N/A');
+            document.getElementById('matricNumber').textContent = sanitizeInput(data.student.matricNumber || 'N/A');
+            document.getElementById('roomInfo').textContent = data.student.room ? `${sanitizeInput(data.student.room.roomNumber)} (${sanitizeInput(data.student.room.type)})` : 'Unassigned';
+            document.getElementById('paymentStatus').textContent = data.paymentStatus ? `${sanitizeInput(data.paymentStatus.status)} (₦${data.paymentStatus.amount.toLocaleString()})` : 'No Payment Slip';
+            await fetchEvents();
         }
-    }
 
-    function navigateToPaymentUpload() {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            showToast('Please log in to continue', 'error');
-            window.location.href = LOGIN_PATH;
-            return false;
+        async function fetchEvents(filters = {}) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const defaultFilters = {
+                    start: today,
+                    status: 'Scheduled'
+                };
+                const combinedFilters = { ...defaultFilters, ...filters };
+                const params = new URLSearchParams(combinedFilters).toString();
+                const response = await fetchWithRetry(`${API_URL}/events?${params}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.currentEvents = response;
+                renderEventList(response);
+                return response;
+            } catch (error) {
+                showToast(error.error?.message || 'Failed to load events', 'error');
+                return [];
+            }
         }
-        window.location.href = '/login-form/payment-upload.html';
-        return true;
-    }
 
-    function renderEventList(events) {
-        const tableBody = document.getElementById('eventList');
-        tableBody.innerHTML = '';
-        if (!events || events.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No upcoming events</td></tr>';
-            return;
+        function navigateToPaymentUpload() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!token) {
+                showToast('Please log in to continue', 'error');
+                window.location.href = LOGIN_PATH;
+                return false;
+            }
+            window.location.href = '/login-form/payment-upload.html';
+            return true;
         }
-        events.forEach(event => {
-            const row = document.createElement('tr');
-            row.innerHTML = DOMPurify.sanitize(`
+
+        function renderEventList(events) {
+            const tableBody = document.getElementById('eventList');
+            tableBody.innerHTML = '';
+            if (!events || events.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No upcoming events</td></tr>';
+                return;
+            }
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                row.innerHTML = DOMPurify.sanitize(`
                 <td>${sanitizeInput(event.title)}</td>
                 <td>${new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                 <td>${sanitizeInput(event.time || 'N/A')}</td>
                 <td>${sanitizeInput(event.description || 'N/A')}</td>
             `);
-            tableBody.appendChild(row);
-        });
-    }
+                tableBody.appendChild(row);
+            });
+        }
 
-    function filterEvents(keyword, startDate, endDate) {
-        const filters = {};
-        if (keyword) filters.keyword = keyword;
-        if (startDate) filters.start = startDate;
-        if (endDate) filters.end = endDate;
-        fetchEvents(filters);
-    }
+        function filterEvents(keyword, startDate, endDate) {
+            const filters = {};
+            if (keyword) filters.keyword = keyword;
+            if (startDate) filters.start = startDate;
+            if (endDate) filters.end = endDate;
+            fetchEvents(filters);
+        }
 
-    function startEventPolling() {
-        setInterval(() => {
-            const keyword = document.getElementById('filterKeyword').value.trim();
-            const startDate = document.getElementById('filterStartDate').value;
-            const endDate = document.getElementById('filterEndDate').value;
-            filterEvents(keyword, startDate, endDate);
-        }, 60000); // Poll every minute
-    }
+        function startEventPolling() {
+            setInterval(() => {
+                const keyword = document.getElementById('filterKeyword').value.trim();
+                const startDate = document.getElementById('filterStartDate').value;
+                const endDate = document.getElementById('filterEndDate').value;
+                filterEvents(keyword, startDate, endDate);
+            }, 60000); // Poll every minute
+        }
 
-    function toggleTheme() {
-        const html = document.documentElement;
-        const themeIcon = document.querySelector('.theme-toggle i');
-        const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
-        themeIcon.classList.toggle('fa-sun', newTheme === 'light');
-        localStorage.setItem('theme', newTheme);
-    }
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.classList.toggle('fa-moon', newTheme === 'dark');
+            themeIcon.classList.toggle('fa-sun', newTheme === 'light');
+            localStorage.setItem('theme', newTheme);
+        }
 
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        sidebar.classList.toggle('active');
-    }
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
 
-    function logout() {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        window.location.href = LOGIN_PATH;
-    }
+        function logout() {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            window.location.href = LOGIN_PATH;
+        }
 
-    function openFilterModal() {
-        document.getElementById('filterModal').style.display = 'flex';
-        document.getElementById('filterKeyword').focus();
-    }
+        function openFilterModal() {
+            document.getElementById('filterModal').style.display = 'flex';
+            document.getElementById('filterKeyword').focus();
+        }
 
-    function closeFilterModal() {
-        document.getElementById('filterModal').style.display = 'none';
-    }
+        function closeFilterModal() {
+            document.getElementById('filterModal').style.display = 'none';
+        }
 
-    function setupModal(modalId) {
-        const modal = document.getElementById(modalId);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal(modalId);
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.style.display === 'flex') {
-                closeModal(modalId);
-            }
-        });
-    }
+        function setupModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(modalId);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    closeModal(modalId);
+                }
+            });
+        }
 
-    function closeModal(modalId) {
-        document.getElementById('filterModal').style.display = 'none';
-    }
+        function closeModal(modalId) {
+            document.getElementById('filterModal').style.display = 'none';
+        }
 
-    (async () => {
-        const user = await checkAuth();
-        if (!user) return;
+        (async () => {
+            const user = await checkAuth();
+            if (!user) return;
 
-        const dashboardData = await checkPaymentStatus();
-        if (!dashboardData) return;
+            const dashboardData = await checkPaymentStatus();
+            if (!dashboardData) return;
 
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('app').style.display = 'grid';
-        document.getElementById('userName').textContent = sanitizeInput(user.name || 'Student User');
-        await fetchDashboardData(dashboardData);
-        startEventPolling();
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('app').style.display = 'grid';
+            document.getElementById('userName').textContent = sanitizeInput(user.name || 'Student User');
+            await fetchDashboardData(dashboardData);
+            startEventPolling();
 
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
-        document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
+            document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const query = sanitizeInput(e.target.value.trim());
-            const startDate = document.getElementById('filterStartDate').value;
-            const endDate = document.getElementById('filterEndDate').value;
-            filterEvents(query, startDate, endDate);
-        });
-        document.getElementById('filterButton').addEventListener('click', openFilterModal);
-        document.getElementById('closeFilterModal').addEventListener('click', closeFilterModal);
-        document.getElementById('resetFilter').addEventListener('click', () => {
-            document.getElementById('filterForm').reset();
-            document.getElementById('searchInput').value = '';
-            fetchEvents();
-            closeFilterModal();
-        });
-        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-        document.getElementById('logoutButton').addEventListener('click', logout);
-        document.querySelector('.hamburger').addEventListener('click', toggleSidebar);
-        setupModal('filterModal');
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const query = sanitizeInput(e.target.value.trim());
+                const startDate = document.getElementById('filterStartDate').value;
+                const endDate = document.getElementById('filterEndDate').value;
+                filterEvents(query, startDate, endDate);
+            });
+            document.getElementById('filterButton').addEventListener('click', openFilterModal);
+            document.getElementById('closeFilterModal').addEventListener('click', closeFilterModal);
+            document.getElementById('resetFilter').addEventListener('click', () => {
+                document.getElementById('filterForm').reset();
+                document.getElementById('searchInput').value = '';
+                fetchEvents();
+                closeFilterModal();
+            });
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            document.getElementById('logoutButton').addEventListener('click', logout);
+            document.querySelector('.hamburger').addEventListener('click', toggleSidebar);
+            setupModal('filterModal');
 
-        document.getElementById('filterForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const keyword = sanitizeInput(document.getElementById('filterKeyword').value.trim());
-            const startDate = document.getElementById('filterStartDate').value;
-            const endDate = document.getElementById('filterEndDate').value;
-            if (startDate && endDate && startDate > endDate) {
-                showToast('Start date cannot be after end date', 'error');
-                return;
-            }
-            filterEvents(keyword, startDate, endDate);
-            closeFilterModal();
-        });
-    })();
-</script>
+            document.getElementById('filterForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const keyword = sanitizeInput(document.getElementById('filterKeyword').value.trim());
+                const startDate = document.getElementById('filterStartDate').value;
+                const endDate = document.getElementById('filterEndDate').value;
+                if (startDate && endDate && startDate > endDate) {
+                    showToast('Start date cannot be after end date', 'error');
+                    return;
+                }
+                filterEvents(keyword, startDate, endDate);
+                closeFilterModal();
+            });
+        })();
+    </script>
 </body>
 
 </html>

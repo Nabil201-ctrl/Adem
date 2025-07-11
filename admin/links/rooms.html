@@ -7,40 +7,47 @@
     <title>Adem Baba - Rooms</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/login-form/style.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
     <style>
         :root {
-            --primary-color: #a67c00;
-            --secondary-color: #2c2c2c;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #f44336;
             --info-color: #17a2b8;
-            --background-color: #121212;
-            --card-background: #1e1e1e;
-            --input-background: #2a2a2a;
-            --border-color: rgba(255, 255, 255, 0.15);
-            --text-color: #e0e0e0;
-            --text-muted: rgba(255, 255, 255, 0.6);
             --transition: all 0.3s ease;
-            --shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
         html[data-theme="light"] {
-            --background-color: #f8fafc;
-            --card-background: #ffffff;
-            --input-background: #f1f5f9;
-            --border-color: rgba(0, 0, 0, 0.15);
-            --text-color: #1f2937;
+            --primary-color: #4d9de0;
+            --primary-dark: #3a7bb8;
+            --text-color: #333333;
             --text-muted: rgba(0, 0, 0, 0.6);
-            --shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            --background-color: #ffffff;
+            --card-background: #f5f9ff;
+            --input-background: rgba(77, 157, 224, 0.05);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-background: #ffffff;
+        }
+
+        html[data-theme="dark"] {
+            --primary-color: #1a5b9e;
+            --primary-dark: #0d3b6b;
+            --text-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #000000;
+            --card-background: #0a1625;
+            --input-background: rgba(26, 91, 158, 0.1);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --sidebar-background: #050a13;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: var(--transition);
         }
 
         body {
@@ -50,14 +57,6 @@
             min-height: 100vh;
             display: flex;
             overflow-x: hidden;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
         }
 
         #loading {
@@ -96,12 +95,13 @@
 
         .sidebar {
             width: 260px;
-            background: var(--secondary-color);
+            background: var(--sidebar-background);
             padding: 2rem 1.5rem;
             height: 100vh;
             position: fixed;
             transition: var(--transition);
             z-index: 100;
+            border-right: 1px solid var(--border-color);
         }
 
         .brand.logo {
@@ -111,14 +111,22 @@
         }
 
         .logo-container {
-            width: 48px;
-            height: 48px;
-            background: var(--primary-color);
-            border-radius: 12px;
+            width: 80px;
+            height: 70px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 1rem;
+            overflow: hidden;
+            background: var(--input-background);
+        }
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .logo-container i {
@@ -172,13 +180,16 @@
             margin-bottom: 2.5rem;
             flex-wrap: wrap;
             gap: 1rem;
-            position: fixed;
+            position: sticky;
             top: 0;
             width: calc(100% - 260px);
-            background: var(--background-color);
-            padding: 1rem 2rem;
+            background: var(--card-background);
+            padding: 1.5rem;
             z-index: 90;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
         }
 
         .hamburger {
@@ -210,7 +221,7 @@
         .search-bar input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(166, 124, 0, 0.1);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
         }
 
         .search-bar i {
@@ -228,19 +239,23 @@
         }
 
         .theme-toggle {
-            background: var(--card-background);
+            background: var(--primary-color);
+            color: white;
             border: none;
-            color: var(--text-color);
             font-size: 1.3rem;
             cursor: pointer;
-            padding: 0.6rem;
+            padding: 0.8rem;
             border-radius: 50%;
             transition: var(--transition);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .theme-toggle:hover {
-            background: var(--primary-color);
-            color: #fff;
+            transform: scale(1.1);
         }
 
         .user-details h4 {
@@ -263,7 +278,7 @@
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2.5rem;
-            margin-top: 80px;
+            margin-top: 20px;
         }
 
         .stat-card {
@@ -274,10 +289,11 @@
             align-items: center;
             gap: 1rem;
             transition: var(--transition);
+            border: 1px solid var(--border-color);
         }
 
         .stat-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow);
         }
 
@@ -305,6 +321,7 @@
         .stat-info .stat-value {
             font-size: 1.8rem;
             font-weight: 700;
+            color: var(--text-color);
         }
 
         .activity-containers {
@@ -318,6 +335,7 @@
             border-radius: 16px;
             padding: 2rem;
             box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
         }
 
         .table-header {
@@ -355,7 +373,7 @@
         }
 
         .action-button:hover {
-            background: #8b6346;
+            background: var(--primary-dark);
         }
 
         table {
@@ -365,18 +383,20 @@
         }
 
         th {
-            background: var(--secondary-color);
+            background: var(--sidebar-background);
             color: var(--text-muted);
             font-weight: 600;
             text-transform: uppercase;
             padding: 1rem;
             font-size: 0.9rem;
+            text-align: left;
         }
 
         td {
             padding: 1rem;
             border-bottom: 1px solid var(--border-color);
             font-size: 0.95rem;
+            vertical-align: top;
         }
 
         .status {
@@ -415,7 +435,7 @@
         }
 
         .action-icons i.fa-edit:hover {
-            color: var(--success-color);
+            color: var(--warning-color);
         }
 
         .action-icons i.fa-trash:hover {
@@ -439,10 +459,12 @@
             background: var(--input-background);
             border-radius: 12px;
             transition: var(--transition);
+            border: 1px solid var(--border-color);
         }
 
         .activity-item:hover {
-            background: var(--border-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .activity-icon {
@@ -468,6 +490,7 @@
         .activity-text {
             margin: 0;
             font-size: 0.9rem;
+            color: var(--text-color);
         }
 
         .activity-time {
@@ -489,14 +512,13 @@
             background: var(--input-background);
             color: var(--text-color);
             font-size: 1rem;
-            transition: var(--transition);
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(166, 124, 0, 0.1);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
         }
 
         .form-group label {
@@ -534,7 +556,7 @@
         }
 
         .add-button:hover {
-            background: #8b6346;
+            background: var(--primary-dark);
         }
 
         .close-btn {
@@ -551,6 +573,14 @@
 
         .close-btn:hover {
             background: #c82333;
+        }
+
+        .close-btn#resetFilter {
+            background: var(--warning-color);
+        }
+
+        .close-btn#resetFilter:hover {
+            background: #e0a800;
         }
 
         .modal {
@@ -571,6 +601,7 @@
             max-width: 500px;
             box-shadow: var(--shadow);
             position: relative;
+            border: 1px solid var(--border-color);
         }
 
         .modal-content h2 {
@@ -617,23 +648,45 @@
             display: none;
             z-index: 1000;
             max-width: 300px;
+            border-left: 5px solid transparent;
         }
 
         .custom-toast.success {
-            border-left: 5px solid var(--success-color);
+            border-left-color: var(--success-color);
         }
 
         .custom-toast.error {
-            border-left: 5px solid var(--danger-color);
+            border-left-color: var(--danger-color);
         }
 
-        @media (max-width: 1024px) {
+        .custom-toast.info {
+            border-left-color: var(--info-color);
+        }
+
+        .custom-toast.show {
+            display: block;
+            animation: fadeInUp 0.4s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1200px) {
             .activity-containers {
                 grid-template-columns: 1fr;
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -645,20 +698,21 @@
             .main-content {
                 margin-left: 0;
                 width: 100%;
-                padding: 1.5rem;
+            }
+
+            .hamburger {
+                display: block;
             }
 
             header {
                 width: 100%;
                 position: static;
             }
+        }
 
+        @media (max-width: 768px) {
             .stats {
-                margin-top: 0;
-            }
-
-            .hamburger {
-                display: block;
+                grid-template-columns: repeat(2, 1fr);
             }
 
             table {
@@ -671,9 +725,7 @@
             td {
                 min-width: 150px;
             }
-        }
 
-        @media (max-width: 480px) {
             .modal-content {
                 padding: 1.5rem;
             }
@@ -683,8 +735,50 @@
                 font-size: 0.85rem;
             }
 
+            .table-actions {
+                justify-content: flex-end;
+            }
+        }
+
+        @media (max-width: 576px) {
             .stats {
                 grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .table-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .action-button {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
@@ -701,7 +795,7 @@
             </button>
             <div class="brand logo">
                 <div class="logo-container">
-                    <i class="fas fa-coffee"></i>
+                    <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
                 </div>
                 <h1>Adem Baba</h1>
             </div>
@@ -711,7 +805,8 @@
                 <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> <span>Students</span></a>
                 <a href="./schedule.html" class="nav-link"><i class="fas fa-calendar"></i> <span>Schedule</span></a>
                 <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> <span>Payments</span></a>
-                <a href="./uploadLink.html" class="nav-link active"><i class="fas fa-file"></i> Upload Documents</a>
+                <a href="./admin-student-document.html" class="nav-link"><i class="fas fa-file"></i> StudentFiles</a>
+                <a href="./uploadLink.html" class="nav-link"><i class="fas fa-file-upload"></i> UploadLink</a>
                 <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> <span>Settings</span></a>
                 <a href="#" class="nav-link" id="logoutLink"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
             </nav>

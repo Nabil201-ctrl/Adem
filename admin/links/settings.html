@@ -18,29 +18,35 @@
         }
 
         html[data-theme="light"] {
-            --primary-color: #8b6346;
-            --primary-dark: #3d2e23;
+            --primary-color: #4d9de0;
+            /* Light blue */
+            --primary-dark: #3a7bb8;
             --text-color: #333333;
             --text-muted: rgba(0, 0, 0, 0.6);
-            --background-color: #f5f5f5;
-            --card-background: #ffffff;
-            --input-background: rgba(0, 0, 0, 0.05);
+            --background-color: #ffffff;
+            /* White */
+            --card-background: #f5f9ff;
+            /* Very light blue */
+            --input-background: rgba(77, 157, 224, 0.05);
             --border-color: rgba(0, 0, 0, 0.1);
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --sidebar-background: #ffffff;
         }
 
         html[data-theme="dark"] {
-            --primary-color: #8b6346;
-            --primary-dark: #3d2e23;
+            --primary-color: #1a5b9e;
+            /* Dark blue */
+            --primary-dark: #0d3b6b;
             --text-color: #ffffff;
             --text-muted: rgba(255, 255, 255, 0.7);
-            --background-color: #1a1a1a;
-            --card-background: rgba(255, 255, 255, 0.03);
-            --input-background: rgba(255, 255, 255, 0.05);
+            --background-color: #000000;
+            /* Black */
+            --card-background: #0a1625;
+            /* Dark blue */
+            --input-background: rgba(26, 91, 158, 0.1);
             --border-color: rgba(255, 255, 255, 0.05);
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            --sidebar-background: #121212;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --sidebar-background: #050a13;
         }
 
         * {
@@ -115,14 +121,40 @@
             display: block;
         }
 
-        .logo {
+
+        .brand {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
-            padding: 0.5rem;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 2.5rem;
+        }
+
+
+
+        .logo-container {
+            width: 80px;
+            /* Match Settings page .upload-preview */
+            height: 70px;
+            /* Match Settings page .upload-preview */
+            border-radius: 50%;
+            /* Circular shape */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            overflow: hidden;
+            /* Ensure image doesn't overflow */
+            background: var(--input-background);
+            /* Match Settings page background */
+        }
+
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensure image covers container without distortion */
+            border-radius: 50%;
+            /* Maintain circular shape */
         }
 
         .nav-links {
@@ -626,11 +658,14 @@
     </div>
 
     <aside class="sidebar">
-        <div class="logo">
-            <div class="logo-icon">
-                <i class="fas fa-coffee"></i>
+        </button>
+        <div class="brand logo">
+            <div class="logo-container">
+                <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
             </div>
-            <h2>Adem Baba</h2>
+            <h1>Adem Baba</h1>
+        </div>
+        <h2>Adem Baba</h2>
         </div>
         <nav class="nav-links">
             <a href="/admin/index.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
@@ -639,7 +674,8 @@
             <a href="/admin/links/schedule.html" class="nav-link"><i
                     class="fas fa-calendar-alt"></i><span>Schedule</span></a>
             <a href="/admin/links/payment.html" class="nav-link"><i class="fas fa-coins"></i><span>Payments</span></a>
-            <a href="./uploadLink.html" class="nav-link active"><i class="fas fa-file"></i> Upload Documents</a>
+            <a href="./uploadLink.html" class="nav-link"><i class="fas fa-file-upload"></i> UploadLink</a>
+            <a href="./admin-student-document.html" class="nav-link"><i class="fas fa-file"></i>StudentFiles</a>
             <a href="/admin/links/settings.html" class="nav-link active"><i
                     class="fas fa-cog"></i><span>Settings</span></a>
         </nav>
@@ -1224,6 +1260,7 @@
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                     body: formData
                 });
+                console.log(localStorage.getItem('token'))
                 userName.textContent = name;
                 if (response.data.avatar) {
                     profilePreview.innerHTML = '';

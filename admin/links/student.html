@@ -11,32 +11,44 @@
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
     <style>
         :root {
-            --primary-color: #8b6346;
-            --primary-dark: #3d2e23;
-            --text-color: #ffffff;
-            --text-muted: rgba(255, 255, 255, 0.7);
-            --background-color: #1a1a1a;
-            --input-background: rgba(255, 255, 255, 0.05);
-            --box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #f44336;
             --info-color: #17a2b8;
-            --secondary-color: #2c2c2c;
+            --transition: all 0.3s ease;
         }
 
-        html[data-theme="light"] {
-            --background-color: #f8fafc;
-            --text-color: #1f2937;
-            --text-muted: rgba(0, 0, 0, 0.7);
-            --input-background: rgba(0, 0, 0, 0.05);
-            --secondary-color: #e0e0e0;
+        [data-theme="light"] {
+            --primary-color: #4d9de0;
+            --primary-dark: #3a7bb8;
+            --text-color: #333333;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --background-color: #ffffff;
+            --card-background: #f5f9ff;
+            --input-background: rgba(77, 157, 224, 0.05);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-background: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #1a5b9e;
+            --primary-dark: #0d3b6b;
+            --text-color: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --background-color: #000000;
+            --card-background: #0a1625;
+            --input-background: rgba(26, 91, 158, 0.1);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --sidebar-background: #050a13;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: var(--transition);
         }
 
         body {
@@ -44,6 +56,16 @@
             background: var(--background-color);
             color: var(--text-color);
             display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
         }
 
         #loading {
@@ -53,6 +75,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--text-muted);
+            font-size: 1.5rem;
             z-index: 9999;
         }
 
@@ -78,389 +102,317 @@
         #app {
             display: flex;
             width: 100%;
-            height: 100vh;
-            position: relative;
-        }
-
-        .main-content {
-            margin-left: 260px;
-            padding: 1rem 2rem;
-            width: calc(100% - 260px);
-            transition: all 0.3s ease;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .header {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding-top: 0.5rem;
-        }
-
-        .content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .background-shapes .shape {
-            position: absolute;
-            filter: blur(100px);
-            z-index: -1;
-        }
-
-        .background-shapes .shape:nth-child(1) {
-            background: var(--primary-color);
-            width: 300px;
-            height: 300px;
-            top: -150px;
-            right: -100px;
-        }
-
-        .background-shapes .shape:nth-child(2) {
-            background: var(--primary-dark);
-            width: 250px;
-            height: 250px;
-            bottom: -100px;
-            left: -50px;
+            min-height: 100vh;
         }
 
         .sidebar {
-            width: 260px;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            padding: 2rem 1.5rem;
-            height: 100vh;
+            width: 250px;
+            background: var(--sidebar-background);
+            padding: 1.5rem;
+            min-height: 100vh;
             position: fixed;
-            transition: all 0.3s ease;
-            z-index: 100;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border-right: 1px solid var(--border-color);
         }
 
-        html[data-theme="light"] .sidebar {
-            background: rgba(255, 255, 255, 0.8);
-            border-right: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .brand {
+        .brand.logo {
             display: flex;
             align-items: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         .logo-container {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            border-radius: 12px;
+            width: 80px;
+            height: 70px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 1rem;
+            overflow: hidden;
+            background: var(--input-background);
+        }
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .logo-container i {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: #fff;
         }
 
         .brand h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--text-color), var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
         }
 
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .nav-link {
+        .nav-links a {
             display: flex;
             align-items: center;
-            padding: 1rem;
+            padding: 0.75rem;
             margin: 0.5rem 0;
             color: var(--text-muted);
             text-decoration: none;
-            border-radius: 12px;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            transition: var(--transition);
         }
 
-        .nav-link:hover,
-        .nav-link.active {
+        .nav-links a:hover,
+        .nav-links a.active {
             background: var(--primary-color);
             color: #fff;
         }
 
-        .nav-link i {
-            margin-right: 1rem;
-            font-size: 1.3rem;
+        .nav-links a i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-height: 100vh;
+            overflow-y: auto;
+            padding: 0;
         }
 
         .hamburger {
             display: none;
             cursor: pointer;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: var(--text-color);
             background: none;
             border: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
         }
 
-        .header {
+        header {
             display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+            background: var(--card-background);
             padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
             position: sticky;
             top: 0;
             z-index: 10;
-        }
-
-        @media (min-width: 768px) {
-            .header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
+            border: 1px solid var(--border-color);
         }
 
         .search-bar {
             position: relative;
-            width: 100%;
-            max-width: 350px;
+            width: 300px;
         }
 
         .search-bar input {
             width: 100%;
-            padding: 1rem 1rem 1rem 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             background: var(--input-background);
             color: var(--text-color);
             font-size: 1rem;
-            transition: all 0.3s ease;
         }
 
         .search-bar input:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
         }
 
         .search-bar i {
             position: absolute;
-            left: 1rem;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
         }
 
-        .user-profile {
+        .user-info {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .theme-toggle {
-            background: var(--input-background);
+            background: var(--primary-color);
+            color: white;
             border: none;
-            color: var(--text-color);
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             cursor: pointer;
-            padding: 0.6rem;
+            padding: 0.5rem;
             border-radius: 50%;
-            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .theme-toggle:hover {
-            background: var(--primary-color);
-            color: #fff;
-        }
-
-        .user-details {
-            text-align: right;
+            transform: scale(1.1);
         }
 
         .user-details h4 {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .user-details p {
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             color: var(--text-muted);
         }
 
         .user-icon i {
-            font-size: 2.2rem;
+            font-size: 2rem;
             color: var(--primary-color);
         }
 
-        .notifications i {
-            font-size: 1.3rem;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .notifications i:hover {
-            color: var(--primary-color);
+        .content {
+            padding: 1.5rem;
         }
 
         .stats {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2.5rem;
-            width: 100%;
-        }
-
-        @media (min-width: 768px) {
-            .stats {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            }
+            margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
+            background: var(--card-background);
             padding: 1.5rem;
-            border-radius: 16px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             gap: 1rem;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: var(--box-shadow);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
         }
 
         .stat-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
 
         .stat-icon {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            width: 56px;
-            height: 56px;
-            border-radius: 12px;
+            background: var(--primary-color);
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .stat-icon i {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: #fff;
         }
 
         .stat-info h3 {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--text-muted);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.25rem;
         }
 
-        .stat-info p {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        .activity-table {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
+        .stat-info .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
         }
 
         .activity-table-container {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: var(--box-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
         }
 
         .table-header {
             display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        @media (min-width: 768px) {
-            .table-header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
         }
 
         .table-header h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
         }
 
         .table-actions {
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+            gap: 0.75rem;
         }
 
         .action-button {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: var(--primary-color);
             color: #fff;
             border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            transition: all 0.3s ease;
+            gap: 0.5rem;
+            transition: var(--transition);
         }
 
         .action-button:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 99, 70, 0.3);
+        }
+
+        .action-button.hidden {
+            display: none;
         }
 
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            flex-grow: 1;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.875rem;
         }
 
         th {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-muted);
+            background: var(--sidebar-background);
+            color: var(--text-color);
             font-weight: 600;
             text-transform: uppercase;
-            padding: 1rem;
-            font-size: 0.9rem;
         }
 
         td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.95rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
         }
 
         .status {
-            padding: 0.4rem 0.8rem;
-            border-radius: 16px;
-            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
             text-transform: capitalize;
             text-align: center;
         }
@@ -482,13 +434,14 @@
 
         .action-icons {
             display: flex;
-            gap: 0.8rem;
+            gap: 0.5rem;
         }
 
         .action-icons i {
-            font-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 1rem;
+            color: var(--text-muted);
+            transition: var(--transition);
         }
 
         .action-icons i.fa-eye:hover {
@@ -496,7 +449,7 @@
         }
 
         .action-icons i.fa-edit:hover {
-            color: var(--success-color);
+            color: var(--warning-color);
         }
 
         .action-icons i.fa-trash:hover {
@@ -504,7 +457,7 @@
         }
 
         .action-icons i.fa-door-open:hover {
-            color: var(--warning-color);
+            color: var(--primary-color);
         }
 
         .action-icons i.disabled {
@@ -524,25 +477,21 @@
         }
 
         .modal-content {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            padding: 2.5rem;
-            border-radius: 20px;
+            background: var(--card-background);
+            padding: 2rem;
+            border-radius: 12px;
             width: 90%;
             max-width: 500px;
-            box-shadow: var(--box-shadow);
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-height: 80vh;
+            max-height: 90vh;
             overflow-y: auto;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
         }
 
         .modal-content h2 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-color);
         }
 
         .form-group {
@@ -551,129 +500,134 @@
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 1rem 1rem 1rem 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             background: var(--input-background);
             color: var(--text-color);
             font-size: 1rem;
-            transition: all 0.3s ease;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
         }
 
         .form-group label {
             position: absolute;
-            left: 3rem;
-            top: 1rem;
+            top: 0.75rem;
+            left: 1rem;
             color: var(--text-muted);
-            transition: all 0.3s ease;
+            font-size: 1rem;
+            transition: var(--transition);
             pointer-events: none;
         }
 
         .form-group i:not(.toggle-password) {
             position: absolute;
-            left: 1rem;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
         }
 
         .form-group input:focus~label,
-        .form-group input:valid~label,
+        .form-group input:not(:placeholder-shown)~label,
         .form-group select:focus~label,
-        .form-group select:not([value=""])~label {
+        .form-group select:not([value=""])~label,
+        .form-group textarea:focus~label,
+        .form-group textarea:not(:placeholder-shown)~label {
             top: -0.5rem;
-            left: 1rem;
+            left: 0.5rem;
+            font-size: 0.75rem;
+            background: var(--card-background);
+            padding: 0 0.25rem;
             color: var(--primary-color);
-            font-size: 0.9rem;
-            background: var(--background-color);
-            padding: 0 0.5rem;
         }
 
         .add-button {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: var(--primary-color);
             color: #fff;
             border: none;
-            padding: 1rem;
-            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            margin-bottom: 0.75rem;
+            transition: var(--transition);
         }
 
         .add-button:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 99, 70, 0.3);
         }
 
         .close-btn {
-            background: var(--danger-color);
-            color: #fff;
+            background: var(--text-muted);
+            color: var(--text-color);
             border: none;
-            padding: 1rem;
-            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
             width: 100%;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .close-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+            background: var(--danger-color);
+            color: #fff;
         }
 
         .modal-close {
             position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
+            top: 1rem;
+            right: 1rem;
             background: none;
             border: none;
             color: var(--text-muted);
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .modal-close:hover {
-            color: var(--text-color);
         }
 
         .custom-toast {
             position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            color: var(--text-color);
-            box-shadow: var(--box-shadow);
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+            z-index: 2000;
             display: none;
-            z-index: 1000;
-            max-width: 300px;
+            box-shadow: var(--shadow);
             border-left: 5px solid transparent;
         }
 
         .custom-toast.success {
+            background: var(--success-color);
             border-left-color: var(--success-color);
         }
 
         .custom-toast.error {
+            background: var(--danger-color);
             border-left-color: var(--danger-color);
         }
 
         .custom-toast.info {
+            background: var(--info-color);
             border-left-color: var(--info-color);
         }
 
@@ -689,7 +643,7 @@
             grid-template-columns: 120px 1fr;
             gap: 1rem;
             padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--border-color);
             align-items: center;
         }
 
@@ -705,7 +659,9 @@
 
         @media (max-width: 768px) {
             .sidebar {
+                width: 200px;
                 transform: translateX(-100%);
+                z-index: 1000;
             }
 
             .sidebar.active {
@@ -715,20 +671,25 @@
             .main-content {
                 margin-left: 0;
                 width: 100%;
-                padding: 1.5rem;
+                padding: 1rem;
             }
 
             .hamburger {
                 display: block;
             }
 
-            .activity-table-container {
-                padding: 1.5rem;
-                overflow-x: auto;
+            .search-bar {
+                width: 100%;
             }
 
-            table {
-                min-width: 800px;
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
             }
 
             .detail-group {
@@ -742,8 +703,8 @@
             }
 
             .action-button {
-                padding: 0.8rem;
-                font-size: 0.85rem;
+                padding: 0.5rem;
+                font-size: 0.75rem;
             }
 
             .table-actions {
@@ -780,7 +741,7 @@
 
         .error {
             animation: shake 0.5s ease-in-out;
-            border-color: #ff4444 !important;
+            border-color: var(--danger-color) !important;
         }
 
         .student-details.loading::before {
@@ -809,51 +770,44 @@
         <div class="loader"></div>
     </div>
     <div id="app" style="display: none;">
-        <div class="background-shapes">
-            <div class="shape"></div>
-            <div class="shape"></div>
-        </div>
-
         <div class="sidebar">
-            <div class="brand">
+            <div class="brand logo">
                 <div class="logo-container">
-                    <i class="fas fa-coffee"></i>
+                    <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
                 </div>
                 <h1>Adem Baba</h1>
             </div>
             <nav class="nav-links">
-                <a href="../index.html" class="active nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="../index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
                 <a href="./rooms.html" class="nav-link"><i class="fas fa-door-open"></i> Rooms</a>
-                <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
+                <a href="./student.html" class="nav-link active"><i class="fas fa-users"></i> Students</a>
                 <a href="./schedule.html" class="nav-link"><i class="fas fa-calendar"></i> Schedule</a>
                 <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
-                <a href="./uploadLink.html" class="nav-link active"><i class="fas fa-file"></i> Upload Documents</a>
+                <a href="./uploadLink.html" class="nav-link"><i class="fas fa-file-upload"></i> UploadLink</a>
+                <a href="./admin-student-document.html" class="nav-link"><i class="fas fa-file"></i> StudentFiles</a>
                 <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
-                <a href="#" class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a href="#" class="nav-link" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </nav>
         </div>
         <div class="main-content">
-            <button class="hamburger" id="hamburger">
-                <i class="fas fa-bars"></i>
-            </button>
-            <header class="header">
+            <header>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search..." aria-label="Search students">
+                    <input type="text" id="searchInput" placeholder="Search students..." aria-label="Search students">
                     <i class="fas fa-search"></i>
                 </div>
-                <div class="user-profile">
-                    <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">
+                <div class="user-info">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                         <i class="fas fa-moon"></i>
                     </button>
                     <div class="user-details">
-                        <h4 id="userName">Admin User</h4>
-                        <p>Admin</p>
+                        <h4 id="userName">Admin</h4>
+                        <p id="userType">Administrator</p>
                     </div>
                     <div class="user-icon">
                         <i class="fas fa-user-circle"></i>
-                    </div>
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
                     </div>
                 </div>
             </header>
@@ -863,21 +817,21 @@
                         <div class="stat-icon"><i class="fas fa-users"></i></div>
                         <div class="stat-info">
                             <h3>Total Students</h3>
-                            <p id="totalStudents">0</p>
+                            <p class="stat-value" id="totalStudents">0</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-male"></i></div>
                         <div class="stat-info">
                             <h3>Male Students</h3>
-                            <p id="maleStudents">0</p>
+                            <p class="stat-value" id="maleStudents">0</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
                         <div class="stat-info">
                             <h3>Pending Applications</h3>
-                            <p id="pendingApplications">0</p>
+                            <p class="stat-value" id="pendingApplications">0</p>
                         </div>
                     </div>
                 </div>
@@ -886,11 +840,15 @@
                         <div class="table-header">
                             <h2>Student List</h2>
                             <div class="table-actions">
-                                <button class="action-button" id="addStudentButton">
+                                <button class="action-button" id="addStudentButton" aria-label="Add new student">
                                     <i class="fas fa-plus"></i> Add Student
                                 </button>
-                                <button class="action-button"><i class="fas fa-filter"></i> Filter</button>
-                                <button class="action-button"><i class="fas fa-download"></i> Export</button>
+                                <button class="action-button" id="filterButton" aria-label="Filter students">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <button class="action-button" id="exportButton" aria-label="Export students">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
                             </div>
                         </div>
                         <table>
@@ -912,39 +870,41 @@
         </div>
 
         <!-- Modals -->
-        <div id="addStudentModal" class="modal">
+        <div id="addStudentModal" class="modal" role="dialog" aria-labelledby="addStudentTitle">
             <div class="modal-content">
-                <button class="modal-close" id="closeAddStudentButton">×</button>
-                <h2>Add New Student</h2>
+                <button class="modal-close" id="closeAddStudentButton" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 id="addStudentTitle">Add New Student</h2>
                 <form id="addStudentForm">
                     <div class="form-group">
                         <i class="fas fa-user"></i>
-                        <input type="text" id="studentName" required aria-label="Student name">
+                        <input type="text" id="studentName" required aria-label="Student name" placeholder=" ">
                         <label for="studentName">Full Name</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" id="studentEmail" required aria-label="Student email">
+                        <input type="email" id="studentEmail" required aria-label="Student email" placeholder=" ">
                         <label for="studentEmail">Email</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-id-card"></i>
-                        <input type="text" id="studentMatricNumber" required aria-label="Matric number">
+                        <input type="text" id="studentMatricNumber" required aria-label="Matric number" placeholder=" ">
                         <label for="studentMatricNumber">Matric Number</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-phone"></i>
-                        <input type="tel" id="studentPhone" required aria-label="Phone number">
+                        <input type="tel" id="studentPhone" required aria-label="Phone number" placeholder=" ">
                         <label for="studentPhone">Phone Number</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-birthday-cake"></i>
-                        <input type="date" id="studentDateOfBirth" required aria-label="Date of birth">
+                        <input type="date" id="studentDateOfBirth" required aria-label="Date of birth" placeholder=" ">
                         <label for="studentDateOfBirth">Date of Birth</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-university"></i>
-                        <input type="text" id="studentFaculty" required aria-label="Faculty">
+                        <input type="text" id="studentFaculty" required aria-label="Faculty" placeholder=" ">
                         <label for="studentFaculty">Faculty</label>
                     </div>
                     <div class="form-group">
@@ -961,53 +921,59 @@
                     </div>
                     <div class="form-group">
                         <i class="fas fa-building"></i>
-                        <input type="text" id="studentDepartment" required aria-label="Department">
+                        <input type="text" id="studentDepartment" required aria-label="Department" placeholder=" ">
                         <label for="studentDepartment">Department</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="studentPassword" required aria-label="Password">
+                        <input type="password" id="studentPassword" required aria-label="Password" placeholder=" ">
                         <label for="studentPassword">Password</label>
                     </div>
-                    <button type="submit" class="add-button">Add Student</button>
+                    <button type="submit" class="add-button" aria-label="Add student">Add Student</button>
+                    <button type="button" class="close-btn" id="cancelAddStudentButton"
+                        aria-label="Cancel">Cancel</button>
                 </form>
             </div>
         </div>
 
-        <div id="editStudentModal" class="modal">
+        <div id="editStudentModal" class="modal" role="dialog" aria-labelledby="editStudentTitle">
             <div class="modal-content">
-                <button class="modal-close" id="closeEditStudentButton">×</button>
-                <h2>Edit Student</h2>
+                <button class="modal-close" id="closeEditStudentButton" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 id="editStudentTitle">Edit Student</h2>
                 <form id="editStudentForm">
                     <input type="hidden" id="editStudentId">
                     <div class="form-group">
                         <i class="fas fa-user"></i>
-                        <input type="text" id="editStudentName" required aria-label="Student name">
+                        <input type="text" id="editStudentName" required aria-label="Student name" placeholder=" ">
                         <label for="editStudentName">Full Name</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" id="editStudentEmail" required aria-label="Student email">
+                        <input type="email" id="editStudentEmail" required aria-label="Student email" placeholder=" ">
                         <label for="editStudentEmail">Email</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-id-card"></i>
-                        <input type="text" id="editStudentMatricNumber" required aria-label="Matric number">
+                        <input type="text" id="editStudentMatricNumber" required aria-label="Matric number"
+                            placeholder=" ">
                         <label for="editStudentMatricNumber">Matric Number</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-phone"></i>
-                        <input type="tel" id="editStudentPhone" required aria-label="Phone number">
+                        <input type="tel" id="editStudentPhone" required aria-label="Phone number" placeholder=" ">
                         <label for="editStudentPhone">Phone Number</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-birthday-cake"></i>
-                        <input type="date" id="editStudentDateOfBirth" required aria-label="Date of birth">
+                        <input type="date" id="editStudentDateOfBirth" required aria-label="Date of birth"
+                            placeholder=" ">
                         <label for="editStudentDateOfBirth">Date of Birth</label>
                     </div>
                     <div class="form-group">
                         <i class="fas fa-university"></i>
-                        <input type="text" id="editStudentFaculty" required aria-label="Faculty">
+                        <input type="text" id="editStudentFaculty" required aria-label="Faculty" placeholder=" ">
                         <label for="editStudentFaculty">Faculty</label>
                     </div>
                     <div class="form-group">
@@ -1024,18 +990,22 @@
                     </div>
                     <div class="form-group">
                         <i class="fas fa-building"></i>
-                        <input type="text" id="editStudentDepartment" required aria-label="Department">
+                        <input type="text" id="editStudentDepartment" required aria-label="Department" placeholder=" ">
                         <label for="editStudentDepartment">Department</label>
                     </div>
-                    <button type="submit" class="add-button">Update Student</button>
+                    <button type="submit" class="add-button" aria-label="Update student">Update Student</button>
+                    <button type="button" class="close-btn" id="cancelEditStudentButton"
+                        aria-label="Cancel">Cancel</button>
                 </form>
             </div>
         </div>
 
-        <div id="assignRoomModal" class="modal">
+        <div id="assignRoomModal" class="modal" role="dialog" aria-labelledby="assignRoomTitle">
             <div class="modal-content">
-                <button class="modal-close" id="closeAssignRoomButton">×</button>
-                <h2>Assign Room</h2>
+                <button class="modal-close" id="closeAssignRoomButton" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 id="assignRoomTitle">Assign Room</h2>
                 <form id="assignRoomForm">
                     <input type="hidden" id="assignStudentId">
                     <div class="form-group">
@@ -1045,15 +1015,19 @@
                         </select>
                         <label for="assignRoomId">Room</label>
                     </div>
-                    <button type="submit" class="add-button">Assign Room</button>
+                    <button type="submit" class="add-button" aria-label="Assign room">Assign Room</button>
+                    <button type="button" class="close-btn" id="cancelAssignRoomButton"
+                        aria-label="Cancel">Cancel</button>
                 </form>
             </div>
         </div>
 
-        <div id="viewStudentModal" class="modal">
+        <div id="viewStudentModal" class="modal" role="dialog" aria-labelledby="viewStudentTitle">
             <div class="modal-content">
-                <button class="modal-close" id="closeViewStudentButton">×</button>
-                <h2>Student Details</h2>
+                <button class="modal-close" id="closeViewStudentButton" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 id="viewStudentTitle">Student Details</h2>
                 <div id="viewStudentDetails" class="student-details">
                     <div class="detail-group">
                         <strong>Name:</strong> <span id="viewStudentName"></span>
@@ -1092,19 +1066,54 @@
                         <strong>Registered:</strong> <span id="viewStudentCreatedAt"></span>
                     </div>
                 </div>
-                <button class="close-btn" id="viewStudentCloseButton">Close</button>
+                <button class="close-btn" id="closeViewStudentModalButton" aria-label="Close">Close</button>
             </div>
         </div>
 
         <div id="toast" class="custom-toast"></div>
     </div>
-
     <script type="module">
         import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
 
+        // Export students to CSV
+        function exportStudentsToCSV() {
+            if (!window.currentStudents || window.currentStudents.length === 0) {
+                showToast('No student data available to export', 'error');
+                console.error('No student data available for export');
+                return;
+            }
+
+            const headers = ['Name', 'Email', 'Matric Number', 'Room', 'Status'];
+            const rows = window.currentStudents.map(student => {
+                const room = student.room ? sanitizeInput(student.room.roomNumber) : 'Unassigned';
+                return [
+                    `"${sanitizeInput(student.name).replace(/"/g, '""')}"`,
+                    `"${sanitizeInput(student.email).replace(/"/g, '""')}"`,
+                    `"${sanitizeInput(student.matricNumber || 'N/A').replace(/"/g, '""')}"`,
+                    `"${room.replace(/"/g, '""')}"`,
+                    `"${sanitizeInput(student.status).replace(/"/g, '""')}"`
+                ].join(',');
+            });
+
+            const csvContent = [headers.join(','), ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `students_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Students exported successfully', 'success');
+            console.log('CSV file generated and downloaded');
+        }
+
+        // Check user authentication
         async function checkAuth() {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             if (!token) {
+                console.error('No token found, redirecting to login');
                 window.location.href = LOGIN_PATH;
                 return null;
             }
@@ -1122,6 +1131,7 @@
             }
         }
 
+        // Fetch student data
         async function fetchStudentData() {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             try {
@@ -1144,9 +1154,11 @@
                 window.availableRooms = rooms.filter(room => room.status === 'Available' && room.occupants.length < room.capacity);
             } catch (error) {
                 showToast(error.error?.message || 'Failed to load student data', 'error');
+                console.error('Error fetching student data:', error);
             }
         }
 
+        // Render student list
         function renderStudentList(students) {
             const tableBody = document.getElementById('studentList');
             tableBody.innerHTML = '';
@@ -1154,20 +1166,20 @@
                 const isPending = student.status.toLowerCase() === 'pending';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                <td>${sanitizeInput(student.name)}</td>
-                <td>${sanitizeInput(student.email)}</td>
-                <td>${sanitizeInput(student.matricNumber || 'N/A')}</td>
-                <td>${student.room ? sanitizeInput(student.room.roomNumber) : 'Unassigned'}</td>
-                <td><span class="status ${student.status.toLowerCase()}">${student.status}</span></td>
-                <td>
-                    <div class="action-icons">
-                        <i class="fas fa-eye" aria-label="View student"></i>
-                        <i class="fas fa-edit" aria-label="Edit student"></i>
-                        <i class="fas fa-trash" aria-label="Delete student"></i>
-                        <i class="fas fa-door-open ${isPending ? 'disabled' : ''}" aria-label="Assign room"></i>
-                    </div>
-                </td>
-            `;
+                        <td>${sanitizeInput(student.name)}</td>
+                        <td>${sanitizeInput(student.email)}</td>
+                        <td>${sanitizeInput(student.matricNumber || 'N/A')}</td>
+                        <td>${student.room ? sanitizeInput(student.room.roomNumber) : 'Unassigned'}</td>
+                        <td><span class="status ${student.status.toLowerCase()}">${student.status}</span></td>
+                        <td>
+                            <div class="action-icons">
+                                <i class="fas fa-eye" aria-label="View student"></i>
+                                <i class="fas fa-edit" aria-label="Edit student"></i>
+                                <i class="fas fa-trash" aria-label="Delete student"></i>
+                                <i class="fas fa-door-open ${isPending ? 'disabled' : ''}" aria-label="Assign room"></i>
+                            </div>
+                        </td>
+                    `;
                 tableBody.appendChild(row);
 
                 const viewIcon = row.querySelector('.fa-eye');
@@ -1182,8 +1194,8 @@
             });
         }
 
+        // Open view student modal
         async function openViewStudentModal(studentId) {
-            console.log('Opening view modal for studentId:', studentId);
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             if (!token) {
                 console.error('No token found');
@@ -1206,14 +1218,10 @@
                 return;
             }
 
-            console.log('Modal element found:', modal);
             detailsContainer.classList.add('loading');
             showToast('Loading student details...', 'info');
 
             try {
-                console.log('Fetching student data from:', `${API_URL}/students/${studentId}`);
-
-                // Add validation for studentId
                 if (!studentId || typeof studentId !== 'string' || studentId.length < 12) {
                     throw new Error('Invalid student ID format');
                 }
@@ -1225,17 +1233,12 @@
                     }
                 });
 
-                console.log('API response:', response);
-
                 if (!response || !response.student) {
                     console.error('No student data in response');
                     throw new Error('No student data returned from API');
                 }
 
                 const studentData = response.student;
-                console.log('Processed student data:', studentData);
-
-                // Helper function to format dates
                 const formatDate = (dateString) => {
                     if (!dateString) return 'N/A';
                     const date = new Date(dateString);
@@ -1246,7 +1249,6 @@
                     });
                 };
 
-                // Populate modal fields
                 document.getElementById('viewStudentName').textContent = sanitizeInput(studentData.name || 'N/A');
                 document.getElementById('viewStudentEmail').textContent = sanitizeInput(studentData.email || 'N/A');
                 document.getElementById('viewStudentMatricNumber').textContent = sanitizeInput(studentData.matricNumber || 'N/A');
@@ -1268,7 +1270,6 @@
                     : 'N/A';
 
                 modal.style.display = 'flex';
-                console.log('Modal set to display: flex');
                 showToast('Student details loaded', 'success');
             } catch (error) {
                 console.error('Error in openViewStudentModal:', error.message, error.stack);
@@ -1338,159 +1339,6 @@
             document.getElementById('assignRoomModal').style.display = 'none';
         }
 
-        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = sanitizeInput(document.getElementById('studentName').value.trim());
-            const email = sanitizeInput(document.getElementById('studentEmail').value.trim());
-            const matricNumber = sanitizeInput(document.getElementById('studentMatricNumber').value.trim());
-            const phone = sanitizeInput(document.getElementById('studentPhone').value.trim());
-            const dateOfBirth = document.getElementById('studentDateOfBirth').value;
-            const faculty = sanitizeInput(document.getElementById('studentFaculty').value.trim());
-            const level = document.getElementById('studentLevel').value;
-            const department = sanitizeInput(document.getElementById('studentDepartment').value.trim());
-            const password = document.getElementById('studentPassword').value;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-            if (
-                !name ||
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-                !/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/.test(matricNumber) ||
-                !/^\+?[\d\s()-]{10,}$/.test(phone) ||
-                !dateOfBirth ||
-                !faculty ||
-                !['100', '200', '300', '400', '500'].includes(level) ||
-                !department ||
-                password.length < 6
-            ) {
-                showToast('Please fill all fields correctly (e.g., matric number format: 23/208CSC/586)', 'error');
-                return;
-            }
-
-            const dob = new Date(dateOfBirth);
-            const today = new Date();
-            if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
-                showToast('Student must be at least 15 years old', 'error');
-                return;
-            }
-
-            try {
-                const data = await fetchWithRetry(`${API_URL}/students`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        matricNumber,
-                        phone,
-                        gender: 'Male',
-                        userType: 'student',
-                        password,
-                        dateOfBirth,
-                        faculty,
-                        level: `${level}level`,
-                        department
-                    })
-                });
-                showToast(data.message || 'Student added successfully', 'success');
-                closeAddStudentModal();
-                fetchStudentData();
-            } catch (error) {
-                showToast(error.error?.message || 'Failed to add student', 'error');
-            }
-        });
-
-        document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editStudentId').value;
-            const name = sanitizeInput(document.getElementById('editStudentName').value.trim());
-            const email = sanitizeInput(document.getElementById('editStudentEmail').value.trim());
-            const matricNumber = sanitizeInput(document.getElementById('editStudentMatricNumber').value.trim());
-            const phone = sanitizeInput(document.getElementById('editStudentPhone').value.trim());
-            const dateOfBirth = document.getElementById('editStudentDateOfBirth').value;
-            const faculty = sanitizeInput(document.getElementById('editStudentFaculty').value.trim());
-            const level = document.getElementById('editStudentLevel').value;
-            const department = sanitizeInput(document.getElementById('editStudentDepartment').value.trim());
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-            if (
-                !name ||
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-                !/^\d{2}\/[A-Z0-9]{6}\/\d{3}$/.test(matricNumber) ||
-                !/^\+?[\d\s()-]{10,}$/.test(phone) ||
-                !dateOfBirth ||
-                !faculty ||
-                !['100', '200', '300', '400', '500'].includes(level) ||
-                !department
-            ) {
-                showToast('Please fill all fields correctly (e.g., matric number format: 23/208CSC/586)', 'error');
-                return;
-            }
-
-            const dob = new Date(dateOfBirth);
-            const today = new Date();
-            if (dob >= today || today.getFullYear() - dob.getFullYear() < 15) {
-                showToast('Student must be at least 15 years old', 'error');
-                return;
-            }
-
-            try {
-                const data = await fetchWithRetry(`${API_URL}/students/${id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        matricNumber,
-                        phone,
-                        gender: 'Male',
-                        dateOfBirth,
-                        faculty,
-                        level: `${level}level`,
-                        department
-                    })
-                });
-                showToast(data.message || 'Student updated successfully', 'success');
-                closeEditStudentModal();
-                fetchStudentData();
-            } catch (error) {
-                showToast(error.error?.message || 'Failed to update student', 'error');
-            }
-        });
-
-        document.getElementById('assignRoomForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const studentId = document.getElementById('assignStudentId').value;
-            const roomId = document.getElementById('assignRoomId').value;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-            if (!studentId || !roomId) {
-                showToast('Please select a room', 'error');
-                return;
-            }
-
-            try {
-                const data = await fetchWithRetry(`${API_URL}/students/assign-room`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ studentId, roomId })
-                });
-                showToast(data.message || 'Room assigned successfully', 'success');
-                closeAssignRoomModal();
-                fetchStudentData();
-            } catch (error) {
-                showToast(error.error?.message || 'Failed to assign room', 'error');
-            }
-        });
-
         async function deleteStudent(id) {
             if (!confirm('Are you sure you want to delete this student?')) return;
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -1536,9 +1384,12 @@
             window.location.href = LOGIN_PATH;
         }
 
-        (async () => {
+        // Initialize when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM fully loaded');
             const user = await checkAuth();
             if (user) {
+                console.log('User authenticated, setting up UI');
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 document.getElementById('userName').textContent = user.name || 'Admin User';
@@ -1549,20 +1400,115 @@
                 document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
                 document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
 
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    const query = sanitizeInput(e.target.value.toLowerCase().trim());
-                    filterStudents(query);
-                });
+                // Event listeners
+                const searchInput = document.getElementById('searchInput');
+                const addStudentButton = document.getElementById('addStudentButton');
+                const closeAddStudentButton = document.getElementById('closeAddStudentButton');
+                const cancelAddStudentButton = document.getElementById('cancelAddStudentButton');
+                const closeEditStudentButton = document.getElementById('closeEditStudentButton');
+                const cancelEditStudentButton = document.getElementById('cancelEditStudentButton');
+                const closeAssignRoomButton = document.getElementById('closeAssignRoomButton');
+                const cancelAssignRoomButton = document.getElementById('cancelAssignRoomButton');
+                const closeViewStudentButton = document.getElementById('closeViewStudentButton');
+                const closeViewStudentModalButton = document.getElementById('closeViewStudentModalButton');
+                const themeToggle = document.getElementById('themeToggle');
+                const hamburger = document.getElementById('hamburger');
+                const logoutButton = document.getElementById('logoutButton');
+                const exportButton = document.getElementById('exportButton');
 
-                document.getElementById('addStudentButton').addEventListener('click', openAddStudentModal);
-                document.getElementById('closeAddStudentButton').addEventListener('click', closeAddStudentModal);
-                document.getElementById('closeEditStudentButton').addEventListener('click', closeEditStudentModal);
-                document.getElementById('closeAssignRoomButton').addEventListener('click', closeAssignRoomModal);
-                document.getElementById('closeViewStudentButton').addEventListener('click', closeViewStudentModal);
-                document.getElementById('viewStudentCloseButton').addEventListener('click', closeViewStudentModal);
-                document.getElementById('hamburger').addEventListener('click', toggleSidebar);
+                // Check if elements exist before adding listeners
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        const query = sanitizeInput(e.target.value.toLowerCase().trim());
+                        filterStudents(query);
+                    });
+                } else {
+                    console.error('searchInput element not found');
+                }
+
+                if (addStudentButton) {
+                    addStudentButton.addEventListener('click', openAddStudentModal);
+                } else {
+                    console.error('addStudentButton element not found');
+                }
+
+                if (closeAddStudentButton) {
+                    closeAddStudentButton.addEventListener('click', closeAddStudentModal);
+                } else {
+                    console.error('closeAddStudentButton element not found');
+                }
+
+                if (cancelAddStudentButton) {
+                    cancelAddStudentButton.addEventListener('click', closeAddStudentModal);
+                } else {
+                    console.error('cancelAddStudentButton element not found');
+                }
+
+                if (closeEditStudentButton) {
+                    closeEditStudentButton.addEventListener('click', closeEditStudentModal);
+                } else {
+                    console.error('closeEditStudentButton element not found');
+                }
+
+                if (cancelEditStudentButton) {
+                    cancelEditStudentButton.addEventListener('click', closeEditStudentModal);
+                } else {
+                    console.error('cancelEditStudentButton element not found');
+                }
+
+                if (closeAssignRoomButton) {
+                    closeAssignRoomButton.addEventListener('click', closeAssignRoomModal);
+                } else {
+                    console.error('closeAssignRoomButton element not found');
+                }
+
+                if (cancelAssignRoomButton) {
+                    cancelAssignRoomButton.addEventListener('click', closeAssignRoomModal);
+                } else {
+                    console.error('cancelAssignRoomButton element not found');
+                }
+
+                if (closeViewStudentButton) {
+                    closeViewStudentButton.addEventListener('click', closeViewStudentModal);
+                } else {
+                    console.error('closeViewStudentButton element not found');
+                }
+
+                if (closeViewStudentModalButton) {
+                    closeViewStudentModalButton.addEventListener('click', closeViewStudentModal);
+                } else {
+                    console.error('closeViewStudentModalButton element not found');
+                }
+
+                if (themeToggle) {
+                    themeToggle.addEventListener('click', toggleTheme);
+                } else {
+                    console.error('themeToggle element not found');
+                }
+
+                if (hamburger) {
+                    hamburger.addEventListener('click', toggleSidebar);
+                } else {
+                    console.error('hamburger element not found');
+                }
+
+                if (logoutButton) {
+                    logoutButton.addEventListener('click', logout);
+                } else {
+                    console.error('logoutButton element not found');
+                }
+
+                if (exportButton) {
+                    exportButton.addEventListener('click', exportStudentsToCSV);
+                    console.log('Export button listener attached');
+                } else {
+                    console.error('exportButton element not found');
+                    showToast('Export button not found in DOM', 'error');
+                }
+            } else {
+                console.error('Authentication failed, no event listeners attached');
             }
-        })();
+        });
     </script>
 </body>
 

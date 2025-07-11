@@ -10,43 +10,45 @@
     <link rel="stylesheet" href="/login-form/style.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
     <style>
-        /* Existing CSS styles remain unchanged */
         :root {
             --success-color: #4CAF50;
             --warning-color: #FFC107;
             --danger-color: #f44336;
-            --info-color: #2196F3;
+            --info-color: #17a2b8;
             --transition: all 0.3s ease;
         }
 
         [data-theme="light"] {
-            --primary-color: #8b6346;
-            --secondary-color: #ffffff;
+            --primary-color: #4d9de0;
+            --primary-dark: #3a7bb8;
             --text-color: #333333;
             --text-muted: rgba(0, 0, 0, 0.6);
-            --background-color: #f5f5f5;
-            --card-background: #ffffff;
-            --input-background: rgba(0, 0, 0, 0.05);
+            --background-color: #ffffff;
+            --card-background: #f5f9ff;
+            --input-background: rgba(77, 157, 224, 0.05);
             --border-color: rgba(0, 0, 0, 0.1);
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-background: #ffffff;
         }
 
         [data-theme="dark"] {
-            --primary-color: #8b6346;
-            --secondary-color: rgba(255, 255, 255, 0.03);
+            --primary-color: #1a5b9e;
+            --primary-dark: #0d3b6b;
             --text-color: #ffffff;
             --text-muted: rgba(255, 255, 255, 0.7);
-            --background-color: #1a1a1a;
-            --card-background: rgba(255, 255, 255, 0.03);
-            --input-background: rgba(255, 255, 255, 0.05);
+            --background-color: #000000;
+            --card-background: #0a1625;
+            --input-background: rgba(26, 91, 158, 0.1);
             --border-color: rgba(255, 255, 255, 0.05);
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --sidebar-background: #050a13;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: var(--transition);
         }
 
         body {
@@ -55,6 +57,7 @@
             color: var(--text-color);
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
 
         html,
@@ -80,16 +83,17 @@
         #app {
             display: flex;
             width: 100%;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         .sidebar {
             width: 250px;
-            background: var(--secondary-color);
+            background: var(--sidebar-background);
             padding: 1.5rem;
-            height: 100vh;
+            min-height: 100vh;
             position: fixed;
             transition: var(--transition);
+            border-right: 1px solid var(--border-color);
         }
 
         .brand.logo {
@@ -99,14 +103,22 @@
         }
 
         .logo-container {
-            width: 40px;
-            height: 40px;
-            background: var(--primary-color);
-            border-radius: 8px;
+            width: 80px;
+            height: 70px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 0.75rem;
+            margin-right: 1rem;
+            overflow: hidden;
+            background: var(--input-background);
+        }
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .logo-container i {
@@ -117,6 +129,7 @@
         .brand h1 {
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .nav-links a {
@@ -144,10 +157,9 @@
         .main-content {
             margin-left: 250px;
             width: calc(100% - 250px);
-            height: 100vh;
+            min-height: 100vh;
             overflow-y: auto;
             padding: 0;
-            /* Remove padding from main content */
         }
 
         header {
@@ -159,9 +171,10 @@
             padding: 0.75rem 1.5rem;
             border-radius: 12px;
             box-shadow: var(--shadow);
-            position:sticky;
+            position: sticky;
             top: 0;
             z-index: 10;
+            border: 1px solid var(--border-color);
         }
 
         .hamburger {
@@ -169,6 +182,12 @@
             cursor: pointer;
             font-size: 1.5rem;
             color: var(--text-color);
+            background: none;
+            border: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
         }
 
         .search-bar {
@@ -189,6 +208,7 @@
         .search-bar input:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
         }
 
         .search-bar i {
@@ -206,23 +226,28 @@
         }
 
         .theme-toggle {
-            background: none;
+            background: var(--primary-color);
+            color: white;
             border: none;
-            color: var(--text-color);
             font-size: 1.25rem;
             cursor: pointer;
             padding: 0.5rem;
             border-radius: 50%;
-            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .theme-toggle:hover {
-            background: var(--card-background);
+            transform: scale(1.1);
         }
 
         .user-details h4 {
             font-size: 1rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .user-details p {
@@ -233,6 +258,10 @@
         .user-icon i {
             font-size: 2rem;
             color: var(--primary-color);
+        }
+
+        .content {
+            padding: 1.5rem;
         }
 
         .stats {
@@ -251,10 +280,12 @@
             gap: 1rem;
             box-shadow: var(--shadow);
             transition: var(--transition);
+            border: 1px solid var(--border-color);
         }
 
         .stat-card:hover {
             transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
 
         .stat-icon {
@@ -281,6 +312,7 @@
         .stat-info .stat-value {
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .activity-table-container {
@@ -289,6 +321,7 @@
             padding: 1.5rem;
             box-shadow: var(--shadow);
             overflow-x: auto;
+            border: 1px solid var(--border-color);
         }
 
         .table-header {
@@ -301,6 +334,7 @@
         .table-header h2 {
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--primary-color);
         }
 
         .table-actions {
@@ -323,7 +357,8 @@
         }
 
         .action-button:hover {
-            background: #3d2e23;
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         .action-button.hidden {
@@ -344,14 +379,15 @@
         }
 
         th {
-            background: var(--secondary-color);
-            color: var(--text-muted);
+            background: var(--sidebar-background);
+            color: var(--text-color);
             font-weight: 600;
             text-transform: uppercase;
         }
 
         td {
             border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
         }
 
         .status {
@@ -364,7 +400,7 @@
 
         .status.pending {
             background: var(--warning-color);
-            color: #fff;
+            color: #1a1a1a;
         }
 
         .status.scheduled {
@@ -390,7 +426,7 @@
         }
 
         .action-icons i.fa-edit:hover {
-            color: var(--success-color);
+            color: var(--warning-color);
         }
 
         .action-icons i.fa-trash:hover {
@@ -405,7 +441,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.85);
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -420,11 +456,13 @@
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
         }
 
         .modal-content h2 {
             font-size: 1.5rem;
             margin-bottom: 1.5rem;
+            color: var(--text-color);
         }
 
         .form-group {
@@ -454,6 +492,7 @@
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(77, 157, 224, 0.1);
         }
 
         .form-group label {
@@ -494,11 +533,12 @@
         }
 
         .add-button:hover {
-            background: #3d2e23;
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         .close-btn {
-            background: var(--border-color);
+            background: var(--text-muted);
             color: var(--text-color);
             border: none;
             padding: 0.75rem 1.5rem;
@@ -545,18 +585,22 @@
             z-index: 2000;
             display: none;
             box-shadow: var(--shadow);
+            border-left: 5px solid transparent;
         }
 
         .custom-toast.success {
             background: var(--success-color);
+            border-left-color: var(--success-color);
         }
 
         .custom-toast.error {
             background: var(--danger-color);
+            border-left-color: var(--danger-color);
         }
 
         .custom-toast.info {
             background: var(--info-color);
+            border-left-color: var(--info-color);
         }
 
         @media (max-width: 768px) {
@@ -617,8 +661,8 @@
     <div id="app" style="display: none;">
         <div class="sidebar">
             <div class="brand logo">
-                <div class="logo-container logo-icon">
-                    <i class="fas fa-coffee"></i>
+                <div class="logo-container">
+                    <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
                 </div>
                 <h1>Adem Baba</h1>
             </div>
@@ -628,7 +672,8 @@
                 <a href="./student.html" class="nav-link"><i class="fas fa-users"></i> Students</a>
                 <a href="./schedule.html" class="nav-link active"><i class="fas fa-calendar"></i> Schedule</a>
                 <a href="./payment.html" class="nav-link"><i class="fas fa-money-bill"></i> Payments</a>
-                <a href="./uploadLink.html" class="nav-link active"><i class="fas fa-file"></i> Upload Documents</a>
+                <a href="./uploadLink.html" class="nav-link"><i class="fas fa-file-upload"></i> UploadLink</a>
+                <a href="./admin-student-document.html" class="nav-link "><i class="fas fa-file"></i>StudentFiles</a>
                 <a href="./settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a>
                 <a href="#" class="nav-link" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </nav>
@@ -826,390 +871,31 @@
     </div>
 
     <div id="toast" class="custom-toast"></div>
-
     <script type="module">
         import { API_URL, LOGIN_PATH, showToast, fetchWithRetry, sanitizeInput } from '/login-form/utils.js';
 
-        // Debounce utility
-        function debounce(func, wait) {
-            let timeout;
-            return function (...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
+        let events = [];
 
         async function checkAuth() {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             if (!token) {
                 window.location.href = LOGIN_PATH;
-                return null;
+                return false;
             }
             try {
                 const data = await fetchWithRetry(`${API_URL}/protected`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
                 });
-                return data.user;
+                document.getElementById('userName').textContent = sanitizeInput(data.user.name || 'Admin');
+                document.getElementById('userType').textContent = data.user.userType === 'admin' ? 'Administrator' : 'User';
+                return true;
             } catch (error) {
+                console.error('Auth check failed:', error);
                 localStorage.removeItem('token');
                 sessionStorage.removeItem('token');
                 window.location.href = LOGIN_PATH;
-                return null;
+                return false;
             }
-        }
-
-        async function fetchEventData(filters = {}) {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            try {
-                // Fetch event stats (only for admins)
-                let stats = { todaysEvents: 0, weeklyEvents: 0, cancelledEvents: 0 };
-                if (window.userType === 'admin') {
-                    stats = await fetchWithRetry(`${API_URL}/events/stats`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                }
-                document.getElementById('todaysEvents').textContent = sanitizeInput(String(stats.todaysEvents || 0));
-                document.getElementById('weeklyEvents').textContent = sanitizeInput(String(stats.weeklyEvents || 0));
-                document.getElementById('cancelledEvents').textContent = sanitizeInput(String(stats.cancelledEvents || 0));
-
-                // Fetch events with filters
-                const queryParams = new URLSearchParams();
-                if (filters.keyword) queryParams.append('keyword', filters.keyword);
-                if (filters.start) queryParams.append('start', filters.start);
-                if (filters.end) queryParams.append('end', filters.end);
-                if (filters.status && window.userType === 'admin') {
-                    queryParams.append('status', filters.status);
-                }
-
-                const events = await fetchWithRetry(`${API_URL}/events?${queryParams}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                window.currentEvents = events || [];
-                renderEventList(window.currentEvents);
-
-                if (!events || events.length === 0) {
-                    showToast('No events found', 'info');
-                    document.getElementById('eventList').innerHTML = '<tr><td colspan="6">No events available</td></tr>';
-                }
-            } catch (error) {
-                let message = error.error?.message || 'Failed to load events';
-                if (error.status === 401) {
-                    message = 'Session expired. Please log in again.';
-                    localStorage.removeItem('token');
-                    sessionStorage.removeItem('token');
-                    window.location.href = LOGIN_PATH;
-                } else if (error.status === 403) {
-                    message = 'Access denied.';
-                } else if (error.message.includes('network')) {
-                    message = 'Network error. Please check your connection.';
-                }
-                showToast(message, 'error');
-                document.getElementById('eventList').innerHTML = '<tr><td colspan="6">Failed to load events</td></tr>';
-            }
-        }
-
-        function renderEventList(events) {
-            const tableBody = document.getElementById('eventList');
-            tableBody.innerHTML = '';
-            if (!events || events.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6">No events to display</td></tr>';
-                return;
-            }
-            events.forEach(event => {
-                const isAdmin = window.userType === 'admin';
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${sanitizeInput(event.title || 'N/A')}</td>
-                    <td>${event.date ? new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</td>
-                    <td>${sanitizeInput(event.time || 'N/A')}</td>
-                    <td>${sanitizeInput(event.description || 'N/A')}</td>
-                    <td><span class="status ${sanitizeInput(event.status?.toLowerCase() || 'scheduled')}">${sanitizeInput(event.status || 'Scheduled')}</span></td>
-                    <td>
-                        ${isAdmin ? `
-                            <div class="action-icons">
-                                <i class="fas fa-edit edit-event" data-id="${sanitizeInput(event._id || '')}" aria-label="Edit event"></i>
-                                <i class="fas fa-trash delete-event" data-id="${sanitizeInput(event._id || '')}" data-title="${sanitizeInput(event.title || 'N/A')}" aria-label="Delete event"></i>
-                            </div>
-                        ` : ''}
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        function openAddEventModal() {
-            if (window.userType !== 'admin') {
-                showToast('Only admins can add events', 'error');
-                return;
-            }
-            document.getElementById('addEventModal').style.display = 'flex';
-            document.getElementById('addEventForm').reset();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('eventDate').value = today;
-            document.getElementById('eventDate').setAttribute('min', today);
-            document.querySelectorAll('#addEventForm .form-group label').forEach(label => {
-                label.style.top = '0.75rem';
-                label.style.fontSize = '1rem';
-            });
-            document.getElementById('eventTitle').focus();
-        }
-
-        function closeAddEventModal() {
-            document.getElementById('addEventModal').style.display = 'none';
-        }
-
-        function openEditEventModal(event) {
-            if (window.userType !== 'admin') {
-                showToast('Only admins can edit events', 'error');
-                return;
-            }
-            document.getElementById('editEventId').value = sanitizeInput(event._id || '');
-            document.getElementById('editEventTitle').value = sanitizeInput(event.title || '');
-            document.getElementById('editEventDate').value = event.date ? new Date(event.date).toISOString().split('T')[0] : '';
-            document.getElementById('editEventTime').value = sanitizeInput(event.time || '');
-            document.getElementById('editEventDescription').value = sanitizeInput(event.description || '');
-            document.getElementById('editEventStatus').value = sanitizeInput(event.status || 'Pending');
-            document.getElementById('editEventModal').style.display = 'flex';
-            document.querySelectorAll('#editEventForm .form-group label').forEach(label => {
-                const input = document.getElementById(label.getAttribute('for'));
-                if (input.value) {
-                    label.style.top = '-0.5rem';
-                    label.style.fontSize = '0.75rem';
-                } else {
-                    label.style.top = '0.75rem';
-                    label.style.fontSize = '1rem';
-                }
-            });
-            document.getElementById('editEventTitle').focus();
-        }
-
-        function closeEditEventModal() {
-            document.getElementById('editEventModal').style.display = 'none';
-        }
-
-        function openFilterModal() {
-            document.getElementById('filterModal').style.display = 'flex';
-            document.getElementById('filterKeyword').focus();
-            if (window.userType !== 'admin') {
-                document.getElementById('filterStatus').disabled = true;
-                document.getElementById('filterStatus').value = 'Scheduled';
-            }
-        }
-
-        function closeFilterModal() {
-            document.getElementById('filterModal').style.display = 'none';
-        }
-
-        function openConfirmDeleteModal(eventId, title) {
-            if (window.userType !== 'admin') {
-                showToast('Only admins can delete events', 'error');
-                return;
-            }
-            document.getElementById('deleteEventTitle').textContent = sanitizeInput(title);
-            document.getElementById('confirmDeleteModal').dataset.eventId = sanitizeInput(eventId);
-            document.getElementById('confirmDeleteModal').style.display = 'flex';
-        }
-
-        function closeConfirmDeleteModal() {
-            document.getElementById('confirmDeleteModal').style.display = 'none';
-            document.getElementById('confirmDeleteModal').dataset.eventId = '';
-        }
-
-        document.getElementById('addEventForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = sanitizeInput(document.getElementById('eventTitle').value.trim());
-            const date = document.getElementById('eventDate').value;
-            const time = document.getElementById('eventTime').value;
-            const description = sanitizeInput(document.getElementById('eventDescription').value.trim());
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-            if (!title || title.length < 3) {
-                showToast('Title must be at least 3 characters', 'error');
-                return;
-            }
-            const today = new Date().toISOString().split('T')[0];
-            if (!date || date < today) {
-                showToast('Date must be today or in the future', 'error');
-                return;
-            }
-            if (!time || !/^[0-2][0-9]:[0-5][0-9]$/.test(time)) {
-                showToast('Invalid time format (HH:mm)', 'error');
-                return;
-            }
-
-            try {
-                const data = await fetchWithRetry(`${API_URL}/events/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ title, date, time, description })
-                });
-                showToast(data.message || 'Event added successfully', 'success');
-                closeAddEventModal();
-                fetchEventData();
-            } catch (error) {
-                const errorMessage = error.error?.message || error.message || 'Failed to add event';
-                if (error.error?.code === 'VALIDATION_ERROR') {
-                    const details = error.error?.details?.map(detail => detail.message).join(', ') || 'Validation failed';
-                    showToast(`Validation error: ${details}`, 'error');
-                } else if (error.status === 401) {
-                    showToast('Session expired. Please log in again.', 'error');
-                    localStorage.removeItem('token');
-                    sessionStorage.removeItem('token');
-                    window.location.href = LOGIN_PATH;
-                } else {
-                    showToast(errorMessage, 'error');
-                }
-            }
-        });
-
-        document.getElementById('editEventForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editEventId').value;
-            const title = sanitizeInput(document.getElementById('editEventTitle').value.trim());
-            const date = document.getElementById('editEventDate').value;
-            const time = document.getElementById('editEventTime').value;
-            const description = sanitizeInput(document.getElementById('editEventDescription').value.trim());
-            const status = document.getElementById('editEventStatus').value;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-            if (!title || title.length < 3) {
-                showToast('Title must be at least 3 characters', 'error');
-                return;
-            }
-            const today = new Date().toISOString().split('T')[0];
-            if (!date || date < today) {
-                showToast('Date must be today or in the future', 'error');
-                return;
-            }
-            if (!time || !/^[0-2][0-9]:[0-5][0-9]$/.test(time)) {
-                showToast('Invalid time format (HH:mm)', 'error');
-                return;
-            }
-            if (!status) {
-                showToast('Please select a valid status', 'error');
-                return;
-            }
-
-            try {
-                const data = await fetchWithRetry(`${API_URL}/events/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ title, date, time, description, status })
-                });
-                showToast(data.message || 'Event updated successfully', 'success');
-                closeEditEventModal();
-                fetchEventData();
-            } catch (error) {
-                const errorMessage = error.error?.message || error.message || 'Failed to update event';
-                if (error.error?.code === 'VALIDATION_ERROR') {
-                    const details = error.error?.details?.map(detail => detail.message).join(', ') || 'Validation failed';
-                    showToast(`Validation error: ${details}`, 'error');
-                } else if (error.status === 401) {
-                    showToast('Session expired. Please log in again.', 'error');
-                    localStorage.removeItem('token');
-                    sessionStorage.removeItem('token');
-                    window.location.href = LOGIN_PATH;
-                } else {
-                    showToast(errorMessage, 'error');
-                }
-            }
-        });
-
-        document.getElementById('filterForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const keyword = sanitizeInput(document.getElementById('filterKeyword').value.trim());
-            const start = document.getElementById('filterStartDate').value;
-            const end = document.getElementById('filterEndDate').value;
-            const status = document.getElementById('filterStatus').value;
-
-            if (start && end && start > end) {
-                showToast('Start date cannot be after end date', 'error');
-                return;
-            }
-
-            const filters = {};
-            if (keyword) filters.keyword = keyword;
-            if (start) filters.start = start;
-            if (end) filters.end = end;
-            if (status && window.userType === 'admin') filters.status = status;
-
-            fetchEventData(filters);
-            closeFilterModal();
-        });
-
-        document.getElementById('eventList').addEventListener('click', (e) => {
-            const target = e.target;
-            if (target.classList.contains('edit-event')) {
-                const event = window.currentEvents.find(e => e._id === target.dataset.id);
-                if (event) openEditEventModal(event);
-            } else if (target.classList.contains('delete-event')) {
-                openConfirmDeleteModal(target.dataset.id, target.dataset.title);
-            }
-        });
-
-        document.getElementById('confirmDeleteButton').addEventListener('click', async () => {
-            const id = document.getElementById('confirmDeleteModal').dataset.eventId;
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            try {
-                const data = await fetchWithRetry(`${API_URL}/events/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                showToast(data.message || 'Event deleted successfully', 'success');
-                closeConfirmDeleteModal();
-                fetchEventData();
-            } catch (error) {
-                const errorMessage = error.error?.message || error.message || 'Failed to delete event';
-                if (error.status === 401) {
-                    showToast('Session expired. Please log in again.', 'error');
-                    localStorage.removeItem('token');
-                    sessionStorage.removeItem('token');
-                    window.location.href = LOGIN_PATH;
-                } else {
-                    showToast(errorMessage, 'error');
-                }
-            }
-        });
-
-        document.getElementById('closeConfirmDeleteModal').addEventListener('click', closeConfirmDeleteModal);
-
-        function exportToCSV() {
-            if (!window.currentEvents || window.currentEvents.length === 0) {
-                showToast('No events to export', 'info');
-                return;
-            }
-            const headers = ['ID', 'Title', 'Date', 'Time', 'Status', 'Description'];
-            const rows = window.currentEvents.map(event => [
-                sanitizeInput(event._id || ''),
-                `"${sanitizeInput(event.title || 'N/A').replace(/"/g, '""')}"`,
-                event.date ? new Date(event.date).toISOString().split('T')[0] : 'N/A',
-                sanitizeInput(event.time || 'N/A'),
-                sanitizeInput(event.status || 'Scheduled'),
-                `"${sanitizeInput(event.description || 'N/A').replace(/"/g, '""')}"`
-            ]);
-            const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', `events_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showToast('Events exported successfully', 'success');
-        }
-
-        function resetFilter() {
-            document.getElementById('filterForm').reset();
-            fetchEventData();
-            closeFilterModal();
         }
 
         function toggleTheme() {
@@ -1233,70 +919,292 @@
             window.location.href = LOGIN_PATH;
         }
 
-        function setupModalClose(modalId) {
+        async function loadEvents() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const data = await fetchWithRetry(`${API_URL}/events`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                events = data || [];
+                renderEvents(events);
+                updateStats();
+            } catch (error) {
+                console.error('Load events error:', error);
+                showToast('Failed to load events', 'error');
+            }
+        }
+
+        function renderEvents(eventList) {
+            const tbody = document.getElementById('eventList');
+            tbody.innerHTML = '';
+            if (!eventList || eventList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No events found</td></tr>';
+                return;
+            }
+            eventList.forEach(event => {
+                const row = document.createElement('tr');
+                row.innerHTML = DOMPurify.sanitize(`
+                        <td>${sanitizeInput(event.title)}</td>
+                        <td>${new Date(event.date).toLocaleDateString('en-GB')}</td>
+                        <td>${event.time}</td>
+                        <td>${sanitizeInput(event.description || 'N/A')}</td>
+                        <td><span class="status ${event.status.toLowerCase()}">${sanitizeInput(event.status)}</span></td>
+                        <td class="action-icons">
+                            <i class="fas fa-edit" data-id="${event._id}" title="Edit"></i>
+                            <i class="fas fa-trash" data-id="${event._id}" title="Delete"></i>
+                        </td>
+                    `);
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStats() {
+            const today = new Date().setHours(0, 0, 0, 0);
+            const weekStart = new Date(today - new Date().getDay() * 86400000);
+            const weekEnd = new Date(weekStart.getTime() + 6 * 86400000);
+
+            const todaysEvents = events.filter(e => new Date(e.date).setHours(0, 0, 0, 0) === today).length;
+            const weeklyEvents = events.filter(e => {
+                const eventDate = new Date(e.date).setHours(0, 0, 0, 0);
+                return eventDate >= weekStart.getTime() && eventDate <= weekEnd.getTime();
+            }).length;
+            const cancelledEvents = events.filter(e => e.status === 'Cancelled').length;
+
+            document.getElementById('todaysEvents').textContent = todaysEvents;
+            document.getElementById('weeklyEvents').textContent = weeklyEvents;
+            document.getElementById('cancelledEvents').textContent = cancelledEvents;
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'addEventModal' || modalId === 'editEventModal') {
+                document.getElementById(`${modalId === 'addEventModal' ? 'add' : 'edit'}EventForm`).reset();
+            }
+        }
+
+        function filterEvents(keyword, startDate, endDate, status) {
+            let filteredEvents = [...events];
+            if (keyword) {
+                keyword = keyword.toLowerCase();
+                filteredEvents = filteredEvents.filter(e =>
+                    e.title.toLowerCase().includes(keyword) ||
+                    (e.description || '').toLowerCase().includes(keyword)
+                );
+            }
+            if (startDate) {
+                filteredEvents = filteredEvents.filter(e => new Date(e.date) >= new Date(startDate));
+            }
+            if (endDate) {
+                filteredEvents = filteredEvents.filter(e => new Date(e.date) <= new Date(endDate));
+            }
+            if (status) {
+                filteredEvents = filteredEvents.filter(e => e.status === status);
+            }
+            renderEvents(filteredEvents);
+        }
+
+        async function saveEvent(eventData, isEdit = false) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const url = isEdit ? `${API_URL}/events/${eventData._id}` : `${API_URL}/events`;
+                const method = isEdit ? 'PUT' : 'POST';
+                await fetchWithRetry(url, {
+                    method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(eventData),
+                });
+                showToast(isEdit ? 'Event updated successfully' : 'Event added successfully', 'success');
+                closeModal(isEdit ? 'editEventModal' : 'addEventModal');
+                loadEvents();
+            } catch (error) {
+                console.error(`${isEdit ? 'Update' : 'Add'} event error:`, error);
+                showToast(`Failed to ${isEdit ? 'update' : 'add'} event`, 'error');
+            }
+        }
+
+        async function deleteEvent(id) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                await fetchWithRetry(`${API_URL}/events/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                showToast('Event deleted successfully', 'success');
+                closeModal('confirmDeleteModal');
+                loadEvents();
+            } catch (error) {
+                console.error('Delete event error:', error);
+                showToast('Failed to delete event', 'error');
+            }
+        }
+
+        function exportEvents() {
+            if (!events.length) {
+                showToast('No events to export', 'info');
+                return;
+            }
+            const csv = [
+                ['Title', 'Date', 'Time', 'Description', 'Status'],
+                ...events.map(e => [
+                    `"${sanitizeInput(e.title).replace(/"/g, '""')}"`,
+                    new Date(e.date).toLocaleDateString('en-GB'),
+                    e.time,
+                    `"${sanitizeInput(e.description || '').replace(/"/g, '""')}"`,
+                    e.status,
+                ]),
+            ].map(row => row.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `events_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Events exported successfully', 'success');
+        }
+
+        // Event listeners
+        document.getElementById('addEventButton').addEventListener('click', () => {
+            openModal('addEventModal');
+            document.getElementById('eventTitle').focus();
+        });
+
+        document.getElementById('filterButton').addEventListener('click', () => {
+            openModal('filterModal');
+        });
+
+        document.getElementById('exportButton').addEventListener('click', exportEvents);
+
+        document.getElementById('addEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const eventData = {
+                title: sanitizeInput(document.getElementById('eventTitle').value.trim()),
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value,
+                description: sanitizeInput(document.getElementById('eventDescription').value.trim()),
+                status: 'Pending',
+            };
+            if (!eventData.title || !eventData.date || !eventData.time) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+            await saveEvent(eventData);
+        });
+
+        document.getElementById('editEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const eventData = {
+                _id: document.getElementById('editEventId').value,
+                title: sanitizeInput(document.getElementById('editEventTitle').value.trim()),
+                date: document.getElementById('editEventDate').value,
+                time: document.getElementById('editEventTime').value,
+                description: sanitizeInput(document.getElementById('editEventDescription').value.trim()),
+                status: document.getElementById('editEventStatus').value,
+            };
+            if (!eventData.title || !eventData.date || !eventData.time || !eventData.status) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+            await saveEvent(eventData, true);
+        });
+
+        document.getElementById('filterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const keyword = sanitizeInput(document.getElementById('filterKeyword').value.trim());
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            const status = document.getElementById('filterStatus').value;
+            filterEvents(keyword, startDate, endDate, status);
+            closeModal('filterModal');
+        });
+
+        document.getElementById('resetFilter').addEventListener('click', () => {
+            document.getElementById('filterForm').reset();
+            document.getElementById('searchInput').value = '';
+            renderEvents(events);
+            closeModal('filterModal');
+        });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const keyword = sanitizeInput(e.target.value.trim());
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            const status = document.getElementById('filterStatus').value;
+            filterEvents(keyword, startDate, endDate, status);
+        });
+
+        document.getElementById('eventList').addEventListener('click', (e) => {
+            const target = e.target;
+            const id = target.dataset.id;
+            if (!id) return;
+            if (target.classList.contains('fa-edit')) {
+                const event = events.find(e => e._id === id);
+                if (event) {
+                    document.getElementById('editEventId').value = event._id;
+                    document.getElementById('editEventTitle').value = event.title;
+                    document.getElementById('editEventDate').value = event.date.split('T')[0];
+                    document.getElementById('editEventTime').value = event.time;
+                    document.getElementById('editEventDescription').value = event.description || '';
+                    document.getElementById('editEventStatus').value = event.status;
+                    openModal('editEventModal');
+                }
+            } else if (target.classList.contains('fa-trash')) {
+                const event = events.find(e => e._id === id);
+                if (event) {
+                    document.getElementById('deleteEventTitle').textContent = sanitizeInput(event.title);
+                    document.getElementById('confirmDeleteButton').dataset.id = id;
+                    openModal('confirmDeleteModal');
+                }
+            }
+        });
+
+        document.getElementById('confirmDeleteButton').addEventListener('click', () => {
+            const id = document.getElementById('confirmDeleteButton').dataset.id;
+            deleteEvent(id);
+        });
+
+        ['closeAddEventModal', 'closeAddEventModalBtn', 'closeEditEventModal', 'closeEditEventModalBtn', 'closeFilterModal', 'closeFilterModalBtn', 'closeConfirmDeleteModal'].forEach(id => {
+            document.getElementById(id).addEventListener('click', () => {
+                closeModal(id.includes('Add') ? 'addEventModal' : id.includes('Edit') ? 'editEventModal' : id.includes('Filter') ? 'filterModal' : 'confirmDeleteModal');
+            });
+        });
+
+        ['addEventModal', 'editEventModal', 'filterModal', 'confirmDeleteModal'].forEach(modalId => {
             const modal = document.getElementById(modalId);
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) closeModal(modalId);
             });
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.style.display === 'flex') {
-                    closeModal(modalId);
-                }
+                if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(modalId);
             });
-        }
+        });
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        document.querySelector('.hamburger').addEventListener('click', toggleSidebar);
+        document.getElementById('logoutButton').addEventListener('click', logout);
 
+        // Initialize the page
         (async () => {
-            const user = await checkAuth();
-            if (user) {
-                window.userType = user.userType; // Store user type globally
+            const isAuthenticated = await checkAuth();
+            if (isAuthenticated) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
-                document.getElementById('userName').textContent = sanitizeInput(user.name || 'User');
-                document.getElementById('userType').textContent = sanitizeInput(user.userType.charAt(0).toUpperCase() + user.userType.slice(1) || 'Role');
-
-                // Hide admin-specific buttons for students
-                if (user.userType !== 'admin') {
-                    document.getElementById('addEventButton').classList.add('hidden');
-                    document.getElementById('filterStatus').disabled = true;
-                    if (user.userType === 'student') {
-                        document.getElementById('filterStatus').value = 'Scheduled';
-                    }
-                }
 
                 const savedTheme = localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', savedTheme);
                 document.querySelector('.theme-toggle i').classList.toggle('fa-moon', savedTheme === 'dark');
                 document.querySelector('.theme-toggle i').classList.toggle('fa-sun', savedTheme === 'light');
 
-                const debouncedSearch = debounce(e => {
-                    const query = sanitizeInput(e.target.value.trim().toLowerCase());
-                    fetchEventData({ keyword: query });
-                }, 300);
-
-                document.getElementById('searchInput').addEventListener('input', debouncedSearch);
-                document.getElementById('addEventButton').addEventListener('click', openAddEventModal);
-                document.getElementById('closeAddEventModal').addEventListener('click', closeAddEventModal);
-                document.getElementById('closeAddEventModalBtn').addEventListener('click', closeAddEventModal);
-                document.getElementById('filterButton').addEventListener('click', openFilterModal);
-                document.getElementById('closeFilterModal').addEventListener('click', closeFilterModal);
-                document.getElementById('closeFilterModalBtn').addEventListener('click', closeFilterModal);
-                document.getElementById('resetFilter').addEventListener('click', resetFilter);
-                document.getElementById('exportButton').addEventListener('click', exportToCSV);
-                document.getElementById('closeEditEventModal').addEventListener('click', closeEditEventModal);
-                document.getElementById('closeEditEventModalBtn').addEventListener('click', closeEditEventModal);
-                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-                document.getElementById('logoutButton').addEventListener('click', logout);
-                document.querySelector('.hamburger').addEventListener('click', toggleSidebar);
-                setupModalClose('addEventModal');
-                setupModalClose('editEventModal');
-                setupModalClose('filterModal');
-                setupModalClose('confirmDeleteModal');
-
-                fetchEventData();
+                await loadEvents();
             }
         })();
     </script>
