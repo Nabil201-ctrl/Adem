@@ -21,7 +21,6 @@
             --warning-color: #ffc107;
             --white: #ffffff;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --transition-duration: 0.5s;
         }
 
         * {
@@ -143,125 +142,6 @@
             font-size: 14px;
         }
 
-        .progress-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            position: relative;
-        }
-
-        .progress-bar::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: var(--border-color);
-            z-index: 1;
-            transform: translateY(-50%);
-        }
-
-        .progress-step {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            font-size: 12px;
-            color: var(--light-text);
-            flex: 1;
-        }
-
-        .progress-step::before {
-            content: '';
-            display: block;
-            width: 20px;
-            height: 20px;
-            margin: 0 auto 8px;
-            background-color: var(--border-color);
-            border-radius: 50%;
-            border: 3px solid var(--white);
-        }
-
-        .progress-step.active {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .progress-step.active::before {
-            background-color: var(--primary-color);
-        }
-
-        .form-step-container {
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            min-height: 400px;
-        }
-
-        .form-step {
-            display: none;
-            position: absolute;
-            width: 100%;
-            top: 0;
-            left: 0;
-            transition: transform var(--transition-duration) ease-in-out;
-        }
-
-        .form-step.active {
-            display: block;
-            transform: translateX(0);
-        }
-
-        .form-step.slide-left {
-            transform: translateX(-100%);
-        }
-
-        .form-step.slide-right {
-            transform: translateX(100%);
-        }
-
-        /* Admin form styles */
-        .admin-form-step {
-            display: none;
-            width: 100%;
-        }
-
-        .admin-form-step.active {
-            display: block;
-        }
-
-        .user-type-toggle {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 25px;
-            gap: 10px;
-        }
-
-        .type-btn {
-            padding: 10px 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--white);
-            color: var(--light-text);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .type-btn i {
-            font-size: 16px;
-        }
-
-        .type-btn.active {
-            background-color: var(--primary-color);
-            color: var(--white);
-            border-color: var(--primary-color);
-        }
-
         .form-group {
             position: relative;
             margin-bottom: 20px;
@@ -306,7 +186,7 @@
         .form-group input:focus+label,
         .form-group input:not(:placeholder-shown)+label,
         .form-group select:focus+label,
-        .form-group select:not([value=""])+label {
+        .form-group select:not(:placeholder-shown)+label {
             top: -10px;
             left: 30px;
             font-size: 12px;
@@ -333,23 +213,6 @@
             cursor: pointer;
         }
 
-        .form-group input[type="file"] {
-            padding: 12px 15px;
-        }
-
-        .form-group input[type="file"]+label {
-            left: 15px;
-        }
-
-        .form-group input[type="file"]:focus+label,
-        .form-group input[type="file"]:not(:placeholder-shown)+label {
-            left: 15px;
-        }
-
-        .form-group input[type="file"]~i {
-            display: none;
-        }
-
         .error-message {
             color: var(--error-color);
             font-size: 12px;
@@ -361,52 +224,10 @@
             display: block;
         }
 
-        .form-navigation {
+        .form-extras {
             display: flex;
             justify-content: space-between;
-            margin-top: 30px;
-        }
-
-        .next-btn,
-        .back-btn,
-        .login-btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .next-btn,
-        .login-btn {
-            background-color: var(--primary-color);
-            color: var(--white);
-        }
-
-        .next-btn:hover,
-        .login-btn:hover {
-            background-color: var(--primary-light);
-        }
-
-        .back-btn {
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-        }
-
-        .back-btn:hover {
-            background-color: #e9ecef;
-        }
-
-        .login-btn {
-            margin-left: auto;
-        }
-
-        .form-extras {
             margin: 20px 0;
         }
 
@@ -457,13 +278,41 @@
             display: block;
         }
 
-        .remember-me a {
+        .forgot-password {
             color: var(--primary-color);
             text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
         }
 
-        .remember-me a:hover {
+        .forgot-password:hover {
             text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .login-btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        .login-btn:disabled {
+            background-color: var(--light-text);
+            cursor: not-allowed;
         }
 
         .register-link {
@@ -503,6 +352,7 @@
             max-width: 500px;
             width: 90%;
             box-shadow: var(--shadow);
+            text-align: center;
         }
 
         .modal h2 {
@@ -570,18 +420,139 @@
             background-color: var(--primary-color);
         }
 
+        .user-type-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--white);
+            color: var(--light-text);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .type-btn.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .document-upload {
+            margin-top: 15px;
+        }
+
+        .document-upload label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+
+        .document-upload input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--secondary-color);
+        }
+
+        /* Slider styles */
+        .student-slider {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .student-slides {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .student-slide {
+            min-width: 100%;
+            padding: 0 5px;
+            box-sizing: border-box;
+        }
+
+        .slider-nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        .slider-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-dot.active {
+            background-color: var(--primary-color);
+        }
+
+        .slider-arrows {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .slider-arrow {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .slider-arrow:hover {
+            opacity: 1;
+        }
+
+        .slider-arrow.prev {
+            margin-left: -15px;
+        }
+
+        .slider-arrow.next {
+            margin-right: -15px;
+        }
+
+        .slider-arrow i {
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .login-box {
                 padding: 30px 20px;
-            }
-
-            .progress-step {
-                font-size: 10px;
-            }
-
-            .progress-step::before {
-                width: 16px;
-                height: 16px;
             }
 
             .form-group input,
@@ -594,11 +565,14 @@
                 left: 12px;
             }
 
-            .next-btn,
-            .back-btn,
             .login-btn {
                 padding: 10px 15px;
                 font-size: 13px;
+            }
+
+            .type-btn {
+                font-size: 12px;
+                padding: 8px;
             }
         }
     </style>
@@ -625,224 +599,163 @@
                     <p>Fill in your details to register</p>
                 </div>
 
-                <!-- Progress Indicator (Hidden for Admin) -->
-                <div class="progress-bar" id="progressBar">
-                    <div class="progress-step active" data-step="1">Personal</div>
-                    <div class="progress-step" data-step="2">Student</div>
-                    <div class="progress-step" data-step="3">Documents</div>
+                <div class="user-type-toggle">
+                    <button class="type-btn active" data-type="student">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Student</span>
+                    </button>
+                    <button class="type-btn" data-type="admin">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin</span>
+                    </button>
                 </div>
 
                 <form class="login-form" id="registerForm" enctype="multipart/form-data">
-                    <!-- Form Step Container for Student -->
-                    <div class="form-step-container" id="studentFormContainer">
-                        <!-- Step 1: Personal Details -->
-                        <div class="form-step active" data-step="1">
-                            <div class="user-type-toggle">
-                                <button type="button" class="type-btn active" data-type="student">
-                                    <i class="fas fa-user-graduate"></i>
-                                    <span>Student</span>
-                                </button>
-                                <button type="button" class="type-btn" data-type="admin">
-                                    <i class="fas fa-user-shield"></i>
-                                    <span>Admin</span>
-                                </button>
+                    <div class="form-group">
+                        <input type="text" id="name" required aria-label="Full name" placeholder=" ">
+                        <label for="name">Full Name</label>
+                        <i class="fas fa-user"></i>
+                        <div id="name-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="email" id="email" required aria-label="Email address" placeholder=" ">
+                        <label for="email">Email Address</label>
+                        <i class="fas fa-envelope"></i>
+                        <div id="email-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="password" id="password" required aria-label="Password" placeholder=" ">
+                        <label for="password">Password</label>
+                        <i class="fas fa-lock"></i>
+                        <i id="togglePassword" class="fas fa-eye-slash toggle-password"></i>
+                        <div id="password-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group admin-field" style="display: none;">
+                        <input type="password" id="adminSecretKey" aria-label="Admin Secret Key" placeholder=" ">
+                        <label for="adminSecretKey">Admin Secret Key</label>
+                        <i class="fas fa-key"></i>
+                        <div id="adminSecretKey-error" class="error-message"></div>
+                    </div>
+
+                    <!-- Student-specific fields in slider -->
+                    <div class="student-slider">
+                        <div class="slider-arrows">
+                            <button class="slider-arrow prev" aria-label="Previous slide">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="slider-arrow next" aria-label="Next slide">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="student-slides">
+                            <!-- Slide 1 - Basic Info -->
+                            <div class="student-slide">
+                                <div class="form-group student-field">
+                                    <input type="text" id="matricNumber" required aria-label="Matric number"
+                                        placeholder=" ">
+                                    <label for="matricNumber">Matric Number</label>
+                                    <i class="fas fa-id-card"></i>
+                                    <div id="matricNumber-error" class="error-message"></div>
+                                </div>
+
+                                <div class="form-group student-field">
+                                    <input type="tel" id="phone" required aria-label="Phone number" placeholder=" ">
+                                    <label for="phone">Phone Number</label>
+                                    <i class="fas fa-phone"></i>
+                                    <div id="phone-error" class="error-message"></div>
+                                </div>
+
+                                <input type="hidden" id="gender" value="Male">
+
+                                <div class="form-group student-field">
+                                    <input type="date" id="dateOfBirth" required aria-label="Date of birth"
+                                        placeholder=" ">
+                                    <label for="dateOfBirth">Date of Birth</label>
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <div id="dateOfBirth-error" class="error-message"></div>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <input type="text" id="name" required aria-label="Full name" placeholder=" ">
-                                <label for="name">Full Name</label>
-                                <i class="fas fa-user"></i>
-                                <div id="name-error" class="error-message"></div>
+                            <!-- Slide 2 - Academic Info -->
+                            <div class="student-slide">
+                                <div class="form-group student-field">
+                                    <input type="text" id="faculty" required aria-label="Faculty" placeholder=" ">
+                                    <label for="faculty">Faculty</label>
+                                    <i class="fas fa-university"></i>
+                                    <div id="faculty-error" class="error-message"></div>
+                                </div>
+
+                                <div class="form-group student-field">
+                                    <input type="text" id="level" required aria-label="Level" placeholder=" ">
+                                    <label for="level">Level (e.g., 400level)</label>
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <div id="level-error" class="error-message"></div>
+                                </div>
+
+                                <div class="form-group student-field">
+                                    <input type="text" id="department" required aria-label="Department" placeholder=" ">
+                                    <label for="department">Department</label>
+                                    <i class="fas fa-building"></i>
+                                    <div id="department-error" class="error-message"></div>
+                                </div>
+
+                                <div class="form-group student-field">
+                                    <select id="jambOrCgpaType" required aria-label="Result Type">
+                                        <option value="" selected disabled> </option>
+                                        <option value="JAMB_RESULT">JAMB Result</option>
+                                        <option value="CGPA">CGPA</option>
+                                    </select>
+                                    <label for="jambOrCgpaType">Result Type</label>
+                                    <i class="fas fa-file-alt"></i>
+                                    <div id="jambOrCgpaType-error" class="error-message"></div>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <input type="email" id="email" required aria-label="Email address" placeholder=" ">
-                                <label for="email">Email Address</label>
-                                <i class="fas fa-envelope"></i>
-                                <div id="email-error" class="error-message"></div>
-                            </div>
+                            <!-- Slide 3 - Documents -->
+                            <div class="student-slide">
+                                <div class="form-group student-field document-upload">
+                                    <label for="jambOrCgpa">JAMB Result/CGPA Document (PDF/Image)</label>
+                                    <input type="file" id="jambOrCgpa" accept=".pdf,.jpg,.jpeg,.png" required>
+                                    <div id="jambOrCgpa-error" class="error-message"></div>
+                                </div>
 
-                            <div class="form-group">
-                                <input type="password" id="password" required aria-label="Password" placeholder=" ">
-                                <label for="password">Password</label>
-                                <i class="fas fa-lock"></i>
-                                <i id="togglePassword" class="fas fa-eye-slash toggle-password"></i>
-                                <div id="password-error" class="error-message"></div>
-                            </div>
+                                <div class="form-group student-field document-upload">
+                                    <label for="admissionLetter">Admission Letter (PDF/Image)</label>
+                                    <input type="file" id="admissionLetter" accept=".pdf,.jpg,.jpeg,.png" required>
+                                    <div id="admissionLetter-error" class="error-message"></div>
+                                </div>
 
-                            <div class="form-navigation">
-                                <button type="button" class="next-btn" data-next="2">Next <i
-                                        class="fas fa-arrow-right"></i></button>
+                                <div class="form-group student-field document-upload">
+                                    <label for="nin">NIN Document (PDF/Image)</label>
+                                    <input type="file" id="nin" accept=".pdf,.jpg,.jpeg,.png" required>
+                                    <div id="nin-error" class="error-message"></div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Step 2: Student Details -->
-                        <div class="form-step" data-step="2">
-                            <div class="form-group">
-                                <input type="text" id="matricNumber" required aria-label="Matric number"
-                                    placeholder="23/208CSC/586">
-                                <label for="matricNumber">Matric Number</label>
-                                <i class="fas fa-id-card"></i>
-                                <div id="matricNumber-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <input type="date" id="dateOfBirth" required aria-label="Date of birth" placeholder=" ">
-                                <label for="dateOfBirth">Date of Birth</label>
-                                <i class="fas fa-calendar-alt"></i>
-                                <div id="dateOfBirth-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <input type="text" id="phone" required aria-label="Phone number" placeholder=" ">
-                                <label for="phone">Phone Number</label>
-                                <i class="fas fa-phone"></i>
-                                <div id="phone-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-navigation">
-                                <button type="button" class="back-btn" data-back="1">Back <i
-                                        class="fas fa-arrow-left"></i></button>
-                                <button type="button" class="next-btn" data-next="3">Next <i
-                                        class="fas fa-arrow-right"></i></button>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Academic & Documents -->
-                        <div class="form-step" data-step="3">
-                            <div class="form-group">
-                                <input type="text" id="faculty" required aria-label="Faculty" placeholder=" ">
-                                <label for="faculty">Faculty</label>
-                                <i class="fas fa-university"></i>
-                                <div id="faculty-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <input type="text" id="level" required aria-label="Level" placeholder="400level">
-                                <label for="level">Level</label>
-                                <i class="fas fa-graduation-cap"></i>
-                                <div id="level-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <input type="text" id="department" required aria-label="Department" placeholder=" ">
-                                <label for="department">Department</label>
-                                <i class="fas fa-building"></i>
-                                <div id="department-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <select id="jambOrCgpaType" required aria-label="Document Type">
-                                    <option value="" disabled selected>Select Document Type</option>
-                                    <option value="JAMB_RESULT">JAMB Result</option>
-                                    <option value="CGPA">Current CGPA</option>
-                                </select>
-                                <label for="jambOrCgpaType">JAMB Result or CGPA</label>
-                                <i class="fas fa-file-alt"></i>
-                                <div id="jambOrCgpaType-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <input type="file" id="jambOrCgpa" accept="image/jpeg,image/png" required
-                                    aria-label="JAMB or CGPA document">
-                                <label for="jambOrCgpa">Upload JAMB/CGPA (JPEG/PNG)</label>
-                                <i class="fas fa-upload"></i>
-                                <div id="jambOrCgpa-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <input type="file" id="admissionLetter" accept="image/jpeg,image/png" required
-                                    aria-label="Admission Letter">
-                                <label for="admissionLetter">Upload Admission Letter (JPEG/PNG)</label>
-                                <i class="fas fa-upload"></i>
-                                <div id="admissionLetter-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <input type="file" id="nin" accept="image/jpeg,image/png" required
-                                    aria-label="NIN document">
-                                <label for="nin">Upload NIN (JPEG/PNG)</label>
-                                <i class="fas fa-upload"></i>
-                                <div id="nin-error" class="error-message"></div>
-                            </div>
-
-                            <div class="form-extras">
-                                <label class="remember-me">
-                                    <input type="checkbox" id="terms" required aria-label="Agree to terms">
-                                    <span class="checkmark"></span>
-                                    I agree to the <a href="#" onclick="openTermsModal()">Terms & Conditions</a>
-                                </label>
-                            </div>
-
-                            <div class="form-navigation">
-                                <button type="button" class="back-btn" data-back="2">Back <i
-                                        class="fas fa-arrow-left"></i></button>
-                                <button type="submit" class="login-btn" aria-label="Register">
-                                    <span>Register</span>
-                                    <i class="fas fa-user-plus"></i>
-                                </button>
-                            </div>
+                        <div class="slider-nav">
+                            <div class="slider-dot active" data-slide="0"></div>
+                            <div class="slider-dot" data-slide="1"></div>
+                            <div class="slider-dot" data-slide="2"></div>
                         </div>
                     </div>
 
-                    <!-- Admin Form (Single Step) -->
-                    <div class="admin-form-step" id="adminForm">
-                        <div class="user-type-toggle">
-                            <button type="button" class="type-btn active" data-type="student">
-                                <i class="fas fa-user-graduate"></i>
-                                <span>Student</span>
-                            </button>
-                            <button type="button" class="type-btn" data-type="admin">
-                                <i class="fas fa-user-shield"></i>
-                                <span>Admin</span>
-                            </button>
-                        </div>
-
-                        <div class="form-group">
-                            <input type="text" id="adminName" required aria-label="Full name" placeholder=" ">
-                            <label for="adminName">Full Name</label>
-                            <i class="fas fa-user"></i>
-                            <div id="adminName-error" class="error-message"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <input type="email" id="adminEmail" required aria-label="Email address" placeholder=" ">
-                            <label for="adminEmail">Email Address</label>
-                            <i class="fas fa-envelope"></i>
-                            <div id="adminEmail-error" class="error-message"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <input type="password" id="adminPassword" required aria-label="Password" placeholder=" ">
-                            <label for="adminPassword">Password</label>
-                            <i class="fas fa-lock"></i>
-                            <i id="adminTogglePassword" class="fas fa-eye-slash toggle-password"></i>
-                            <div id="adminPassword-error" class="error-message"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <input type="password" id="adminSecretKey" required aria-label="Admin Secret Key"
-                                placeholder=" ">
-                            <label for="adminSecretKey">Admin Secret Key</label>
-                            <i class="fas fa-key"></i>
-                            <div id="adminSecretKey-error" class="error-message"></div>
-                        </div>
-
-                        <div class="form-extras">
-                            <label class="remember-me">
-                                <input type="checkbox" id="adminTerms" required aria-label="Agree to terms">
-                                <span class="checkmark"></span>
-                                I agree to the <a href="#" onclick="openTermsModal()">Terms & Conditions</a>
-                            </label>
-                        </div>
-
-                        <div class="form-navigation">
-                            <button type="submit" class="login-btn" aria-label="Login">
-                                <span>Login</span>
-                                <i class="fas fa-sign-in-alt"></i>
-                            </button>
-                        </div>
+                    <div class="form-extras">
+                        <label class="remember-me">
+                            <input type="checkbox" id="terms" required aria-label="Agree to terms">
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#" onclick="openTermsModal()">Terms & Conditions</a>
+                        </label>
                     </div>
+
+                    <button type="submit" class="login-btn" aria-label="Register">
+                        <span>Register</span>
+                        <i class="fas fa-user-plus"></i>
+                    </button>
                 </form>
 
                 <div class="register-link">
@@ -856,7 +769,7 @@
         <div class="modal-content">
             <h2>Terms & Conditions</h2>
             <p>By registering, you agree to abide by the hostel rules and regulations. Ensure all provided information
-                and documents are accurate and complete.</p>
+                is accurate and complete.</p>
             <button type="button" class="close-btn" onclick="closeModal()">Close</button>
         </div>
     </div>
@@ -869,30 +782,82 @@
         </div>
     </div>
 
-    <div id="toast" class="custom-toast"></div>
+    <div id="registrationClosedModal" class="modal">
+        <div class="modal-content">
+            <h2>Registration Closed</h2>
+            <p>The registration period for Adem Baba Hostel has closed.</p>
+            <button type="button" class="close-btn" onclick="window.location.href='index.html'">Return to Login</button>
+        </div>
+    </div>
+
+    <div id="toast" class="custom-toast" aria-live="polite"></div>
 
     <script type="module">
         import { API_URL, showToast, togglePasswordVisibility, fetchWithRetry, sanitizeInput } from './utils.js';
 
         togglePasswordVisibility('password', 'togglePassword');
-        togglePasswordVisibility('adminPassword', 'adminTogglePassword');
 
+        // Slider functionality
+        const slider = document.querySelector('.student-slides');
+        const slides = document.querySelectorAll('.student-slide');
+        const dots = document.querySelectorAll('.slider-dot');
+        const prevBtn = document.querySelector('.slider-arrow.prev');
+        const nextBtn = document.querySelector('.slider-arrow.next');
+        let currentSlide = 0;
+        const slideCount = slides.length;
+
+        function goToSlide(slideIndex) {
+            if (slideIndex < 0) slideIndex = slideCount - 1;
+            if (slideIndex >= slideCount) slideIndex = 0;
+
+            currentSlide = slideIndex;
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            // Update dots
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                goToSlide(parseInt(dot.dataset.slide));
+            });
+        });
+
+        prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
+        nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+        // Initialize slider
+        goToSlide(0);
+
+        // Function to show registration closed modal
+        function showRegistrationClosedModal() {
+            const modal = document.getElementById('registrationClosedModal');
+            modal.style.display = 'flex';
+
+            // Disable the form
+            document.getElementById('registerForm').querySelectorAll('input, select, button').forEach(element => {
+                element.disabled = true;
+            });
+        }
+
+        // Modified checkRegistrationDeadline function to return more information
         async function checkRegistrationDeadline() {
             try {
                 const data = await fetchWithRetry(`${API_URL}/registration-deadline`);
                 if (!data.deadline) {
                     showToast('No registration deadline set. Please contact support.', 'error');
-                    return false;
+                    return { isOpen: true, deadline: null };
                 }
                 const deadline = new Date(data.deadline.extended ? data.deadline.extendedDeadline : data.deadline.deadline);
                 const now = new Date();
                 if (now > deadline) {
-                    showToast('The registration period for Adem Baba Hostel has closed.', 'error');
-                    return false;
+                    return { isOpen: false, deadline };
                 }
                 const deadlineDate = deadline.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
                 showToast(`Registration is open until ${deadlineDate}`, 'info');
-                return true;
+                return { isOpen: true, deadline };
             } catch (error) {
                 console.error('checkRegistrationDeadline: Error:', error);
                 if (error.error?.code === 'NOT_FOUND') {
@@ -900,22 +865,19 @@
                 } else {
                     showToast('Failed to check registration deadline. Please try again.', 'error');
                 }
-                return false;
+                return { isOpen: true, deadline: null };
             }
         }
 
         function openTermsModal() {
-            console.log('openTermsModal: Showing terms modal');
             document.getElementById('termsModal').style.display = 'flex';
         }
 
         function closeModal() {
-            console.log('closeModal: Hiding terms modal');
             document.getElementById('termsModal').style.display = 'none';
         }
 
         function openRegisterSuccessModal(message) {
-            console.log('openRegisterSuccessModal: Showing success modal');
             document.getElementById('registerSuccessMessage').textContent = message;
             const modal = document.getElementById('registerSuccessModal');
             modal.style.display = 'flex';
@@ -924,476 +886,190 @@
         }
 
         function closeRegisterSuccessModal() {
-            console.log('closeRegisterSuccessModal: Hiding success modal');
             document.getElementById('registerSuccessModal').style.display = 'none';
             window.location.href = 'index.html';
         }
 
-        // User Type Toggle
         const typeButtons = document.querySelectorAll('.type-btn');
-        const studentFormContainer = document.getElementById('studentFormContainer');
-        const adminForm = document.getElementById('adminForm');
-        const progressBar = document.getElementById('progressBar');
-
-        function toggleUserType(userType) {
-            console.log(`type-btn: Switching to ${userType}`);
-            typeButtons.forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.type-btn[data-type="${userType}"]`).classList.add('active');
-
-            if (userType === 'student') {
-                studentFormContainer.style.display = 'block';
-                adminForm.style.display = 'none';
-                progressBar.style.display = 'flex';
-                showStep(1); // Initialize student form
-            } else {
-                studentFormContainer.style.display = 'none';
-                adminForm.style.display = 'block';
-                adminForm.classList.add('active');
-                progressBar.style.display = 'none';
-            }
-        }
+        const studentFields = document.querySelectorAll('.student-field');
+        const adminField = document.querySelector('.admin-field');
+        const studentSlider = document.querySelector('.student-slider');
 
         typeButtons.forEach(button => {
             button.addEventListener('click', () => {
-                toggleUserType(button.dataset.type);
+                typeButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const userType = button.dataset.type;
+                studentFields.forEach(field => {
+                    field.style.display = userType === 'student' ? 'block' : 'none';
+                    const input = field.querySelector('input, select');
+                    if (input) input.required = userType === 'student';
+                });
+                adminField.style.display = userType === 'admin' ? 'block' : 'none';
+                const adminInput = adminField.querySelector('input');
+                if (adminInput) adminInput.required = userType === 'admin';
+
+                // Show/hide slider based on user type
+                studentSlider.style.display = userType === 'student' ? 'block' : 'none';
             });
         });
 
-        // Multi-Step Form Navigation for Students
-        const formSteps = document.querySelectorAll('.form-step');
-        const progressSteps = document.querySelectorAll('.progress-step');
-        const nextButtons = document.querySelectorAll('.next-btn');
-        const backButtons = document.querySelectorAll('.back-btn');
-        let currentStep = 1;
+        document.querySelector('.type-btn[data-type="student"]').click();
 
-        function showStep(stepNumber, direction = 'next') {
-            const currentStepElement = formSteps[currentStep - 1];
-            const nextStepElement = formSteps[stepNumber - 1];
-
-            if (direction === 'next') {
-                currentStepElement.classList.add('slide-left');
-                nextStepElement.classList.add('slide-right');
-            } else {
-                currentStepElement.classList.add('slide-right');
-                nextStepElement.classList.add('slide-left');
+        // Check registration deadline on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { isOpen } = await checkRegistrationDeadline();
+            if (!isOpen) {
+                showRegistrationClosedModal();
             }
-
-            currentStepElement.offsetWidth;
-
-            setTimeout(() => {
-                formSteps.forEach(step => {
-                    step.classList.remove('active', 'slide-left', 'slide-right');
-                    step.style.display = 'none';
-                });
-                nextStepElement.style.display = 'block';
-                nextStepElement.classList.add('active');
-                nextStepElement.classList.remove('slide-left', 'slide-right');
-
-                progressSteps.forEach(step => {
-                    step.classList.remove('active');
-                    if (parseInt(step.dataset.step) === stepNumber) {
-                        step.classList.add('active');
-                    }
-                });
-
-                document.querySelector('.login-btn').style.display = stepNumber === 3 ? 'block' : 'none';
-                backButtons.forEach(btn => {
-                    btn.style.display = stepNumber === 1 ? 'none' : 'block';
-                });
-            }, 50);
-
-            currentStep = stepNumber;
-        }
-
-        nextButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const nextStep = parseInt(button.dataset.next);
-                const userType = document.querySelector('.type-btn.active').dataset.type;
-
-                if (userType === 'admin') {
-                    return; // Admin uses single-step form
-                }
-
-                // Validate current step
-                if (currentStep === 1) {
-                    const name = sanitizeInput(document.getElementById('name').value.trim());
-                    const email = document.getElementById('email').value.trim();
-                    const password = document.getElementById('password').value;
-
-                    document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-                    document.querySelectorAll('.form-group input').forEach(input => input.classList.remove('error'));
-
-                    if (!name) {
-                        showToast('Full name is required', 'error');
-                        document.getElementById('name-error').textContent = 'Full name is required';
-                        document.getElementById('name').classList.add('error');
-                        return;
-                    }
-
-                    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
-                    if (!emailRegex.test(email)) {
-                        showToast('Please enter a valid email (e.g., user@example.com)', 'error');
-                        document.getElementById('email-error').textContent = 'Invalid email format';
-                        document.getElementById('email').classList.add('error');
-                        return;
-                    }
-
-                    if (password.length < 6) {
-                        showToast('Password must be at least 6 characters', 'error');
-                        document.getElementById('password-error').textContent = 'Password must be at least 6 characters';
-                        document.getElementById('password').classList.add('error');
-                        return;
-                    }
-                } else if (currentStep === 2) {
-                    const matricNumber = sanitizeInput(document.getElementById('matricNumber').value.trim().toUpperCase());
-                    const dateOfBirth = document.getElementById('dateOfBirth').value;
-                    const phone = sanitizeInput(document.getElementById('phone').value.trim());
-                    const gender = 'Male';
-
-                    document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-                    document.querySelectorAll('.form-group input, .form-group select').forEach(input => input.classList.remove('error'));
-
-                    const matricRegex = /^\d{2}\/[A-Z0-9]{6}\/\d{3}$/;
-                    if (!matricRegex.test(matricNumber)) {
-                        showToast('Invalid matric number (e.g., 23/208CSC/586)', 'error');
-                        document.getElementById('matricNumber-error').textContent = 'Invalid matric number (e.g., 23/208CSC/586)';
-                        document.getElementById('matricNumber').classList.add('error');
-                        return;
-                    }
-
-                    if (!dateOfBirth) {
-                        showToast('Date of birth is required', 'error');
-                        document.getElementById('dateOfBirth-error').textContent = 'Date of birth is required';
-                        document.getElementById('dateOfBirth').classList.add('error');
-                        return;
-                    }
-
-                    if (!/^\+?[\d\s()-]{10,}$/.test(phone)) {
-                        showToast('Valid phone number is required (e.g., +2341234567890)', 'error');
-                        document.getElementById('phone-error').textContent = 'Invalid phone number';
-                        document.getElementById('phone').classList.add('error');
-                        return;
-                    }
-
-                    if (!['Male', 'Female', 'Other'].includes(gender)) {
-                        showToast('Please select a gender', 'error');
-                        document.getElementById('gender-error').textContent = 'Please select a gender';
-                        document.getElementById('gender').classList.add('error');
-                        return;
-                    }
-                }
-
-                showStep(nextStep, 'next');
-            });
         });
 
-        backButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const backStep = parseInt(button.dataset.back);
-                showStep(backStep, 'back');
-            });
-        });
-
-        // Initialize first step
-        document.addEventListener('DOMContentLoaded', () => {
-            toggleUserType('student');
-        });
-
-        // Form Submission
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitButton = e.target.querySelector('.login-btn');
+            const submitButton = e.target.querySelector('button[type="submit"]');
             submitButton.disabled = true;
-            submitButton.querySelector('span').textContent = 'Processing...';
+            submitButton.querySelector('span').textContent = 'Registering...';
+
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.form-group input, .form-group select').forEach(input => input.classList.remove('error'));
 
             const userType = document.querySelector('.type-btn.active').dataset.type;
             const formData = new FormData();
 
-            if (userType === 'student') {
-                const isRegistrationOpen = await checkRegistrationDeadline();
-                if (!isRegistrationOpen) {
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
+            // Common fields
+            formData.append('name', sanitizeInput(document.getElementById('name').value.trim()));
+            formData.append('email', document.getElementById('email').value.trim());
+            formData.append('password', document.getElementById('password').value);
+            formData.append('userType', userType);
 
-                const name = sanitizeInput(document.getElementById('name').value.trim());
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value;
-                const matricNumber = sanitizeInput(document.getElementById('matricNumber').value.trim().toUpperCase());
-                const dateOfBirth = document.getElementById('dateOfBirth').value;
-                const phone = sanitizeInput(document.getElementById('phone').value.trim());
-                const gender = document.getElementById('gender').value;
-                const faculty = sanitizeInput(document.getElementById('faculty').value.trim());
+            if (userType === 'admin') {
+                formData.append('adminSecretKey', document.getElementById('adminSecretKey').value);
+            } else {
+                // Student fields
+                formData.append('matricNumber', sanitizeInput(document.getElementById('matricNumber').value.trim().toUpperCase()));
+                formData.append('phone', sanitizeInput(document.getElementById('phone').value.trim()));
+                formData.append('gender', document.getElementById('gender').value); // Hardcoded to 'Male'
+                formData.append('dateOfBirth', document.getElementById('dateOfBirth').value);
+                formData.append('faculty', sanitizeInput(document.getElementById('faculty').value.trim()));
+
+                // Validate level format (e.g., 400level)
                 const level = sanitizeInput(document.getElementById('level').value.trim().toLowerCase());
-                const department = sanitizeInput(document.getElementById('department').value.trim());
-                const jambOrCgpaType = document.getElementById('jambOrCgpaType').value;
-                const jambOrCgpa = document.getElementById('jambOrCgpa').files[0];
-                const admissionLetter = document.getElementById('admissionLetter').files[0];
-                const nin = document.getElementById('nin').files[0];
-                const terms = document.getElementById('terms').checked;
-
-                // Validate Step 3 fields
-                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-                document.querySelectorAll('.form-group input, .form-group select').forEach(input => input.classList.remove('error'));
-
-                if (!faculty) {
-                    showToast('Faculty is required', 'error');
-                    document.getElementById('faculty-error').textContent = 'Faculty is required';
-                    document.getElementById('faculty').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
                 const levelRegex = /^(100|200|300|400|500|600|700)level$/;
                 if (!levelRegex.test(level)) {
-                    showToast('Invalid level (e.g., 400level)', 'error');
-                    document.getElementById('level-error').textContent = 'Invalid level (e.g., 400level)';
+                    showToast('Invalid level format (e.g., 400level)', 'error');
+                    document.getElementById('level-error').textContent = 'Invalid level format (e.g., 400level)';
                     document.getElementById('level').classList.add('error');
                     submitButton.disabled = false;
                     submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
-
-                if (!department) {
-                    showToast('Department is required', 'error');
-                    document.getElementById('department-error').textContent = 'Department is required';
-                    document.getElementById('department').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                if (!jambOrCgpaType) {
-                    showToast('Please select JAMB Result or CGPA', 'error');
-                    document.getElementById('jambOrCgpaType-error').textContent = 'Please select JAMB Result or CGPA';
-                    document.getElementById('jambOrCgpaType').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                if (!jambOrCgpa) {
-                    showToast('JAMB Result or CGPA document is required', 'error');
-                    document.getElementById('jambOrCgpa-error').textContent = 'JAMB Result or CGPA document is required';
-                    document.getElementById('jambOrCgpa').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                if (!admissionLetter) {
-                    showToast('Admission Letter is required', 'error');
-                    document.getElementById('admissionLetter-error').textContent = 'Admission Letter is required';
-                    document.getElementById('admissionLetter').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                if (!nin) {
-                    showToast('NIN document is required', 'error');
-                    document.getElementById('nin-error').textContent = 'NIN document is required';
-                    document.getElementById('nin').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                const fileTypes = ['image/jpeg', 'image/png'];
-                if (!fileTypes.includes(jambOrCgpa.type) || !fileTypes.includes(admissionLetter.type) || !fileTypes.includes(nin.type)) {
-                    showToast('Only JPEG or PNG files are allowed', 'error');
-                    if (!fileTypes.includes(jambOrCgpa.type)) {
-                        document.getElementById('jambOrCgpa-error').textContent = 'Only JPEG or PNG allowed';
-                        document.getElementById('jambOrCgpa').classList.add('error');
-                    }
-                    if (!fileTypes.includes(admissionLetter.type)) {
-                        document.getElementById('admissionLetter-error').textContent = 'Only JPEG or PNG allowed';
-                        document.getElementById('admissionLetter').classList.add('error');
-                    }
-                    if (!fileTypes.includes(nin.type)) {
-                        document.getElementById('nin-error').textContent = 'Only JPEG or PNG allowed';
-                        document.getElementById('nin').classList.add('error');
-                    }
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                if (!terms) {
-                    showToast('You must agree to the terms', 'error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                formData.append('name', name);
-                formData.append('email', email);
-                formData.append('password', password);
-                formData.append('userType', userType);
-                formData.append('matricNumber', matricNumber);
-                formData.append('dateOfBirth', dateOfBirth);
-                formData.append('phone', phone);
-                formData.append('gender', gender);
-                formData.append('faculty', faculty);
                 formData.append('level', level);
-                formData.append('department', department);
-                formData.append('jambOrCgpaType', jambOrCgpaType);
-                formData.append('jambOrCgpa', jambOrCgpa);
-                formData.append('admissionLetter', admissionLetter);
-                formData.append('nin', nin);
-            } else {
-                const name = sanitizeInput(document.getElementById('adminName').value.trim());
-                const email = document.getElementById('adminEmail').value.trim();
-                const password = document.getElementById('adminPassword').value;
-                const adminSecretKey = document.getElementById('adminSecretKey').value;
-                const terms = document.getElementById('adminTerms').checked;
 
-                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-                document.querySelectorAll('.form-group input').forEach(input => input.classList.remove('error'));
+                formData.append('department', sanitizeInput(document.getElementById('department').value.trim()));
+                formData.append('jambOrCgpaType', document.getElementById('jambOrCgpaType').value);
+                formData.append('NIN', 'NIN'); // Hardcoded as per request
 
-                if (!name) {
-                    showToast('Full name is required', 'error');
-                    document.getElementById('adminName-error').textContent = 'Full name is required';
-                    document.getElementById('adminName').classList.add('error');
+                // Student documents
+                const jambOrCgpaFile = document.getElementById('jambOrCgpa').files[0];
+                const admissionLetterFile = document.getElementById('admissionLetter').files[0];
+                const ninFile = document.getElementById('nin').files[0];
+
+                if (!jambOrCgpaFile || !admissionLetterFile || !ninFile) {
+                    showToast('All documents are required for student registration', 'error');
+                    if (!jambOrCgpaFile) {
+                        document.getElementById('jambOrCgpa-error').textContent = 'JAMB/CGPA document is required';
+                    }
+                    if (!admissionLetterFile) {
+                        document.getElementById('admissionLetter-error').textContent = 'Admission letter is required';
+                    }
+                    if (!ninFile) {
+                        document.getElementById('nin-error').textContent = 'NIN document is required';
+                    }
                     submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Login';
+                    submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
 
-                const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
-                if (!emailRegex.test(email)) {
-                    showToast('Please enter a valid email (e.g., user@example.com)', 'error');
-                    document.getElementById('adminEmail-error').textContent = 'Invalid email format';
-                    document.getElementById('adminEmail').classList.add('error');
+                formData.append('jambOrCgpa', jambOrCgpaFile);
+                formData.append('admissionLetter', admissionLetterFile);
+                formData.append('nin', ninFile);
+
+                // Check registration deadline for students
+                const { isOpen } = await checkRegistrationDeadline();
+                if (!isOpen) {
+                    showRegistrationClosedModal();
                     submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Login';
+                    submitButton.querySelector('span').textContent = 'Register';
                     return;
                 }
+            }
 
-                if (password.length < 6) {
-                    showToast('Password must be at least 6 characters', 'error');
-                    document.getElementById('adminPassword-error').textContent = 'Password must be at least 6 characters';
-                    document.getElementById('adminPassword').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Login';
-                    return;
-                }
-
-                if (!adminSecretKey) {
-                    showToast('Admin secret key is required', 'error');
-                    document.getElementById('adminSecretKey-error').textContent = 'Admin secret key is required';
-                    document.getElementById('adminSecretKey').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Login';
-                    return;
-                }
-
-                if (!terms) {
-                    showToast('You must agree to the terms', 'error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Login';
-                    return;
-                }
-
-                formData.append('name', name);
-                formData.append('email', email);
-                formData.append('password', password);
-                formData.append('userType', userType);
-                formData.append('adminSecretKey', adminSecretKey);
+            // Validate terms
+            if (!document.getElementById('terms').checked) {
+                showToast('You must agree to the terms', 'error');
+                submitButton.disabled = false;
+                submitButton.querySelector('span').textContent = 'Register';
+                return;
             }
 
             try {
-                console.log('registerForm: Sending registration data (excluding files and sensitive fields)', {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    userType: formData.get('userType')
-                });
-                const registerData = await fetchWithRetry(`${API_URL}/register`, {
+                const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     body: formData
                 });
 
-                if (userType === 'student') {
-                    openRegisterSuccessModal('Your request has been sent. Please check your email periodically for further updates.');
-                    sessionStorage.setItem('registerEmail', formData.get('email'));
-                } else {
-                    // Perform login for admin
-                    const loginData = await fetchWithRetry(`${API_URL}/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            email: formData.get('email'),
-                            password: formData.get('password'),
-                            userType: 'admin'
-                        })
-                    });
+                const data = await response.json();
 
-                    if (loginData.token) {
-                        localStorage.setItem('authToken', loginData.token);
-                        showToast('Admin login successful', 'success');
-                        setTimeout(() => {
-                            console.log('registerForm: Redirecting to admin-dashboard.html');
-                            window.location.href = 'admin-dashboard.html';
-                        }, 1000);
-                    } else {
-                        throw new Error('No token received from login');
-                    }
+                if (!response.ok) {
+                    throw data;
                 }
-            } catch (error) {
-                console.error('registerForm: Error:', error);
-                let errorMessage = error.error?.message || error.message || 'Operation failed';
-                if (error.error?.code === 'VALIDATION_ERROR') {
-                    errorMessage = 'Please fix the following errors:';
-                    error.error.details.forEach(err => {
-                        const field = userType === 'admin' ? `admin${err.path.charAt(0).toUpperCase() + err.path.slice(1)}` : err.path;
-                        const message = err.message;
-                        if (document.getElementById(`${field}-error`)) {
-                            document.getElementById(`${field}-error`).textContent = message;
-                            document.getElementById(field).classList.add('error');
-                        }
-                    });
-                    showToast(errorMessage, 'error');
-                } else if (error.error?.code === 'DUPLICATE') {
-                    errorMessage = 'Email or matric number already exists';
-                    const emailField = userType === 'admin' ? 'adminEmail' : 'email';
-                    document.getElementById(`${emailField}-error`).textContent = errorMessage;
-                    document.getElementById(emailField).classList.add('error');
-                    showToast(errorMessage, 'error');
-                } else if (error.error?.code === 'REGISTRATION_CLOSED' || error.error?.code === 'NO_DEADLINE_SET') {
-                    errorMessage = 'The Adem Baba Hostel has closed the page for booking hostel.';
-                    showToast(errorMessage, 'error');
-                } else if (error.error?.code === 'INVALID_ADMIN_KEY') {
-                    errorMessage = 'Invalid admin secret key';
-                    document.getElementById('adminSecretKey-error').textContent = errorMessage;
-                    document.getElementById('adminSecretKey').classList.add('error');
-                    showToast(errorMessage, 'error');
-                } else if (error.error?.code === 'ADMIN_LIMIT_EXCEEDED') {
-                    errorMessage = 'Maximum number of admin accounts reached';
-                    document.getElementById('adminSecretKey-error').textContent = errorMessage;
-                    document.getElementById('adminSecretKey').classList.add('error');
-                    showToast(errorMessage, 'error');
-                } else if (error.error?.code === 'NO_FILE') {
-                    errorMessage = 'Please upload all required documents';
-                    document.getElementById('jambOrCgpa-error').textContent = errorMessage;
-                    document.getElementById('admissionLetter-error').textContent = errorMessage;
-                    document.getElementById('nin-error').textContent = errorMessage;
-                    document.getElementById('jambOrCgpa').classList.add('error');
-                    document.getElementById('admissionLetter').classList.add('error');
-                    document.getElementById('nin').classList.add('error');
-                    showToast(errorMessage, 'error');
-                } else if (error.message.includes('login')) {
-                    errorMessage = 'Admin login failed. Please try logging in manually.';
-                    showToast(errorMessage, 'error');
+
+                if (userType === 'student') {
+                    openRegisterSuccessModal('Your registration request has been submitted. Please check your email for updates on your approval status.');
+                    sessionStorage.setItem('registerEmail', document.getElementById('email').value.trim());
+                } else {
+                    showToast('Admin registration successful', 'success');
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 2000);
-                } else {
-                    showToast(errorMessage, 'error');
                 }
+            } catch (error) {
+                console.error('Registration Error:', error);
+                let errorMessage = error.error?.message || error.message || 'Registration failed';
+
+                if (error.error?.code === 'VALIDATION_ERROR') {
+                    error.error.details.forEach(err => {
+                        const field = err.path;
+                        const message = err.msg;
+                        const errorElement = document.getElementById(`${field}-error`);
+                        const inputElement = document.getElementById(field);
+
+                        if (errorElement) {
+                            errorElement.textContent = message;
+                        }
+                        if (inputElement) {
+                            inputElement.classList.add('error');
+                        }
+                    });
+                } else if (error.error?.code === 'DUPLICATE') {
+                    document.getElementById('email-error').textContent = 'Email or matric number already exists';
+                    document.getElementById('email').classList.add('error');
+                } else if (error.error?.code === 'REGISTRATION_CLOSED') {
+                    showRegistrationClosedModal();
+                    errorMessage = 'The registration period for Adem Baba Hostel has closed.';
+                } else if (error.error?.code === 'INVALID_ADMIN_KEY') {
+                    document.getElementById('adminSecretKey-error').textContent = 'Invalid admin secret key';
+                    document.getElementById('adminSecretKey').classList.add('error');
+                } else if (error.error?.code === 'ADMIN_LIMIT_EXCEEDED') {
+                    errorMessage = 'Maximum number of admin accounts reached';
+                } else if (error.error?.code === 'NO_FILE') {
+                    errorMessage = 'All required documents must be uploaded';
+                }
+
+                showToast(errorMessage, 'error');
                 submitButton.disabled = false;
-                submitButton.querySelector('span').textContent = userType === 'admin' ? 'Login' : 'Register';
+                submitButton.querySelector('span').textContent = 'Register';
             }
         });
     </script>

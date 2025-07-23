@@ -464,27 +464,23 @@
         }
 
         /* ======================
-               TABLES
-               ====================== */
+   TABLES
+   ====================== */
         .activity-table-container {
             max-height: 500px;
-            /* Limit the height of the container */
             overflow-y: auto;
-            /* Enable vertical scrolling for the container */
-            overflow-x: hidden;
-            /* Prevent horizontal scrolling outside the table */
+            overflow-x: auto;
+            /* Enable horizontal scrolling for wide tables */
             position: relative;
-            /* Ensure positioning context for sticky headers */
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--card-background);
         }
 
         .activity-table {
-            background: var(--card-background);
-            border-radius: 12px;
             padding: 1.5rem;
-            border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
             width: 100%;
-            /* Ensure it takes full width of parent */
         }
 
         .table-header {
@@ -545,21 +541,10 @@
             background: var(--primary-dark);
         }
 
-        .table-container {
-            overflow-x: auto;
-            /* Allow horizontal scrolling for wide tables */
-            overflow-y: auto;
-            /* Allow vertical scrolling */
-            max-height: 400px;
-            /* Adjusted to fit within activity-table-container */
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
+            /* Changed to collapse for better alignment */
             min-width: 800px;
             /* Ensures table doesn't collapse too narrowly */
         }
@@ -577,19 +562,24 @@
             text-transform: uppercase;
             font-size: 0.875rem;
             color: var(--text-muted);
+            text-align: left;
+            /* Align headers to the left for consistency */
+            white-space: wrap;
+            /* Prevent header text wrapping */
         }
 
         td {
             padding: 1rem;
             border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            /* Align content vertically */
+            white-space: wrap;
+            /* Prevent cell content wrapping */
         }
 
         tbody {
-            display: block;
-            max-height: 350px;
-            /* Slightly less than table-container to account for thead */
-            overflow-y: auto;
-            /* Enable vertical scrolling for table body */
+            display: table;
+            /* Use table display to maintain alignment */
         }
 
         tr {
@@ -599,12 +589,68 @@
             /* Ensure consistent column widths */
         }
 
+        /* Define specific column widths to prevent mooshing */
+        th:nth-child(1),
+        td:nth-child(1) {
+            /* Name */
+            width: 15%;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            /* Email */
+            width: 20%;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            /* Matric Number */
+            width: 10%;
+        }
+
+        th:nth-child(4),
+        td:nth-child(4) {
+            /* Phone */
+            width: 10%;
+        }
+
+        th:nth-child(5),
+        td:nth-child(5) {
+            /* Faculty */
+            width: 10%;
+        }
+
+        th:nth-child(6),
+        td:nth-child(6) {
+            /* Level */
+            width: 9%;
+        }
+
+        th:nth-child(7),
+        td:nth-child(7) {
+            /* Interview Date */
+            width: 10%;
+        }
+
+        th:nth-child(8),
+        td:nth-child(8) {
+            /* Status */
+            width: 10%;
+        }
+
+        th:nth-child(9),
+        td:nth-child(9) {
+            /* Action */
+            width: 20%;
+        }
+
         .status {
             padding: 0.5rem 1rem;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 500;
             display: inline-block;
+            text-align: center;
         }
 
         .status.pending {

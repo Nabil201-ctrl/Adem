@@ -29,7 +29,7 @@ export function togglePasswordVisibility(inputId, toggleId) {
 }
 
 export async function fetchWithRetry(url, options, retries = 3, timeout = 10000) {
-    console.log(`Fetching URL: ${url}`); // Debug log
+    console.log(`Fetching URL: ${url}`);
     for (let i = 0; i < retries; i++) {
         try {
             const controller = new AbortController();
@@ -42,30 +42,40 @@ export async function fetchWithRetry(url, options, retries = 3, timeout = 10000)
                 try {
                     const text = await response.text();
                     errorData = text ? JSON.parse(text) : { message: `HTTP error! status: ${response.status}` };
-                    console.log(`Error response from ${url}:`, errorData); // Debug log
+                    console.log(`Error response from ${url}:`, errorData);
                 } catch (e) {
                     errorData = { message: `Non-JSON response: ${response.statusText || 'Unknown error'}` };
                     console.error(`Failed to parse error response from ${url}:`, e);
                 }
+
+                // Check for database timeout errors
+                if (errorData.error?.message?.includes('MongoTimeoutError') ||
+                    errorData.error?.message?.includes('timeout') ||
+                    errorData.error?.code === 'ETIMEOUT') {
+                    const dbTimeoutError = new Error('Database request timed out. Please try again later.');
+                    dbTimeoutError.name = 'database_timeout';
+                    throw dbTimeoutError;
+                }
+
                 const error = new Error(errorData.error?.message || errorData.message || `HTTP error! status: ${response.status}`);
                 error.error = errorData.error || errorData;
-                error.status = response.status; // Ensure status is set
+                error.status = response.status;
                 throw error;
             }
             return await response.json();
         } catch (error) {
             console.error(`Fetch attempt ${i + 1}/${retries} failed for ${url}:`, error);
             if (error.name === 'AbortError') {
-                const abortError = new Error('Request timed out');
-                abortError.name = 'network';
-                throw abortError;
+                const networkTimeoutError = new Error('Network request timed out. Please check your connection.');
+                networkTimeoutError.name = 'network_timeout';
+                throw networkTimeoutError;
+            }
+            if (error.message.includes('Failed to fetch')) {
+                error.name = 'network';
             }
             if (i < retries - 1) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 continue;
-            }
-            if (error.message.includes('Failed to fetch')) {
-                error.name = 'network';
             }
             throw error;
         }

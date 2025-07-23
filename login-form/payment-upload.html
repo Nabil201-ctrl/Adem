@@ -1,86 +1,80 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Upload - Slip</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/login-form/style.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
     <style>
         :root {
-            --success-color: #4CAF50;
-            --danger-color: #f44336;
-            --transition: all 0.3s ease;
-            --gradient: linear-gradient(90deg, #8b6346, #3d2e23);
-        }
-
-        html[data-theme="light"] {
-            --primary-color: #8b6346;
-            --text-color: #333333;
-            --text-muted: rgba(0, 0, 0, 0.6);
-            --background-color: #f5f5f5;
-            --card-background: #ffffff;
-            --input-background: rgba(0, 0, 0, 0.05);
-            --border-color: rgba(0, 0, 0, 0.1);
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        html[data-theme="dark"] {
-            --primary-color: #8b6346;
-            --text-color: #ffffff;
-            --text-muted: rgba(255, 255, 255, 0.7);
-            --background-color: #1a1a1a;
-            --card-background: #242424;
-            --input-background: #2e2e2e;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            --primary-color: #4a6bff;
+            --primary-light: #6a86ff;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --light-text: #6c757d;
+            --border-color: #e0e0e0;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--background-color);
+            background-color: var(--white);
             color: var(--text-color);
+            line-height: 1.6;
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            overflow: hidden;
-            position: relative;
+            align-items: center;
+            padding: 20px;
         }
 
         .background-shapes {
-            position: absolute;
-            inset: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: -1;
+            overflow: hidden;
         }
 
-        .shape {
+        .background-shapes .shape {
             position: absolute;
-            background: var(--primary-color);
-            opacity: 0.1;
             border-radius: 50%;
+            background: linear-gradient(135deg, rgba(74, 107, 255, 0.1) 0%, rgba(106, 134, 255, 0.1) 100%);
         }
 
-        .shape:nth-child(1) {
-            width: 300px;
-            height: 300px;
+        .background-shapes .shape:nth-child(1) {
+            width: 400px;
+            height: 400px;
             top: -100px;
             left: -100px;
         }
 
-        .shape:nth-child(2) {
-            width: 400px;
-            height: 400px;
-            bottom: -150px;
-            right: -150px;
+        .background-shapes .shape:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .payment-section {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .payment-container {
@@ -88,77 +82,64 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            padding: 1rem;
         }
 
         .payment-box {
-            background: var(--card-background);
-            padding: 2rem;
+            background-color: var(--white);
             border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
             box-shadow: var(--shadow);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand.logo {
             text-align: center;
+            margin-bottom: 30px;
         }
-        .brand {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2.5rem;
-        }
-
-
 
         .logo-container {
             width: 80px;
-            /* Match Settings page .upload-preview */
-            height: 70px;
-            /* Match Settings page .upload-preview */
+            height: 80px;
+            margin: 0 auto 15px;
             border-radius: 50%;
-            /* Circular shape */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
             overflow: hidden;
-            /* Ensure image doesn't overflow */
-            background: var(--input-background);
-            /* Match Settings page background */
+            border: 3px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
 
         .logo-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Ensure image covers container without distortion */
-            border-radius: 50%;
-            /* Maintain circular shape */
-        }
-
-        .logo-container i {
-            font-size: 1.5rem;
-            color: #fff;
         }
 
         .brand h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 25px;
         }
 
         .payment-header h2 {
-            font-size: 1.5rem;
+            font-size: 22px;
             font-weight: 600;
-            margin-bottom: 0.5rem;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            color: var(--text-color);
+            margin-bottom: 5px;
         }
 
         .payment-header p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
+            color: var(--light-text);
+            font-size: 14px;
         }
 
         .payment-form {
@@ -169,110 +150,115 @@
 
         .form-group {
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 12px 15px 12px 40px;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background: var(--input-background);
+            border-radius: 8px;
+            font-size: 14px;
             color: var(--text-color);
-            font-size: 1rem;
+            background-color: var(--white);
+            transition: all 0.3s ease;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 107, 255, 0.2);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-color);
         }
 
         .form-group label {
             position: absolute;
-            top: 0.75rem;
-            left: 1rem;
-            color: var(--text-muted);
-            font-size: 1rem;
-            transition: var(--transition);
+            top: 12px;
+            left: 40px;
+            color: var(--light-text);
+            font-size: 14px;
             pointer-events: none;
+            transition: all 0.3s ease;
+            background-color: var(--white);
+            padding: 0 5px;
         }
 
-        .form-group input:focus + label,
-        .form-group input:not(:placeholder-shown) + label {
-            top: -0.5rem;
-            left: 0.5rem;
-            font-size: 0.75rem;
-            background: var(--card-background);
-            padding: 0 0.25rem;
+        .form-group input:focus+label,
+        .form-group input:not(:placeholder-shown)+label {
+            top: -10px;
+            left: 30px;
+            font-size: 12px;
+            color: var(--primary-color);
+        }
+
+        .form-group i {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: var(--light-text);
+            font-size: 16px;
+        }
+
+        .form-group input:focus~i {
+            color: var(--primary-color);
         }
 
         .error-message {
-            color: var(--danger-color);
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-            text-align: left;
-            min-height: 1rem;
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message:not(:empty) {
+            display: block;
         }
 
         .upload-btn {
-            background: var(--primary-color);
-            color: #fff;
+            width: 100%;
+            padding: 12px 25px;
             border: none;
-            padding: 0.75rem;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            transition: var(--transition);
+            gap: 8px;
+            transition: all 0.3s ease;
+            background-color: var(--primary-color);
+            color: var(--white);
         }
 
         .upload-btn:hover {
-            background: var(--primary-dark, #3d2e23);
+            background-color: var(--primary-light);
         }
 
         .upload-btn:disabled {
-            background: var(--text-muted);
+            background-color: var(--light-text);
             cursor: not-allowed;
         }
 
         .payment-box p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-top: 1rem;
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--light-text);
         }
 
         .payment-box a {
             color: var(--primary-color);
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .payment-box a:hover {
             text-decoration: underline;
-        }
-
-        .custom-toast {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            background: var(--card-background);
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            color: var(--text-color);
-            box-shadow: var(--shadow);
-            display: none;
-            z-index: 1000;
-        }
-
-        .custom-toast.success {
-            border-left: 4px solid var(--success-color);
-        }
-
-        .custom-toast.error {
-            border-left: 4px solid var(--danger-color);
         }
 
         .modal {
@@ -282,77 +268,108 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
         }
 
         .modal-content {
-            background: var(--card-background);
-            border-radius: 12px;
-            padding: 2rem;
-            width: 90%;
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
             max-width: 500px;
-            text-align: center;
+            width: 90%;
             box-shadow: var(--shadow);
-            position: relative;
         }
 
         .modal-content h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 15px;
             color: var(--text-color);
+            font-size: 20px;
         }
 
         .modal-content p {
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--light-text);
+            font-size: 14px;
         }
 
         .modal-content .modal-btn {
-            background: var(--primary-color);
-            color: #fff;
+            padding: 8px 20px;
+            background-color: var(--primary-color);
+            color: var(--white);
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
             cursor: pointer;
-            transition: var(--transition);
+            font-size: 14px;
+            transition: all 0.3s ease;
         }
 
         .modal-content .modal-btn:hover {
-            background: var(--primary-dark, #3d2e23);
+            background-color: var(--primary-light);
         }
 
-        @media (max-width: 480px) {
+        .custom-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .custom-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .custom-toast.success {
+            background-color: var(--success-color);
+        }
+
+        .custom-toast.error {
+            background-color: var(--error-color);
+        }
+
+        .custom-toast.warning {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+
+        .custom-toast.info {
+            background-color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
             .payment-box {
-                padding: 1.5rem;
+                padding: 30px 20px;
             }
 
-            .shape:nth-child(1),
-            .shape:nth-child(2) {
-                width: 200px;
-                height: 200px;
+            .form-group input {
+                padding: 10px 15px 10px 35px;
             }
 
-            .modal-content {
-                padding: 1.5rem;
-                width: 95%;
+            .form-group i {
+                font-size: 14px;
+                left: 12px;
             }
 
-            .modal-content h2 {
-                font-size: 1.2rem;
-            }
-
-            .modal-content p {
-                font-size: 0.9rem;
+            .upload-btn {
+                padding: 10px 15px;
+                font-size: 13px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="background-shapes">
         <div class="shape"></div>
@@ -367,21 +384,28 @@
                         <img src="../../images/adem/adem 2.jpg" alt="Adem Baba Logo" class="logo-image">
                     </div>
                     <h1>Adem Baba</h1>
-                    </div>
+                </div>
                 <div class="payment-header">
-                    <h2 class="gradient-text">Upload Payment Slip</h2>
-                    <p>Upload a JPEG, PNG, or PDF file (&lt;5MB) and enter the amount.</p>
+                    <h2>Upload Payment Slip</h2>
+                    <p>Upload a JPEG, PNG, or PDF file (<5MB) and enter the amount.</p>
                 </div>
 
                 <form class="payment-form" id="paymentSlipForm">
                     <div class="form-group">
-                        <input type="number" id="paymentAmount" required aria-label="Payment amount" placeholder=" " min="1" step="0.01">
+                        <input type="number" id="paymentAmount" required aria-label="Payment amount" placeholder=" "
+                            min="1" step="0.01">
                         <label for="paymentAmount">Amount (₦)</label>
+                        <i class="fas fa-money-bill-wave"></i>
                         <div id="amount-error" class="error-message"></div>
                     </div>
                     <div class="form-group">
-                        <input type="file" id="paymentSlip" accept="image/jpeg,image/png,application/pdf" required aria-label="Payment slip" aria-describedby="file-instructions">
-                        <div id="file-instructions" class="payment-header p" style="text-align: left; margin-bottom: 0.5rem;">Accepted formats: JPEG, PNG, PDF (max 5MB)</div>
+                        <input type="file" id="paymentSlip" accept="image/jpeg,image/png,application/pdf" required
+                            aria-label="Payment slip" aria-describedby="file-instructions">
+                        <label for="paymentSlip">Payment Slip</label>
+                        <i class="fas fa-file-upload"></i>
+                        <div id="file-instructions" class="payment-header p"
+                            style="text-align: left; margin-bottom: 0.5rem;">Accepted formats: JPEG, PNG, PDF (max 5MB)
+                        </div>
                         <div id="file-error" class="error-message"></div>
                     </div>
                     <button type="submit" class="upload-btn" aria-label="Upload Payment Slip">
@@ -403,7 +427,7 @@
         </div>
     </div>
 
-    <div id="toast" class="custom-toast"></div>
+    <div id="toast" class="custom-toast" aria-live="polite"></div>
 
     <script type="module">
         import { API_URL, LOGIN_PATH, showToast, fetchWithRetry } from './utils.js';
@@ -430,7 +454,8 @@
 
         function showSuccessModal() {
             const modal = document.getElementById('successModal');
-            modal.style.display = 'flex';
+            modal.style.display = ""
+            modal.focus();
             document.getElementById('closeModalBtn').focus();
         }
 
@@ -500,9 +525,6 @@
             const formData = new FormData();
             formData.append('amount', amount.toString());
             formData.append('paymentSlip', file);
-            for (let [key, value] of formData.entries()) {
-                console.log(`FormData: ${key}`, value);
-            }
 
             const submitButton = document.querySelector('#paymentSlipForm .upload-btn');
             submitButton.disabled = true;
@@ -514,7 +536,6 @@
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData,
                 });
-                console.log('Server response:', response);
                 showToast(response.message, 'success');
                 document.getElementById('paymentSlipForm').reset();
                 showSuccessModal();
@@ -560,4 +581,5 @@
         })();
     </script>
 </body>
+
 </html>
