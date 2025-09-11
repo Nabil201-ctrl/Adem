@@ -915,48 +915,72 @@
             }
         }
 
-        async function fetchDocumentData(matricNumber = '', studentId = '') {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            try {
-                let url = `${API_URL}/student-documents`;
-                if (matricNumber) {
-                    url += `?matricNumber=${encodeURIComponent(matricNumber)}`;
-                } else if (studentId) {
-                    url += `?studentId=${encodeURIComponent(studentId)}`;
-                }
-                const documents = await fetchWithRetry(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const groupedDocuments = documents.reduce((acc, doc) => {
-                    const studentId = doc.student._id;
-                    if (!acc[studentId]) {
-                        acc[studentId] = {
-                            student: doc.student,
-                            documents: []
-                        };
-                    }
-                    acc[studentId].documents.push(doc);
-                    return acc;
-                }, {});
-                window.currentDocuments = Object.values(groupedDocuments);
-                renderDocumentList(window.currentDocuments);
-            } catch (error) {
-                console.error('Fetch document error:', error);
-                showToast(error.error?.message || 'Failed to load documents', 'error');
+    async function fetchDocumentData(matricNumber = '', studentId = '') {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        try {
+            let url = `${API_URL}/student-documents`;
+            if (matricNumber) {
+                url += `?matricNumber=${encodeURIComponent(matricNumber)}`;
+            } else if (studentId) {
+                url += `?studentId=${encodeURIComponent(studentId)}`;
             }
-        }
+            const documents = await fetchWithRetry(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-        function renderDocumentList(groupedDocuments) {
-            const tableBody = document.getElementById('documentList');
-            tableBody.innerHTML = '';
-            groupedDocuments.forEach(group => {
-                const row = document.createElement('tr');
-                const docCount = group.documents.length;
-                row.innerHTML = DOMPurify.sanitize(`
-                    <td>${sanitizeInput(group.student.name)}</td>
-                    <td>${sanitizeInput(group.student.matricNumber)}</td>
-                    <td>${sanitizeInput(group.student.email)}</td>
-                    <td>
+            // Filter out documents with null students
+            const validDocuments = documents.filter(doc => doc.student !== null);
+
+            // Show warning if any documents were filtered out
+            if (validDocuments.length < documents.length) {
+                console.warn(`${documents.length - validDocuments.length} documents with null students were filtered out`);
+            }
+
+            const groupedDocuments = validDocuments.reduce((acc, doc) => {
+                const studentId = doc.student._id;
+                if (!acc[studentId]) {
+                    acc[studentId] = {
+                        student: doc.student,
+                        documents: []
+                    };
+                }
+                acc[studentId].documents.push(doc);
+                return acc;
+            }, {});
+
+            window.currentDocuments = Object.values(groupedDocuments);
+            renderDocumentList(window.currentDocuments);
+        } catch (error) {
+            console.error('Fetch document error:', error);
+            showToast(error.error?.message || 'Failed to load documents', 'error');
+        }
+    }
+
+    function renderDocumentList(groupedDocuments) {
+        const tableBody = document.getElementById('documentList');
+        tableBody.innerHTML = '';
+
+        groupedDocuments.forEach(group => {
+            // Add safety check for student data
+            if (!group.student) {
+                console.warn('Skipping document group with missing student data');
+                return;
+            }
+
+            const row = document.createElement('tr');
+            const docCount = group.documents.length;
+
+            // Use safe fallbacks for student data
+            const studentName = group.student ? sanitizeInput(group.student.name) : 'Unknown Student';
+            const matricNumber = group.student ? sanitizeInput(group.student.matricNumber) : 'N/A';
+            const email = group.student ? sanitizeInput(group.student.email) : 'N/A';
+            const studentId = group.student ? group.student._id : 'unknown';
+
+            row.innerHTML = DOMPurify.sanitize(`
+            <td>${studentName}</td>
+            <td>${matricNumber}</td>
+            <td>${email}</td>
+            <td>
                         <div class="toggle-documents" aria-label="Toggle documents">
                             ${docCount} Document${docCount > 1 ? 's' : ''} <i class="fas fa-chevron-down"></i>
                         </div>

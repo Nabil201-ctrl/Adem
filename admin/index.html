@@ -1952,49 +1952,72 @@
             window.registrationCountdownInterval = setInterval(updateCountdown, 1000);
         }
 
-        async function saveDeadline(isExtension = false) {
-            const deadlineInput = document.getElementById('deadlineInput');
-            const deadlineError = document.getElementById('deadlineError');
-            const saveBtn = document.getElementById('saveDeadlineBtn');
+async function saveDeadline(isExtension = false) {
+    const deadlineInput = document.getElementById('deadlineInput');
+    const deadlineError = document.getElementById('deadlineError');
+    const saveBtn = document.getElementById('saveDeadlineBtn');
 
-            deadlineError.textContent = '';
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
+    deadlineError.textContent = '';
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
 
-            const deadlineValue = deadlineInput.value;
-            if (!deadlineValue) {
-                deadlineError.textContent = 'Please select a date and time';
-                saveBtn.disabled = false;
-                saveBtn.textContent = isExtension ? 'Extend' : 'Set';
-                return;
-            }
+    const deadlineValue = deadlineInput.value;
+    if (!deadlineValue) {
+        deadlineError.textContent = 'Please select a date and time';
+        saveBtn.disabled = false;
+        saveBtn.textContent = isExtension ? 'Extend' : 'Set';
+        return;
+    }
 
-            try {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                const endpoint = isExtension ? '/extend' : '';
-                const response = await fetchWithRetry(`${API_URL}/registration-deadline${endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(isExtension ? { extendedDeadline: deadlineValue } : { deadline: deadlineValue })
-                });
-
-                showToast(response.message, 'success');
-                closeDeadlineModal();
-                await updateDeadlineDisplay();
-            } catch (error) {
-                console.error('Failed to save deadline:', error);
-                deadlineError.textContent = error.message || 'Failed to save deadline';
-                showToast(error.message || 'Failed to save deadline', 'error');
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.textContent = isExtension ? 'Extend' : 'Set';
-            }
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
         }
 
+        const endpoint = isExtension ? '/extend' : '';
+        const url = `${API_URL}/registration-deadline${endpoint}`;
+        
+        console.log('Making request to:', url);
+        
+        const response = await fetch(url, {
+            method: 'POST', // Both endpoints use POST now
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(isExtension ? 
+                { extendedDeadline: deadlineValue } : 
+                { deadline: deadlineValue }
+            )
+        });
 
+        // Check if response is OK
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+            
+            throw new Error(errorData.error?.message || `Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        showToast(data.message, 'success');
+        closeDeadlineModal();
+        await updateDeadlineDisplay();
+        
+    } catch (error) {
+        console.error('Failed to save deadline:', error);
+        deadlineError.textContent = error.message || 'Failed to save deadline';
+        showToast(error.message || 'Failed to save deadline', 'error');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = isExtension ? 'Extend' : 'Set';
+    }
+}
 
         function toggleSidebarCollapse() {
             document.querySelector('.sidebar').classList.toggle('collapsed');

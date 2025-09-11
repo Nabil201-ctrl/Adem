@@ -19,7 +19,6 @@
             --error-color: #dc3545;
             --success-color: #28a745;
             --warning-color: #ffc107;
-            --info-color: #17a2b8;
             --white: #ffffff;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
@@ -383,44 +382,6 @@
             background-color: var(--primary-light);
         }
 
-        .custom-toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .custom-toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .custom-toast.success {
-            background-color: var(--success-color);
-        }
-
-        .custom-toast.error {
-            background-color: var(--error-color);
-        }
-
-        .custom-toast.warning {
-            background-color: var(--warning-color);
-            color: var(--text-color);
-        }
-
-        .custom-toast.info {
-            background-color: var(--info-color);
-        }
-
         .user-type-toggle {
             display: flex;
             justify-content: center;
@@ -551,113 +512,32 @@
             font-size: 14px;
         }
 
-        /* Popup Modal Styles */
-        .popup-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            justify-content: center;
+        /* Notification Modal Styles */
+        .notification-modal .modal-content {
+            display: flex;
+            flex-direction: column;
             align-items: center;
         }
 
-        .popup-content {
-            background-color: var(--white);
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: var(--shadow);
-            text-align: center;
-            position: relative;
-        }
-
-        .popup-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: var(--light-text);
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .popup-close:hover {
-            color: var(--error-color);
-        }
-
-        .popup-icon {
+        .notification-modal .icon {
             font-size: 48px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
-        .popup-icon.success {
+        .notification-modal.success .icon {
             color: var(--success-color);
         }
 
-        .popup-icon.error {
+        .notification-modal.error .icon {
             color: var(--error-color);
         }
 
-        .popup-icon.warning {
+        .notification-modal.warning .icon {
             color: var(--warning-color);
         }
 
-        .popup-icon.info {
-            color: var(--info-color);
-        }
-
-        .popup-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--text-color);
-        }
-
-        .popup-message {
-            margin-bottom: 25px;
-            color: var(--light-text);
-            line-height: 1.5;
-        }
-
-        .popup-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .popup-btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .popup-btn.primary {
-            background-color: var(--primary-color);
-            color: var(--white);
-        }
-
-        .popup-btn.primary:hover {
-            background-color: var(--primary-light);
-        }
-
-        .popup-btn.secondary {
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-        }
-
-        .popup-btn.secondary:hover {
-            background-color: var(--border-color);
+        .notification-modal.info .icon {
+            color: var(--primary-color);
         }
 
         @media (max-width: 768px) {
@@ -880,7 +760,7 @@
             <h2>Terms & Conditions</h2>
             <p>By registering, you agree to abide by the hostel rules and regulations. Ensure all provided information
                 is accurate and complete.</p>
-            <button type="button" class="close-btn" onclick="closeModal()">Close</button>
+            <button type="button" class="close-btn" onclick="closeModal('termsModal')">Close</button>
         </div>
     </div>
 
@@ -900,26 +780,18 @@
         </div>
     </div>
 
-    <!-- Popup Modal -->
-    <div id="popupModal" class="popup-modal">
-        <div class="popup-content">
-            <button class="popup-close" aria-label="Close popup">
-                <i class="fas fa-times"></i>
-            </button>
-            <div id="popupIcon" class="popup-icon"></div>
-            <h3 id="popupTitle" class="popup-title"></h3>
-            <p id="popupMessage" class="popup-message"></p>
-            <div class="popup-buttons">
-                <button id="popupPrimaryBtn" class="popup-btn primary">OK</button>
-                <button id="popupSecondaryBtn" class="popup-btn secondary" style="display: none;">Cancel</button>
-            </div>
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="modal notification-modal">
+        <div class="modal-content">
+            <i id="notificationIcon" class="icon"></i>
+            <h2 id="notificationTitle"></h2>
+            <p id="notificationMessage"></p>
+            <button type="button" class="close-btn" id="notificationCloseBtn">Close</button>
         </div>
     </div>
 
-    <div id="toast" class="custom-toast" aria-live="polite"></div>
-
     <script type="module">
-        import { API_URL, showToast, togglePasswordVisibility, fetchWithRetry, sanitizeInput } from './utils.js';
+        import { API_URL, togglePasswordVisibility, fetchWithRetry, sanitizeInput } from './utils.js';
 
         togglePasswordVisibility('password', 'togglePassword');
 
@@ -957,6 +829,47 @@
         // Initialize slider
         goToSlide(0);
 
+        // Function to show notification modal
+        function showNotification(title, message, type = 'info') {
+            const modal = document.getElementById('notificationModal');
+            const icon = document.getElementById('notificationIcon');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+
+            // Set content based on type
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            // Set icon based on type
+            switch (type) {
+                case 'success':
+                    icon.className = 'icon fas fa-check-circle';
+                    modal.className = 'modal notification-modal success';
+                    break;
+                case 'error':
+                    icon.className = 'icon fas fa-exclamation-circle';
+                    modal.className = 'modal notification-modal error';
+                    break;
+                case 'warning':
+                    icon.className = 'icon fas fa-exclamation-triangle';
+                    modal.className = 'modal notification-modal warning';
+                    break;
+                case 'info':
+                default:
+                    icon.className = 'icon fas fa-info-circle';
+                    modal.className = 'modal notification-modal info';
+                    break;
+            }
+
+            // Show the modal
+            modal.style.display = 'flex';
+
+            // Add event listener to close button
+            document.getElementById('notificationCloseBtn').onclick = function () {
+                modal.style.display = 'none';
+            };
+        }
+
         // Function to show registration closed modal
         function showRegistrationClosedModal() {
             const modal = document.getElementById('registrationClosedModal');
@@ -968,143 +881,49 @@
             });
         }
 
-        // Popup Modal Functions
-        function showPopup(type, title, message, primaryBtnText = 'OK', primaryBtnCallback = null, secondaryBtnText = null, secondaryBtnCallback = null) {
-            const popupModal = document.getElementById('popupModal');
-            const popupIcon = document.getElementById('popupIcon');
-            const popupTitle = document.getElementById('popupTitle');
-            const popupMessage = document.getElementById('popupMessage');
-            const popupPrimaryBtn = document.getElementById('popupPrimaryBtn');
-            const popupSecondaryBtn = document.getElementById('popupSecondaryBtn');
-            const popupCloseBtn = document.querySelector('.popup-close');
-
-            // Set icon based on type
-            popupIcon.className = 'popup-icon';
-            switch (type) {
-                case 'success':
-                    popupIcon.classList.add('success', 'fas', 'fa-check-circle');
-                    break;
-                case 'error':
-                    popupIcon.classList.add('error', 'fas', 'fa-exclamation-circle');
-                    break;
-                case 'warning':
-                    popupIcon.classList.add('warning', 'fas', 'fa-exclamation-triangle');
-                    break;
-                case 'info':
-                    popupIcon.classList.add('info', 'fas', 'fa-info-circle');
-                    break;
-            }
-
-            // Set title and message
-            popupTitle.textContent = title;
-            popupMessage.textContent = message;
-
-            // Set primary button
-            popupPrimaryBtn.textContent = primaryBtnText;
-            popupPrimaryBtn.onclick = function () {
-                if (primaryBtnCallback) primaryBtnCallback();
-                popupModal.style.display = 'none';
-            };
-
-            // Set secondary button if provided
-            if (secondaryBtnText) {
-                popupSecondaryBtn.style.display = 'inline-block';
-                popupSecondaryBtn.textContent = secondaryBtnText;
-                popupSecondaryBtn.onclick = function () {
-                    if (secondaryBtnCallback) secondaryBtnCallback();
-                    popupModal.style.display = 'none';
-                };
-            } else {
-                popupSecondaryBtn.style.display = 'none';
-            }
-
-            // Set close button functionality
-            popupCloseBtn.onclick = function () {
-                popupModal.style.display = 'none';
-            };
-
-            // Show the modal
-            popupModal.style.display = 'flex';
-        }
-
-        // Close popup when clicking outside the content
-        document.getElementById('popupModal').addEventListener('click', function (e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
-
-    // Modified checkRegistrationDeadline function to use popup
     async function checkRegistrationDeadline() {
         try {
             const data = await fetchWithRetry(`${API_URL}/registration-deadline`);
 
-            // Check if deadline exists and is valid
-            if (!data || !data.deadline) {
-                showPopup(
-                    'error',
-                    'Registration Information',
-                    'Registration for the Adem Baba Hostel has not begun. Please contact support for assistance.',
-                    'Contact Support',
-                    () => {
-                        window.location.href = 'mailto:adembabahostel@gmail.com';
-                    }
-                );
+            // Check if no deadline is set (backend returns this structure)
+            if (data.message === 'No registration deadline set' && data.deadline === null) {
+                showNotification('Registration Status', 'No registration deadline set. Please contact support.', 'error');
                 return { isOpen: true, deadline: null };
             }
 
-            // Get the correct deadline (extended or regular)
-            const deadlineDate = data.extended && data.extendedDeadline ?
-                new Date(data.extendedDeadline) :
-                new Date(data.deadline);
-
-            // Check if the date is valid
-            if (isNaN(deadlineDate.getTime())) {
-                throw new Error('Invalid deadline date format from server');
+            // Extract deadline date - handle both response structures
+            let deadlineDate;
+            if (data.extended && data.extendedDeadline) {
+                deadlineDate = data.extendedDeadline;
+            } else if (data.deadline) {
+                deadlineDate = data.deadline;
+            } else {
+                showNotification('Registration Status', 'The Adem Baba Hostel has not yet started accepting request or contact support.', 'error');
+                return { isOpen: true, deadline: null };
             }
 
+            const deadline = new Date(deadlineDate);
             const now = new Date();
-            if (now > deadlineDate) {
-                return { isOpen: false, deadline: deadlineDate };
+
+            if (isNaN(deadline.getTime())) {
+                showNotification('Registration Status', 'Invalid deadline format. Please contact support.', 'error');
+                return { isOpen: true, deadline: null };
             }
 
-            // Format the date properly
-            const deadlineDateFormatted = deadlineDate.toLocaleString('en-US', {
+            if (now > deadline) {
+                return { isOpen: false, deadline };
+            }
+
+            const formattedDeadline = deadline.toLocaleString('en-US', {
                 dateStyle: 'medium',
                 timeStyle: 'short'
             });
 
-            showPopup(
-                'info',
-                'Registration Deadline',
-                `Registration is currently open and will close on ${deadlineDateFormatted}. Please ensure you complete your registration before this date.`,
-                'Continue Registration'
-            );
-            return { isOpen: true, deadline: deadlineDate };
+            showNotification('Registration Open', `Registration is open until ${formattedDeadline}`, 'info');
+            return { isOpen: true, deadline };
         } catch (error) {
             console.error('checkRegistrationDeadline: Error:', error);
-
-            if (error.error?.code === 'NOT_FOUND' || error.message.includes('Invalid deadline')) {
-                showPopup(
-                    'error',
-                    'Registration Information',
-                    'No valid registration deadline has been configured. Please contact the support team for assistance.',
-                    'Contact Support',
-                    () => {
-                        window.location.href = 'mailto:support@adembaba.com';
-                    }
-                );
-            } else {
-                showPopup(
-                    'error',
-                    'Connection Issue',
-                    'We are unable to verify the registration deadline at this time. Please check your connection and try again.',
-                    'Try Again',
-                    () => {
-                        checkRegistrationDeadline();
-                    }
-                );
-            }
+            showNotification('Registration Status', 'Failed to check registration deadline. Please try again.', 'error');
             return { isOpen: true, deadline: null };
         }
     }
@@ -1113,8 +932,8 @@
             document.getElementById('termsModal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('termsModal').style.display = 'none';
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
         }
 
         function openRegisterSuccessModal(message) {
@@ -1197,12 +1016,7 @@
                 const level = sanitizeInput(document.getElementById('level').value.trim().toLowerCase());
                 const levelRegex = /^(100|200|300|400|500|600|700)level$/;
                 if (!levelRegex.test(level)) {
-                    showPopup(
-                        'error',
-                        'Invalid Level Format',
-                        'Please enter your level in the correct format (e.g., 400level).',
-                        'OK'
-                    );
+                    showNotification('Validation Error', 'Invalid level format (e.g., 400level)', 'error');
                     document.getElementById('level-error').textContent = 'Invalid level format (e.g., 400level)';
                     document.getElementById('level').classList.add('error');
                     submitButton.disabled = false;
@@ -1221,12 +1035,7 @@
                 const ninFile = document.getElementById('nin').files[0];
 
                 if (!jambOrCgpaFile || !admissionLetterFile || !ninFile) {
-                    showPopup(
-                        'error',
-                        'Missing Documents',
-                        'All required documents must be uploaded for student registration. Please ensure you have provided your JAMB/CGPA document, admission letter, and NIN document.',
-                        'OK'
-                    );
+                    showNotification('Validation Error', 'All documents are required for student registration', 'error');
                     if (!jambOrCgpaFile) {
                         document.getElementById('jambOrCgpa-error').textContent = 'JAMB/CGPA document is required';
                     }
@@ -1257,12 +1066,7 @@
 
             // Validate terms
             if (!document.getElementById('terms').checked) {
-                showPopup(
-                    'error',
-                    'Terms and Conditions',
-                    'You must agree to the terms and conditions before proceeding with registration.',
-                    'OK'
-                );
+                showNotification('Validation Error', 'You must agree to the terms', 'error');
                 submitButton.disabled = false;
                 submitButton.querySelector('span').textContent = 'Register';
                 return;
@@ -1284,15 +1088,10 @@
                     openRegisterSuccessModal('Your registration request has been submitted. Please check your email for updates on your approval status.');
                     sessionStorage.setItem('registerEmail', document.getElementById('email').value.trim());
                 } else {
-                    showPopup(
-                        'success',
-                        'Registration Successful',
-                        'Your admin account has been successfully created. You will now be redirected to the login page.',
-                        'Continue',
-                        () => {
-                            window.location.href = 'index.html';
-                        }
-                    );
+                    showNotification('Registration Successful', 'Admin registration successful', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
                 }
             } catch (error) {
                 console.error('Registration Error:', error);
@@ -1312,60 +1111,22 @@
                             inputElement.classList.add('error');
                         }
                     });
-
-                    showPopup(
-                        'error',
-                        'Validation Error',
-                        'Please check the form for errors. Some fields require correction before submission.',
-                        'OK'
-                    );
                 } else if (error.error?.code === 'DUPLICATE') {
                     document.getElementById('email-error').textContent = 'Email or matric number already exists';
                     document.getElementById('email').classList.add('error');
-                    showPopup(
-                        'error',
-                        'Account Already Exists',
-                        'An account with this email address or matric number already exists. Please use a different email or contact support if you believe this is an error.',
-                        'OK'
-                    );
                 } else if (error.error?.code === 'REGISTRATION_CLOSED') {
                     showRegistrationClosedModal();
                     errorMessage = 'The registration period for Adem Baba Hostel has closed.';
                 } else if (error.error?.code === 'INVALID_ADMIN_KEY') {
                     document.getElementById('adminSecretKey-error').textContent = 'Invalid admin secret key';
                     document.getElementById('adminSecretKey').classList.add('error');
-                    showPopup(
-                        'error',
-                        'Invalid Admin Key',
-                        'The admin secret key you provided is incorrect. Please verify your key and try again.',
-                        'OK'
-                    );
                 } else if (error.error?.code === 'ADMIN_LIMIT_EXCEEDED') {
-                    showPopup(
-                        'error',
-                        'Admin Limit Reached',
-                        'The maximum number of admin accounts has been reached. Please contact the system administrator for assistance.',
-                        'Contact Support',
-                        () => {
-                            window.location.href = 'mailto:admin@adembaba.com';
-                        }
-                    );
+                    errorMessage = 'Maximum number of admin accounts reached';
                 } else if (error.error?.code === 'NO_FILE') {
-                    showPopup(
-                        'error',
-                        'Missing Documents',
-                        'All required documents must be uploaded for registration. Please ensure you have provided all necessary files.',
-                        'OK'
-                    );
-                } else {
-                    showPopup(
-                        'error',
-                        'Registration Failed',
-                        errorMessage,
-                        'OK'
-                    );
+                    errorMessage = 'All required documents must be uploaded';
                 }
 
+                showNotification('Registration Failed', errorMessage, 'error');
                 submitButton.disabled = false;
                 submitButton.querySelector('span').textContent = 'Register';
             }

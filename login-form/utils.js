@@ -15,7 +15,7 @@ export function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.className = 'custom-toast';
     }, 3000);
-}
+} 
 
 export function togglePasswordVisibility(inputId, toggleId) {
     const input = document.getElementById(inputId);
