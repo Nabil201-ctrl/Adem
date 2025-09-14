@@ -1,7 +1,7 @@
 // utils.js
 export const API_URL_1 = 'https://adem-backend.onrender.com/api';
 export const API_URL = 'http://localhost:3000/api';
-export const LOGIN_PATH = '/login-form/index.html';
+export const LOGIN_PATH = '/index.html';
 export const BASE_URL = '';
 
 export function showToast(message, type = 'info') {

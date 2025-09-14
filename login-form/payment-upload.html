@@ -310,42 +310,122 @@
             background-color: var(--primary-light);
         }
 
-        .custom-toast {
+        /* Popup Modal Styles */
+        .popup-modal {
+            display: none;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: var(--shadow);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
+            justify-content: center;
+            align-items: center;
         }
 
-        .custom-toast.show {
-            transform: translateY(0);
-            opacity: 1;
+        .popup-content {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: var(--shadow);
+            position: relative;
+            text-align: center;
         }
 
-        .custom-toast.success {
-            background-color: var(--success-color);
+        .popup-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
         }
 
-        .custom-toast.error {
-            background-color: var(--error-color);
+        .popup-success .popup-icon {
+            color: var(--success-color);
         }
 
-        .custom-toast.warning {
-            background-color: var(--warning-color);
+        .popup-error .popup-icon {
+            color: var(--error-color);
+        }
+
+        .popup-warning .popup-icon {
+            color: var(--warning-color);
+        }
+
+        .popup-info .popup-icon {
+            color: var(--primary-color);
+        }
+
+        .popup-message {
+            margin-bottom: 25px;
+            font-size: 16px;
             color: var(--text-color);
         }
 
-        .custom-toast.info {
+        .popup-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .popup-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .popup-button-primary {
             background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .popup-button-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .popup-button-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .popup-button-secondary:hover {
+            background-color: #e9ecef;
+        }
+
+        .pending-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pending-notice h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .pending-notice p {
+            color: #856404;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .retry-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: var(--warning-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
         }
 
         @media (max-width: 768px) {
@@ -365,6 +445,14 @@
             .upload-btn {
                 padding: 10px 15px;
                 font-size: 13px;
+            }
+
+            .popup-content {
+                padding: 20px;
+            }
+
+            .popup-buttons {
+                flex-direction: column;
             }
         }
     </style>
@@ -388,6 +476,12 @@
                 <div class="payment-header">
                     <h2>Upload Payment Slip</h2>
                     <p>Upload a JPEG, PNG, or PDF file (<5MB) and enter the amount.</p>
+                </div>
+
+                <div id="pendingNotice" class="pending-notice" style="display: none;">
+                    <h3><i class="fas fa-clock"></i> Payment Under Review</h3>
+                    <p>You have already submitted a payment slip. Please wait for admin approval before uploading
+                        another.</p>
                 </div>
 
                 <form class="payment-form" id="paymentSlipForm">
@@ -422,15 +516,113 @@
     <div id="successModal" class="modal">
         <div class="modal-content">
             <h2>Payment Slip Uploaded</h2>
-            <p>Your payment slip has been submitted for verification. You will be notified once it’s approved.</p>
+            <p>Your payment slip has been submitted for verification. You will be notified once it's approved.</p>
             <button class="modal-btn" id="closeModalBtn">OK</button>
         </div>
     </div>
 
-    <div id="toast" class="custom-toast" aria-live="polite"></div>
+    <!-- Popup Modal -->
+    <div id="popupModal" class="popup-modal">
+        <div class="popup-content" id="popupContent">
+            <div class="popup-icon" id="popupIcon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <p class="popup-message" id="popupMessage"></p>
+            <div class="popup-buttons">
+                <button class="popup-button popup-button-primary" id="popupButton">OK</button>
+                <button class="popup-button popup-button-secondary" id="popupRetryButton"
+                    style="display: none;">Retry</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
-        import { API_URL, LOGIN_PATH, showToast, fetchWithRetry } from './utils.js';
+        import { API_URL, LOGIN_PATH, fetchWithRetry } from './utils.js';
+
+        // Store form data for retry functionality
+        let lastFormData = null;
+
+        // Replace showToast function with showPopup
+        function showPopup(message, type = 'info', showRetry = false) {
+            const popupModal = document.getElementById('popupModal');
+            const popupContent = document.getElementById('popupContent');
+            const popupIcon = document.getElementById('popupIcon');
+            const popupMessage = document.getElementById('popupMessage');
+            const popupButton = document.getElementById('popupButton');
+            const popupRetryButton = document.getElementById('popupRetryButton');
+
+            if (!popupModal) {
+                console.warn('Popup modal not found');
+                return;
+            }
+
+            // Set message
+            popupMessage.textContent = message;
+
+            // Set icon and styling based on type
+            popupContent.className = 'popup-content';
+            popupIcon.innerHTML = '';
+
+            let iconClass = '';
+            switch (type) {
+                case 'success':
+                    iconClass = 'fas fa-check-circle';
+                    popupContent.classList.add('popup-success');
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-exclamation-circle';
+                    popupContent.classList.add('popup-error');
+                    break;
+                case 'warning':
+                    iconClass = 'fas fa-exclamation-triangle';
+                    popupContent.classList.add('popup-warning');
+                    break;
+                case 'info':
+                default:
+                    iconClass = 'fas fa-info-circle';
+                    popupContent.classList.add('popup-info');
+                    break;
+            }
+
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+            popupIcon.appendChild(icon);
+
+            // Show/hide retry button
+            popupRetryButton.style.display = showRetry ? 'block' : 'none';
+
+            // Show the popup
+            popupModal.style.display = 'flex';
+
+            // Set up button event listeners
+            popupButton.onclick = function () {
+                popupModal.style.display = 'none';
+            };
+
+            popupRetryButton.onclick = function () {
+                popupModal.style.display = 'none';
+                if (lastFormData) {
+                    retryUpload(lastFormData);
+                }
+            };
+
+            // Close on escape key
+            const closeOnEscape = function (e) {
+                if (e.key === 'Escape') {
+                    popupModal.style.display = 'none';
+                    document.removeEventListener('keydown', closeOnEscape);
+                }
+            };
+
+            document.addEventListener('keydown', closeOnEscape);
+
+            // Close on background click
+            popupModal.onclick = function (e) {
+                if (e.target === popupModal) {
+                    popupModal.style.display = 'none';
+                }
+            };
+        }
 
         async function checkAuth() {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -452,10 +644,31 @@
             }
         }
 
+        // Check if user has pending payment slips
+        async function checkPendingPayments() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            try {
+                const response = await fetchWithRetry(`${API_URL}/student/payment-slips`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+
+                // Check if there's any payment slip with pending status
+                const hasPending = response.some(slip => slip.status === 'Pending');
+                if (hasPending) {
+                    document.getElementById('pendingNotice').style.display = 'block';
+                    document.getElementById('paymentSlipForm').style.display = 'none';
+                }
+
+                return hasPending;
+            } catch (error) {
+                console.error('Error checking pending payments:', error);
+                return false;
+            }
+        }
+
         function showSuccessModal() {
             const modal = document.getElementById('successModal');
-            modal.style.display = ""
-            modal.focus();
+            modal.style.display = "flex";
             document.getElementById('closeModalBtn').focus();
         }
 
@@ -463,6 +676,72 @@
             const modal = document.getElementById('successModal');
             modal.style.display = 'none';
             window.location.href = LOGIN_PATH;
+        }
+
+        // Function to retry upload with the same form data
+        async function retryUpload(formData) {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const submitButton = document.querySelector('#paymentSlipForm .upload-btn');
+
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Retrying...';
+
+            try {
+                const response = await fetchWithRetry(`${API_URL}/payment-slips/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                });
+
+                showPopup(response.message, 'success');
+                document.getElementById('paymentSlipForm').reset();
+                lastFormData = null;
+
+                // Show success modal that redirects to login
+                setTimeout(() => {
+                    showSuccessModal();
+                }, 1000);
+            } catch (error) {
+                console.error('Retry upload error:', error);
+                handleUploadError(error);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<span>Upload Slip</span><i class="fas fa-upload"></i>';
+            }
+        }
+
+        // Handle upload errors with specific messages
+        function handleUploadError(error) {
+            let message = 'Failed to upload payment slip';
+            let targetErrorField = 'file-error';
+            let showRetry = false;
+
+            if (error.message.includes('401')) {
+                message = 'Session expired. Please log in again.';
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+                window.location.href = LOGIN_PATH;
+            } else if (error.message.includes('403')) {
+                message = 'Access denied. Students only.';
+            } else if (error.message.includes('No file uploaded')) {
+                message = 'No file uploaded. Please select a file.';
+                targetErrorField = 'file-error';
+            } else if (error.message.includes('Validation failed')) {
+                message = error.message.includes('Amount') ? 'Enter a valid amount' : 'Invalid input';
+                targetErrorField = error.message.includes('Amount') ? 'amount-error' : 'file-error';
+            } else if (error.message.includes('Invalid file type')) {
+                message = 'Only JPEG, PNG, or PDF files are allowed';
+                targetErrorField = 'file-error';
+            } else if (error.message.includes('network') || error.message.includes('ENOTFOUND') || error.message.includes('timeout')) {
+                message = 'Network error. Please check your connection and try again.';
+                showRetry = true;
+            } else if (error.message.includes('Cloudinary') || error.message.includes('cloudinary')) {
+                message = 'File storage service is temporarily unavailable. Please try again later.';
+                showRetry = true;
+            }
+
+            showPopup(message, 'error', showRetry);
+            document.getElementById(targetErrorField).textContent = message;
         }
 
         document.getElementById('closeModalBtn').addEventListener('click', closeSuccessModal);
@@ -486,6 +765,14 @@
 
         document.getElementById('paymentSlipForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Check if user already has pending payment
+            const hasPending = await checkPendingPayments();
+            if (hasPending) {
+                showPopup('You already have a payment slip pending review. Please wait for approval before uploading another.', 'warning');
+                return;
+            }
+
             const amountInput = document.getElementById('paymentAmount');
             const fileInput = document.getElementById('paymentSlip');
             const amount = parseFloat(amountInput.value);
@@ -498,25 +785,25 @@
 
             // Client-side validation
             if (!amount || amount <= 0) {
-                showToast('Please enter a valid amount', 'error');
+                showPopup('Please enter a valid amount', 'error');
                 document.getElementById('amount-error').textContent = 'Enter a positive amount';
                 amountInput.focus();
                 return;
             }
             if (!file) {
-                showToast('Please select a payment slip file', 'error');
+                showPopup('Please select a payment slip file', 'error');
                 document.getElementById('file-error').textContent = 'File is required';
                 fileInput.focus();
                 return;
             }
             if (!['image/jpeg', 'image/png', 'application/pdf'].includes(file.type)) {
-                showToast('Only JPEG, PNG, or PDF files are allowed', 'error');
+                showPopup('Only JPEG, PNG, or PDF files are allowed', 'error');
                 document.getElementById('file-error').textContent = 'Invalid file type';
                 fileInput.focus();
                 return;
             }
             if (file.size > 5 * 1024 * 1024) {
-                showToast('File size must be less than 5MB', 'error');
+                showPopup('File size must be less than 5MB', 'error');
                 document.getElementById('file-error').textContent = 'File too large';
                 fileInput.focus();
                 return;
@@ -525,6 +812,9 @@
             const formData = new FormData();
             formData.append('amount', amount.toString());
             formData.append('paymentSlip', file);
+
+            // Store for potential retry
+            lastFormData = formData;
 
             const submitButton = document.querySelector('#paymentSlipForm .upload-btn');
             submitButton.disabled = true;
@@ -536,47 +826,31 @@
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData,
                 });
-                showToast(response.message, 'success');
+
+                showPopup(response.message, 'success');
                 document.getElementById('paymentSlipForm').reset();
-                showSuccessModal();
+                lastFormData = null;
+
+                // Show success modal that redirects to login
+                setTimeout(() => {
+                    showSuccessModal();
+                }, 1000);
             } catch (error) {
                 console.error('Upload error:', error);
-                let message = 'Failed to upload payment slip';
-                let targetErrorField = 'file-error';
-
-                if (error.message.includes('401')) {
-                    message = 'Session expired. Please log in again.';
-                    localStorage.removeItem('token');
-                    sessionStorage.removeItem('token');
-                    window.location.href = LOGIN_PATH;
-                } else if (error.message.includes('403')) {
-                    message = 'Access denied. Students only.';
-                } else if (error.message.includes('No file uploaded')) {
-                    message = 'No file uploaded. Please select a file.';
-                    targetErrorField = 'file-error';
-                } else if (error.message.includes('Validation failed')) {
-                    message = error.message.includes('Amount') ? 'Enter a valid amount' : 'Invalid input';
-                    targetErrorField = error.message.includes('Amount') ? 'amount-error' : 'file-error';
-                } else if (error.message.includes('Invalid file type')) {
-                    message = 'Only JPEG, PNG, or PDF files are allowed';
-                    targetErrorField = 'file-error';
-                } else if (error.message.includes('network')) {
-                    message = 'Network error. Please check your connection.';
-                }
-
-                showToast(message, 'error');
-                document.getElementById(targetErrorField).textContent = message;
+                handleUploadError(error);
             } finally {
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<span>Upload Slip</span><i class="fas fa-upload"></i>';
             }
         });
 
-        // Check authentication on page load
+        // Check authentication and pending payments on page load
         (async () => {
             const isAuthenticated = await checkAuth();
             if (!isAuthenticated) {
-                showToast('Please log in to continue', 'error');
+                showPopup('Please log in to continue', 'error');
+            } else {
+                await checkPendingPayments();
             }
         })();
     </script>
