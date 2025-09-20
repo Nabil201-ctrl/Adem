@@ -283,6 +283,7 @@
             text-decoration: none;
             font-size: 13px;
             font-weight: 500;
+            cursor: pointer;
         }
 
         .forgot-password:hover {
@@ -353,6 +354,7 @@
             width: 90%;
             box-shadow: var(--shadow);
             text-align: center;
+            position: relative;
         }
 
         .modal h2 {
@@ -380,6 +382,21 @@
 
         .close-btn:hover {
             background-color: var(--primary-light);
+        }
+
+        .modal-close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+
+        .modal-close-button:hover {
+            color: var(--text-color);
         }
 
         .user-type-toggle {
@@ -749,7 +766,7 @@
                 </form>
 
                 <div class="register-link">
-                    <p>Already have an account? <a href="./index.html">Login</a></p>
+                    <p>Already have an account? <a href="./../index.html">Login</a></p>
                 </div>
             </div>
         </div>
@@ -757,6 +774,9 @@
 
     <div id="termsModal" class="modal">
         <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal('termsModal')">
+                <i class="fas fa-times"></i>
+            </button>
             <h2>Terms & Conditions</h2>
             <p>By registering, you agree to abide by the hostel rules and regulations. Ensure all provided information
                 is accurate and complete.</p>
@@ -766,6 +786,9 @@
 
     <div id="registerSuccessModal" class="modal">
         <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal('registerSuccessModal')">
+                <i class="fas fa-times"></i>
+            </button>
             <h2>Registration Submitted</h2>
             <p id="registerSuccessMessage"></p>
             <button type="button" class="close-btn" id="registerSuccessCloseBtn">Close</button>
@@ -774,15 +797,24 @@
 
     <div id="registrationClosedModal" class="modal">
         <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal('registrationClosedModal')">
+                <i class="fas fa-times"></i>
+            </button>
             <h2>Registration Closed</h2>
             <p>The registration period for Adem Baba Hostel has closed.</p>
-            <button type="button" class="close-btn" onclick="window.location.href='./../index.html'">Return to Login</button>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button type="button" class="close-btn" onclick="window.location.href='./../index.html'">Return to
+                    Login</button>
+            </div>
         </div>
     </div>
 
     <!-- Notification Modal -->
     <div id="notificationModal" class="modal notification-modal">
         <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal('notificationModal')">
+                <i class="fas fa-times"></i>
+            </button>
             <i id="notificationIcon" class="icon"></i>
             <h2 id="notificationTitle"></h2>
             <p id="notificationMessage"></p>
@@ -791,114 +823,145 @@
     </div>
 
     <script type="module">
-        import { API_URL, togglePasswordVisibility, fetchWithRetry, sanitizeInput } from './utils.js';
+    import { API_URL, togglePasswordVisibility, fetchWithRetry, sanitizeInput } from './utils.js';
 
-        togglePasswordVisibility('password', 'togglePassword');
+    // Initialize password visibility toggle
+    togglePasswordVisibility('password', 'togglePassword');
 
-        // Slider functionality
-        const slider = document.querySelector('.student-slides');
-        const slides = document.querySelectorAll('.student-slide');
-        const dots = document.querySelectorAll('.slider-dot');
-        const prevBtn = document.querySelector('.slider-arrow.prev');
-        const nextBtn = document.querySelector('.slider-arrow.next');
-        let currentSlide = 0;
-        const slideCount = slides.length;
-
-        function goToSlide(slideIndex) {
-            if (slideIndex < 0) slideIndex = slideCount - 1;
-            if (slideIndex >= slideCount) slideIndex = 0;
-
-            currentSlide = slideIndex;
-            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-            // Update dots
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
-            });
-        }
-
-        dots.forEach(dot => {
-            dot.addEventListener('click', () => {
-                goToSlide(parseInt(dot.dataset.slide));
+    // Close modal when clicking outside of modal content
+    function setupModalCloseOnOutsideClick() {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
             });
         });
+    }
 
-        prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
-        nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
+    // Slider functionality
+    const slider = document.querySelector('.student-slides');
+    const slides = document.querySelectorAll('.student-slide');
+    const dots = document.querySelectorAll('.slider-dot');
+    const prevBtn = document.querySelector('.slider-arrow.prev');
+    const nextBtn = document.querySelector('.slider-arrow.next');
+    let currentSlide = 0;
+    const slideCount = slides.length;
 
-        // Initialize slider
-        goToSlide(0);
+    function goToSlide(slideIndex) {
+        if (slideIndex < 0) slideIndex = slideCount - 1;
+        if (slideIndex >= slideCount) slideIndex = 0;
 
-        // Function to show notification modal
-        function showNotification(title, message, type = 'info') {
-            const modal = document.getElementById('notificationModal');
-            const icon = document.getElementById('notificationIcon');
-            const titleEl = document.getElementById('notificationTitle');
-            const messageEl = document.getElementById('notificationMessage');
+        currentSlide = slideIndex;
+        slider.style.transform = `translateX(-${currentSlide * 100}%)`;
 
-            // Set content based on type
-            titleEl.textContent = title;
-            messageEl.textContent = message;
+        // Update dots
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentSlide);
+        });
+    }
 
-            // Set icon based on type
-            switch (type) {
-                case 'success':
-                    icon.className = 'icon fas fa-check-circle';
-                    modal.className = 'modal notification-modal success';
-                    break;
-                case 'error':
-                    icon.className = 'icon fas fa-exclamation-circle';
-                    modal.className = 'modal notification-modal error';
-                    break;
-                case 'warning':
-                    icon.className = 'icon fas fa-exclamation-triangle';
-                    modal.className = 'modal notification-modal warning';
-                    break;
-                case 'info':
-                default:
-                    icon.className = 'icon fas fa-info-circle';
-                    modal.className = 'modal notification-modal info';
-                    break;
-            }
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            goToSlide(parseInt(dot.dataset.slide));
+        });
+    });
 
-            // Show the modal
-            modal.style.display = 'flex';
+    prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
+    nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
 
-            // Add event listener to close button
-            document.getElementById('notificationCloseBtn').onclick = function () {
-                modal.style.display = 'none';
-            };
+    // Initialize slider
+    goToSlide(0);
+
+    // Function to show notification modal
+    function showNotification(title, message, type = 'info') {
+        const modal = document.getElementById('notificationModal');
+        const icon = document.getElementById('notificationIcon');
+        const titleEl = document.getElementById('notificationTitle');
+        const messageEl = document.getElementById('notificationMessage');
+
+        if (!modal || !icon || !titleEl || !messageEl) {
+            console.error('Notification modal elements not found');
+            return;
         }
 
-        // Function to show registration closed modal
-        function showRegistrationClosedModal() {
-            const modal = document.getElementById('registrationClosedModal');
-            modal.style.display = 'flex';
+        // Set content based on type
+        titleEl.textContent = title;
+        messageEl.textContent = message;
 
-            // Disable the form
-            document.getElementById('registerForm').querySelectorAll('input, select, button').forEach(element => {
+        // Set icon based on type
+        switch (type) {
+            case 'success':
+                icon.className = 'icon fas fa-check-circle';
+                modal.className = 'modal notification-modal success';
+                break;
+            case 'error':
+                icon.className = 'icon fas fa-exclamation-circle';
+                modal.className = 'modal notification-modal error';
+                break;
+            case 'warning':
+                icon.className = 'icon fas fa-exclamation-triangle';
+                modal.className = 'modal notification-modal warning';
+                break;
+            case 'info':
+            default:
+                icon.className = 'icon fas fa-info-circle';
+                modal.className = 'modal notification-modal info';
+                break;
+        }
+
+        // Show the modal
+        modal.style.display = 'flex';
+
+        // Ensure close button has event listener
+        const closeBtn = document.getElementById('notificationCloseBtn');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+        } else {
+            console.error('Notification close button not found');
+        }
+    }
+
+    // Function to show registration closed modal
+    function showRegistrationClosedModal() {
+        const modal = document.getElementById('registrationClosedModal');
+        if (!modal) {
+            console.error('Registration closed modal not found');
+            return;
+        }
+        modal.style.display = 'flex';
+
+        // Disable the form
+        const form = document.getElementById('registerForm');
+        if (form) {
+            form.querySelectorAll('input, select, button').forEach(element => {
                 element.disabled = true;
             });
         }
+    }
 
+    // Function to check registration deadline
     async function checkRegistrationDeadline() {
         try {
             const data = await fetchWithRetry(`${API_URL}/registration-deadline`);
 
-            // Check if no deadline is set (backend returns this structure)
+            // Check if no deadline is set
             if (data.message === 'No registration deadline set' && data.deadline === null) {
                 showNotification('Registration Status', 'No registration deadline set. Please contact support.', 'error');
                 return { isOpen: true, deadline: null };
             }
 
-            // Extract deadline date - handle both response structures
+            // Extract deadline date
             let deadlineDate;
             if (data.extended && data.extendedDeadline) {
                 deadlineDate = data.extendedDeadline;
             } else if (data.deadline) {
                 deadlineDate = data.deadline;
             } else {
-                showNotification('Registration Status', 'The Adem Baba Hostel has not yet started accepting request or contact support.', 'error');
+                showNotification('Registration Status', 'The Adem Baba Hostel has not yet started accepting requests or contact support.', 'error');
                 return { isOpen: true, deadline: null };
             }
 
@@ -928,209 +991,290 @@
         }
     }
 
-        function openTermsModal() {
-            document.getElementById('termsModal').style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function openRegisterSuccessModal(message) {
-            document.getElementById('registerSuccessMessage').textContent = message;
-            const modal = document.getElementById('registerSuccessModal');
+    // Function to open terms modal
+    function openTermsModal() {
+        const modal = document.getElementById('termsModal');
+        if (modal) {
             modal.style.display = 'flex';
-            const closeBtn = document.getElementById('registerSuccessCloseBtn');
-            closeBtn.addEventListener('click', closeRegisterSuccessModal);
+        } else {
+            console.error('Terms modal not found');
         }
+    }
 
-        function closeRegisterSuccessModal() {
-            document.getElementById('registerSuccessModal').style.display = 'none';
-            window.location.href = 'index.html';
+    // Function to close any modal by ID
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+            console.error(`Modal with ID ${modalId} not found`);
+            return;
         }
+        modal.style.display = 'none';
 
-        const typeButtons = document.querySelectorAll('.type-btn');
-        const studentFields = document.querySelectorAll('.student-field');
-        const adminField = document.querySelector('.admin-field');
-        const studentSlider = document.querySelector('.student-slider');
-
-        typeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                typeButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                const userType = button.dataset.type;
-                studentFields.forEach(field => {
-                    field.style.display = userType === 'student' ? 'block' : 'none';
-                    const input = field.querySelector('input, select');
-                    if (input) input.required = userType === 'student';
+        // If closing the registration closed modal, re-enable the form
+        if (modalId === 'registrationClosedModal') {
+            const form = document.getElementById('registerForm');
+            if (form) {
+                form.querySelectorAll('input, select, button').forEach(element => {
+                    element.disabled = false;
                 });
-                adminField.style.display = userType === 'admin' ? 'block' : 'none';
-                const adminInput = adminField.querySelector('input');
-                if (adminInput) adminInput.required = userType === 'admin';
+            }
+        }
+    }
 
-                // Show/hide slider based on user type
-                studentSlider.style.display = userType === 'student' ? 'block' : 'none';
-            });
-        });
+    // Function to open registration success modal
+    function openRegisterSuccessModal(message) {
+        const modal = document.getElementById('registerSuccessModal');
+        const messageEl = document.getElementById('registerSuccessMessage');
+        const closeBtn = document.getElementById('registerSuccessCloseBtn');
 
-        document.querySelector('.type-btn[data-type="student"]').click();
+        if (!modal || !messageEl || !closeBtn) {
+            console.error('Register success modal elements not found');
+            return;
+        }
 
-        // Check registration deadline on page load
-        document.addEventListener('DOMContentLoaded', async () => {
-            const { isOpen } = await checkRegistrationDeadline();
-            if (!isOpen) {
-                showRegistrationClosedModal();
+        messageEl.textContent = message;
+        modal.style.display = 'flex';
+
+        // Ensure close button has event listener
+        closeBtn.onclick = closeRegisterSuccessModal;
+    }
+
+    // Function to close registration success modal
+    function closeRegisterSuccessModal() {
+        const modal = document.getElementById('registerSuccessModal');
+        if (modal) {
+            modal.style.display = 'none';
+            window.location.href = 'index.html';
+        } else {
+            console.error('Register success modal not found');
+        }
+    }
+
+    // Set up close buttons for all modals
+    function setupModalCloseButtons() {
+        const modals = [
+            'termsModal',
+            'registerSuccessModal',
+            'registrationClosedModal',
+            'notificationModal'
+        ];
+
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (!modal) {
+                console.error(`Modal with ID ${modalId} not found`);
+                return;
+            }
+
+            // Set up the "X" close button
+            const closeButton = modal.querySelector('.modal-close-button');
+            if (closeButton) {
+                closeButton.onclick = () => closeModal(modalId);
+            } else {
+                console.warn(`Close button not found for modal ${modalId}`);
+            }
+
+            // Set up the "Close" button (close-btn)
+            const actionButton = modal.querySelector('.close-btn');
+            if (actionButton) {
+                actionButton.onclick = () => closeModal(modalId);
+            } else {
+                console.warn(`Action close button not found for modal ${modalId}`);
             }
         });
+    }
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.querySelector('span').textContent = 'Registering...';
+    // User type toggle functionality
+    const typeButtons = document.querySelectorAll('.type-btn');
+    const studentFields = document.querySelectorAll('.student-field');
+    const adminField = document.querySelector('.admin-field');
+    const studentSlider = document.querySelector('.student-slider');
+    let registrationStatusChecked = false;
 
-            // Clear previous errors
-            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-            document.querySelectorAll('.form-group input, .form-group select').forEach(input => input.classList.remove('error'));
+    typeButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            typeButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const userType = button.dataset.type;
 
-            const userType = document.querySelector('.type-btn.active').dataset.type;
-            const formData = new FormData();
+            studentFields.forEach(field => {
+                field.style.display = userType === 'student' ? 'block' : 'none';
+                const input = field.querySelector('input, select');
+                if (input) input.required = userType === 'student';
+            });
 
-            // Common fields
-            formData.append('name', sanitizeInput(document.getElementById('name').value.trim()));
-            formData.append('email', document.getElementById('email').value.trim());
-            formData.append('password', document.getElementById('password').value);
-            formData.append('userType', userType);
+            adminField.style.display = userType === 'admin' ? 'block' : 'none';
+            const adminInput = adminField.querySelector('input');
+            if (adminInput) adminInput.required = userType === 'admin';
 
-            if (userType === 'admin') {
-                formData.append('adminSecretKey', document.getElementById('adminSecretKey').value);
-            } else {
-                // Student fields
-                formData.append('matricNumber', sanitizeInput(document.getElementById('matricNumber').value.trim().toUpperCase()));
-                formData.append('phone', sanitizeInput(document.getElementById('phone').value.trim()));
-                formData.append('gender', document.getElementById('gender').value); // Hardcoded to 'Male'
-                formData.append('dateOfBirth', document.getElementById('dateOfBirth').value);
-                formData.append('faculty', sanitizeInput(document.getElementById('faculty').value.trim()));
+            studentSlider.style.display = userType === 'student' ? 'block' : 'none';
 
-                // Validate level format (e.g., 400level)
-                const level = sanitizeInput(document.getElementById('level').value.trim().toLowerCase());
-                const levelRegex = /^(100|200|300|400|500|600|700)level$/;
-                if (!levelRegex.test(level)) {
-                    showNotification('Validation Error', 'Invalid level format (e.g., 400level)', 'error');
-                    document.getElementById('level-error').textContent = 'Invalid level format (e.g., 400level)';
-                    document.getElementById('level').classList.add('error');
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-                formData.append('level', level);
-
-                formData.append('department', sanitizeInput(document.getElementById('department').value.trim()));
-                formData.append('jambOrCgpaType', document.getElementById('jambOrCgpaType').value);
-                formData.append('NIN', 'NIN'); // Hardcoded as per request
-
-                // Student documents
-                const jambOrCgpaFile = document.getElementById('jambOrCgpa').files[0];
-                const admissionLetterFile = document.getElementById('admissionLetter').files[0];
-                const ninFile = document.getElementById('nin').files[0];
-
-                if (!jambOrCgpaFile || !admissionLetterFile || !ninFile) {
-                    showNotification('Validation Error', 'All documents are required for student registration', 'error');
-                    if (!jambOrCgpaFile) {
-                        document.getElementById('jambOrCgpa-error').textContent = 'JAMB/CGPA document is required';
-                    }
-                    if (!admissionLetterFile) {
-                        document.getElementById('admissionLetter-error').textContent = 'Admission letter is required';
-                    }
-                    if (!ninFile) {
-                        document.getElementById('nin-error').textContent = 'NIN document is required';
-                    }
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
-                }
-
-                formData.append('jambOrCgpa', jambOrCgpaFile);
-                formData.append('admissionLetter', admissionLetterFile);
-                formData.append('nin', ninFile);
-
-                // Check registration deadline for students
+            if (userType === 'student' && !registrationStatusChecked) {
                 const { isOpen } = await checkRegistrationDeadline();
                 if (!isOpen) {
                     showRegistrationClosedModal();
-                    submitButton.disabled = false;
-                    submitButton.querySelector('span').textContent = 'Register';
-                    return;
                 }
+                registrationStatusChecked = true;
             }
+        });
+    });
 
-            // Validate terms
-            if (!document.getElementById('terms').checked) {
-                showNotification('Validation Error', 'You must agree to the terms', 'error');
+    // Initialize with student selected
+    document.querySelector('.type-btn[data-type="student"]').click();
+
+    // Set up modal close functionality
+    setupModalCloseOnOutsideClick();
+    setupModalCloseButtons();
+
+    // Form submission
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.querySelector('span').textContent = 'Registering...';
+
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+        document.querySelectorAll('.form-group input, .form-group select').forEach(input => input.classList.remove('error'));
+
+        const userType = document.querySelector('.type-btn.active').dataset.type;
+        const formData = new FormData();
+
+        // Common fields
+        formData.append('name', sanitizeInput(document.getElementById('name').value.trim()));
+        formData.append('email', document.getElementById('email').value.trim());
+        formData.append('password', document.getElementById('password').value);
+        formData.append('userType', userType);
+
+        if (userType === 'admin') {
+            formData.append('adminSecretKey', document.getElementById('adminSecretKey').value);
+        } else {
+            // Student fields
+            formData.append('matricNumber', sanitizeInput(document.getElementById('matricNumber').value.trim().toUpperCase()));
+            formData.append('phone', sanitizeInput(document.getElementById('phone').value.trim()));
+            formData.append('gender', document.getElementById('gender').value); // Hardcoded to 'Male'
+            formData.append('dateOfBirth', document.getElementById('dateOfBirth').value);
+            formData.append('faculty', sanitizeInput(document.getElementById('faculty').value.trim()));
+
+            // Validate level format
+            const level = sanitizeInput(document.getElementById('level').value.trim().toLowerCase());
+            const levelRegex = /^(100|200|300|400|500|600|700)level$/;
+            if (!levelRegex.test(level)) {
+                showNotification('Validation Error', 'Invalid level format (e.g., 400level)', 'error');
+                document.getElementById('level-error').textContent = 'Invalid level format (e.g., 400level)';
+                document.getElementById('level').classList.add('error');
+                submitButton.disabled = false;
+                submitButton.querySelector('span').textContent = 'Register';
+                return;
+            }
+            formData.append('level', level);
+
+            formData.append('department', sanitizeInput(document.getElementById('department').value.trim()));
+            formData.append('jambOrCgpaType', document.getElementById('jambOrCgpaType').value);
+            formData.append('NIN', 'NIN'); // Hardcoded
+
+            // Student documents
+            const jambOrCgpaFile = document.getElementById('jambOrCgpa').files[0];
+            const admissionLetterFile = document.getElementById('admissionLetter').files[0];
+            const ninFile = document.getElementById('nin').files[0];
+
+            if (!jambOrCgpaFile || !admissionLetterFile || !ninFile) {
+                showNotification('Validation Error', 'All documents are required for student registration', 'error');
+                if (!jambOrCgpaFile) {
+                    document.getElementById('jambOrCgpa-error').textContent = 'JAMB/CGPA document is required';
+                }
+                if (!admissionLetterFile) {
+                    document.getElementById('admissionLetter-error').textContent = 'Admission letter is required';
+                }
+                if (!ninFile) {
+                    document.getElementById('nin-error').textContent = 'NIN document is required';
+                }
                 submitButton.disabled = false;
                 submitButton.querySelector('span').textContent = 'Register';
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_URL}/register`, {
-                    method: 'POST',
-                    body: formData
-                });
+            formData.append('jambOrCgpa', jambOrCgpaFile);
+            formData.append('admissionLetter', admissionLetterFile);
+            formData.append('nin', ninFile);
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw data;
-                }
-
-                if (userType === 'student') {
-                    openRegisterSuccessModal('Your registration request has been submitted. Please check your email for updates on your approval status.');
-                    sessionStorage.setItem('registerEmail', document.getElementById('email').value.trim());
-                } else {
-                    showNotification('Registration Successful', 'Admin registration successful', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
-                }
-            } catch (error) {
-                console.error('Registration Error:', error);
-                let errorMessage = error.error?.message || error.message || 'Registration failed';
-
-                if (error.error?.code === 'VALIDATION_ERROR') {
-                    error.error.details.forEach(err => {
-                        const field = err.path;
-                        const message = err.msg;
-                        const errorElement = document.getElementById(`${field}-error`);
-                        const inputElement = document.getElementById(field);
-
-                        if (errorElement) {
-                            errorElement.textContent = message;
-                        }
-                        if (inputElement) {
-                            inputElement.classList.add('error');
-                        }
-                    });
-                } else if (error.error?.code === 'DUPLICATE') {
-                    document.getElementById('email-error').textContent = 'Email or matric number already exists';
-                    document.getElementById('email').classList.add('error');
-                } else if (error.error?.code === 'REGISTRATION_CLOSED') {
-                    showRegistrationClosedModal();
-                    errorMessage = 'The registration period for Adem Baba Hostel has closed.';
-                } else if (error.error?.code === 'INVALID_ADMIN_KEY') {
-                    document.getElementById('adminSecretKey-error').textContent = 'Invalid admin secret key';
-                    document.getElementById('adminSecretKey').classList.add('error');
-                } else if (error.error?.code === 'ADMIN_LIMIT_EXCEEDED') {
-                    errorMessage = 'Maximum number of admin accounts reached';
-                } else if (error.error?.code === 'NO_FILE') {
-                    errorMessage = 'All required documents must be uploaded';
-                }
-
-                showNotification('Registration Failed', errorMessage, 'error');
+            // Check registration deadline for students
+            const { isOpen } = await checkRegistrationDeadline();
+            if (!isOpen) {
+                showRegistrationClosedModal();
                 submitButton.disabled = false;
                 submitButton.querySelector('span').textContent = 'Register';
+                return;
             }
-        });
+        }
+
+        // Validate terms
+        if (!document.getElementById('terms').checked) {
+            showNotification('Validation Error', 'You must agree to the terms', 'error');
+            submitButton.disabled = false;
+            submitButton.querySelector('span').textContent = 'Register';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw data;
+            }
+
+            if (userType === 'student') {
+                openRegisterSuccessModal('Your registration request has been submitted. Please check your email for updates on your approval status.');
+                sessionStorage.setItem('registerEmail', document.getElementById('email').value.trim());
+            } else {
+                showNotification('Registration Successful', 'Admin registration successful', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Registration Error:', error);
+            let errorMessage = error.error?.message || error.message || 'Registration failed';
+
+            if (error.error?.code === 'VALIDATION_ERROR') {
+                error.error.details.forEach(err => {
+                    const field = err.path;
+                    const message = err.msg;
+                    const errorElement = document.getElementById(`${field}-error`);
+                    const inputElement = document.getElementById(field);
+
+                    if (errorElement) {
+                        errorElement.textContent = message;
+                    }
+                    if (inputElement) {
+                        inputElement.classList.add('error');
+                    }
+                });
+            } else if (error.error?.code === 'DUPLICATE') {
+                document.getElementById('email-error').textContent = 'Email or matric number already exists';
+                document.getElementById('email').classList.add('error');
+            } else if (error.error?.code === 'REGISTRATION_CLOSED') {
+                showRegistrationClosedModal();
+                errorMessage = 'The registration period for Adem Baba Hostel has closed.';
+            } else if (error.error?.code === 'INVALID_ADMIN_KEY') {
+                document.getElementById('adminSecretKey-error').textContent = 'Invalid admin secret key';
+                document.getElementById('adminSecretKey').classList.add('error');
+            } else if (error.error?.code === 'ADMIN_LIMIT_EXCEEDED') {
+                errorMessage = 'Maximum number of admin accounts reached';
+            } else if (error.error?.code === 'NO_FILE') {
+                errorMessage = 'All required documents must be uploaded';
+            }
+
+            showNotification('Registration Failed', errorMessage, 'error');
+            submitButton.disabled = false;
+            submitButton.querySelector('span').textContent = 'Register';
+        }
+    });
     </script>
 </body>
 
